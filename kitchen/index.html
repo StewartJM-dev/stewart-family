@@ -136,11 +136,14 @@ body{font-family:'Lato',sans-serif;background:var(--cream);color:var(--ink);font
 .nosnack{background:var(--rust);color:white;text-align:center;padding:9px 14px;font-size:11px;font-style:italic;}
 .nosnack strong{font-style:normal;letter-spacing:.8px;font-size:10px;text-transform:uppercase;}
 </style>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
 <nav class="tnav">
   <div><div class="logo">Stewart <span>Kitchen</span></div><span class="logo-sub">Family Meal System</span></div>
-  <div class="ver">98 meals + 33 recipes<br><span style="color:#4a3a28">v4 &middot; Cookbook embedded</span></div>
+  <div class="ver">98 meals + 33 recipes<br><span id="sync-status" style="font-size:10px;color:#a07000">&#9675; Connecting...</span></div>
 </nav>
 <main class="main">
   <div class="nosnack"><strong>The Rule:</strong> Three meals a day. No snacking. Dinner when Dad gets home (~6pm). Dessert a few nights a week.</div>
@@ -670,10 +673,7 @@ pantry:[{id:'p1',name:'Pasta spaghetti/ziti/macaroni',qty:4,unit:'boxes',low:2},
 fridge:[{id:'r1',name:'Eggs',qty:12,unit:'eggs',low:6},{id:'r2',name:'Whole Milk',qty:1,unit:'gallon',low:1},{id:'r3',name:'Butter',qty:4,unit:'sticks',low:2},{id:'r4',name:'Cheddar Cheese',qty:1,unit:'block',low:1},{id:'r5',name:'Mozzarella',qty:1,unit:'pkg',low:1},{id:'r6',name:'Potatoes',qty:5,unit:'lbs',low:3},{id:'r7',name:'Deli Ham',qty:1,unit:'pkg',low:1},{id:'r8',name:'Deli Turkey',qty:1,unit:'pkg',low:1},{id:'r9',name:'Bologna',qty:1,unit:'pkg',low:1},{id:'r10',name:"Hellman's Mayonnaise",qty:1,unit:'jar',low:1},{id:'r11',name:'Sour Cream',qty:1,unit:'tub',low:1},{id:'r12',name:'Green Peppers',qty:2,unit:'peppers',low:2},{id:'r13',name:'Onions',qty:3,unit:'onions',low:2},{id:'r14',name:'Ricotta Cheese',qty:0,unit:'container',low:1}]
 };
 
-function getInv(){try{const s=localStorage.getItem('sk4-inv');return s?JSON.parse(s):JSON.parse(JSON.stringify(DEFAULT_INV));}catch(e){return JSON.parse(JSON.stringify(DEFAULT_INV));}}
-function saveInv(i){try{localStorage.setItem('sk4-inv',JSON.stringify(i));}catch(e){}}
-function getShop(){try{const s=localStorage.getItem('sk4-shop');return s?JSON.parse(s):[];}catch(e){return[];}}
-function saveShop(l){try{localStorage.setItem('sk4-shop',JSON.stringify(l));}catch(e){}}
+// Storage functions overridden by Firebase block below
 
 function renderInv(){
   const inv=getInv();
@@ -743,6 +743,142 @@ function showScreen(name,btn){
   if(btn)btn.classList.add('active');
 }
 
+
+// ══════════════════════════════════════════════════════
+// FIREBASE SYNC
+// ══════════════════════════════════════════════════════
+const FB_CONFIG = {
+  apiKey: "AIzaSyAXfFW3rWpChcTDqCiFKwk9QIJMY0fhnfw",
+  authDomain: "stewart-family-3cece.firebaseapp.com",
+  databaseURL: "https://stewart-family-3cece-default-rtdb.firebaseio.com",
+  projectId: "stewart-family-3cece",
+  storageBucket: "stewart-family-3cece.firebasestorage.app",
+  messagingSenderId: "43602660041",
+  appId: "1:43602660041:web:0f3d567cc00e7fdf86db18"
+};
+
+// Firebase loaded via CDN in <head> — db reference
+let _db = null;
+let _fbReady = false;
+let _syncStatus = 'connecting'; // connecting | live | offline
+
+function initFirebase(){
+  try {
+    firebase.initializeApp(FB_CONFIG);
+    _db = firebase.database();
+    _fbReady = true;
+    setSyncStatus('live');
+
+    // Listen for real-time changes from other devices
+    _db.ref('stewart/inventory').on('value', snap => {
+      const val = snap.val();
+      if(val){
+        try{ localStorage.setItem('sk4-inv', JSON.stringify(val)); }catch(e){}
+        if(document.getElementById('screen-inventory').classList.contains('active')) renderInv();
+      }
+    });
+    _db.ref('stewart/shopping').on('value', snap => {
+      const val = snap.val();
+      if(val && Array.isArray(val)){
+        try{ localStorage.setItem('sk4-shop', JSON.stringify(val)); }catch(e){}
+        if(document.getElementById('screen-shopping').classList.contains('active')) renderShopList();
+      }
+    });
+    _db.ref('stewart/plan').on('value', snap => {
+      const val = snap.val();
+      if(val && Array.isArray(val)){
+        currentPlan = val;
+        if(document.getElementById('screen-planner').classList.contains('active')){
+          renderPlan(val);
+          renderNutrition(val);
+          document.getElementById('cal-btn').style.display='block';
+        }
+      }
+    });
+
+    // Connection state monitor
+    _db.ref('.info/connected').on('value', snap => {
+      setSyncStatus(snap.val() ? 'live' : 'offline');
+    });
+
+  } catch(e){
+    console.log('Firebase init failed, using localStorage fallback:', e);
+    setSyncStatus('offline');
+  }
+}
+
+function setSyncStatus(status){
+  _syncStatus = status;
+  const el = document.getElementById('sync-status');
+  if(!el) return;
+  if(status === 'live'){
+    el.innerHTML = '&#9679; Synced';
+    el.style.color = '#2d6a47';
+  } else if(status === 'connecting'){
+    el.innerHTML = '&#9675; Connecting...';
+    el.style.color = '#a07000';
+  } else {
+    el.innerHTML = '&#9675; Offline &mdash; saving locally';
+    el.style.color = '#8b3010';
+  }
+}
+
+function fbWrite(path, data){
+  if(_fbReady && _db){
+    _db.ref(path).set(data).catch(e => console.log('FB write failed:', e));
+  }
+}
+
+// ── OVERRIDE STORAGE FUNCTIONS TO USE FIREBASE ──────────────────
+
+function getInv(){
+  try{
+    const s = localStorage.getItem('sk4-inv');
+    return s ? JSON.parse(s) : JSON.parse(JSON.stringify(DEFAULT_INV));
+  } catch(e){ return JSON.parse(JSON.stringify(DEFAULT_INV)); }
+}
+
+function saveInv(inv){
+  try{ localStorage.setItem('sk4-inv', JSON.stringify(inv)); }catch(e){}
+  fbWrite('stewart/inventory', inv);
+}
+
+function getShop(){
+  try{
+    const s = localStorage.getItem('sk4-shop');
+    return s ? JSON.parse(s) : [];
+  } catch(e){ return []; }
+}
+
+function saveShop(list){
+  try{ localStorage.setItem('sk4-shop', JSON.stringify(list)); }catch(e){}
+  fbWrite('stewart/shopping', list);
+}
+
+function savePlan(plan){
+  if(!plan) return;
+  // Strip non-serializable bits before saving
+  const clean = plan.map(s => ({
+    day: s.day, type: s.type, label: s.label||'',
+    mealName: s.mealName||'', sides: s.sides||'',
+    health: s.health||'green',
+    dessert: s.dessert||null,
+    bread: s.bread||null,
+    defrost: s.defrost||null,
+    chainName: s.chain ? s.chain.name : null,
+    mealId: s.mealObj ? s.mealObj.id : null,
+    alert: s.alert||null
+  }));
+  fbWrite('stewart/plan', clean);
+}
+
+// ── PATCH generatePlan TO ALSO SAVE TO FIREBASE ─────────────────
+const _origGeneratePlan = generatePlan;
+function generatePlan(){
+  _origGeneratePlan();
+  if(currentPlan) savePlan(currentPlan);
+}
+
 document.addEventListener('DOMContentLoaded',()=>{
   filterMeals();
   renderChains();
@@ -751,6 +887,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   renderShopList();
   renderHealth();
   renderHelp();
+  initFirebase();
 });
 
 </script>
