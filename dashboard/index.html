@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Stewart HQ — Parent Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+:root{
+  --green:#1a4a2e;--green2:#2d6a47;--green3:#3d8a5e;
+  --indigo:#1e2d5a;--indigo2:#2e3f7a;
+  --gold:#c8922a;--gold2:#e8b84a;
+  --white:#f9f7f2;--offwhite:#ede9e0;--cream:#f7f2ea;
+  --black:#0e0e0e;--ink:#1a1410;--brown:#5c3d1e;
+  --rust:#b5451b;--muted:#8a7a65;--border:#e0d5c0;
+  --card:#ffffff;
+  --alpha:#1e3a6e;--bravo:#6e1e1e;--dino:#1e5c2a;--wild:#7a5c1e;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{height:-webkit-fill-available;}
+body{
+  font-family:'Lato',sans-serif;
+  background:var(--cream);color:var(--ink);
+  min-height:100vh;min-height:-webkit-fill-available;
+  font-size:14px;
+}
+
+/* ── PIN SCREEN ── */
+.pin-screen{
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  min-height:100vh;min-height:-webkit-fill-available;
+  background:linear-gradient(160deg,var(--green) 0%,#0f2e1a 100%);
+  padding:32px 24px;
+}
+.pin-logo{
+  font-family:'Cinzel',serif;font-size:13px;
+  letter-spacing:4px;text-transform:uppercase;
+  color:var(--gold2);margin-bottom:6px;text-align:center;
+}
+.pin-title{
+  font-family:'Cinzel',serif;font-size:26px;font-weight:900;
+  color:var(--white);text-align:center;margin-bottom:4px;
+}
+.pin-sub{
+  font-family:'Crimson Pro',serif;font-size:14px;
+  font-style:italic;color:rgba(255,255,255,.6);
+  margin-bottom:32px;text-align:center;
+}
+.pin-dots{
+  display:flex;gap:14px;margin-bottom:28px;
+}
+.pin-dot{
+  width:16px;height:16px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.4);
+  transition:all .2s;
+}
+.pin-dot.filled{background:var(--gold2);border-color:var(--gold2);}
+.pin-pad{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:10px;width:240px;
+}
+.pin-btn{
+  height:64px;border-radius:12px;
+  background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.15);
+  color:var(--white);font-family:'Cinzel',serif;
+  font-size:22px;font-weight:700;cursor:pointer;
+  transition:background .15s;
+}
+.pin-btn:active{background:rgba(255,255,255,.25);}
+.pin-btn.del{font-size:16px;color:rgba(255,255,255,.6);}
+.pin-btn.zero{grid-column:2;}
+.pin-error{
+  color:#ff6b6b;font-size:12px;font-style:italic;
+  margin-top:14px;text-align:center;
+  min-height:18px;
+}
+
+/* ── MAIN APP ── */
+.app{display:none;flex-direction:column;min-height:100vh;min-height:-webkit-fill-available;}
+.app.active{display:flex;}
+
+/* TOP BAR */
+.topbar{
+  background:var(--green);
+  border-bottom:3px solid var(--gold);
+  padding:10px 14px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+}
+.topbar-logo{
+  font-family:'Cinzel',serif;font-size:14px;font-weight:900;
+  color:var(--white);letter-spacing:1px;
+}
+.topbar-logo span{color:var(--gold2);}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.topbar-sync{font-size:9px;letter-spacing:1px;text-transform:uppercase;}
+.topbar-home{
+  font-size:16px;color:var(--gold2);text-decoration:none;
+}
+.topbar-lock{
+  font-size:12px;color:rgba(255,255,255,.5);
+  border:none;background:transparent;cursor:pointer;
+  letter-spacing:.5px;
+}
+
+/* BOTTOM NAV */
+.botnav{
+  background:var(--green);
+  border-top:3px solid var(--gold);
+  display:flex;flex-shrink:0;
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+.bnb{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:2px;
+  border:none;background:transparent;cursor:pointer;
+  color:rgba(255,255,255,.4);font-family:'Lato',sans-serif;
+  font-size:8px;letter-spacing:.3px;text-transform:uppercase;
+  padding:8px 2px;transition:color .2s;
+}
+.bnb.active{color:var(--gold2);}
+.bnb svg{width:18px;height:18px;flex-shrink:0;}
+
+/* CONTENT */
+.content{
+  flex:1;overflow-y:auto;
+  -webkit-overflow-scrolling:touch;min-height:0;
+}
+.tab{display:none;padding:14px 13px 24px;}
+.tab.active{display:block;}
+
+/* SECTION HEADERS */
+.sec-hd{
+  font-family:'Cinzel',serif;font-size:9px;
+  letter-spacing:2.5px;text-transform:uppercase;
+  color:var(--green2);margin-bottom:8px;
+  display:flex;align-items:center;gap:8px;
+}
+.sec-hd::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* CARDS */
+.card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:10px;overflow:hidden;margin-bottom:10px;
+}
+.card-hd{
+  padding:9px 13px;
+  display:flex;align-items:center;gap:8px;
+  border-bottom:1px solid var(--border);
+}
+.card-hd-icon{font-size:14px;flex-shrink:0;}
+.card-hd-title{
+  font-family:'Cinzel',serif;font-size:10px;
+  font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+  color:var(--white);flex:1;
+}
+.card-bd{padding:12px 13px;}
+
+.green-hd .card-hd{background:var(--green);}
+.indigo-hd .card-hd{background:var(--indigo);}
+.brown-hd .card-hd{background:var(--brown);}
+.rust-hd .card-hd{background:var(--rust);}
+
+/* AGENT CARDS */
+.agent-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px;}
+.agent-card{
+  background:var(--card);border:2px solid var(--border);
+  border-radius:10px;overflow:hidden;
+}
+.agent-card-hd{
+  padding:8px 11px;display:flex;
+  align-items:center;justify-content:space-between;
+}
+.agent-card-name{
+  font-family:'Cinzel',serif;font-size:11px;
+  font-weight:700;color:var(--white);
+}
+.agent-card-sub{font-size:9px;color:rgba(255,255,255,.6);}
+.agent-card-bd{padding:9px 11px;}
+.agent-prog-bar{
+  height:5px;border-radius:3px;background:#e8e0d0;
+  overflow:hidden;margin-bottom:5px;
+}
+.agent-prog-fill{height:100%;border-radius:3px;}
+.agent-stat{
+  display:flex;justify-content:space-between;
+  align-items:center;
+}
+.agent-missions{font-size:11px;color:var(--muted);}
+.agent-pay{font-size:12px;font-weight:700;}
+
+/* MESSENGER */
+.msg-identity{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:8px;margin-bottom:14px;
+}
+.msg-id-btn{
+  padding:10px;border-radius:8px;
+  border:2px solid var(--border);
+  background:var(--card);cursor:pointer;
+  text-align:center;transition:all .2s;
+}
+.msg-id-btn.active{border-color:var(--green2);background:#edf7f0;}
+.msg-id-btn-name{
+  font-family:'Cinzel',serif;font-size:10px;
+  font-weight:700;text-transform:uppercase;
+  letter-spacing:.5px;color:var(--ink);
+}
+.msg-id-btn-sub{font-size:10px;color:var(--muted);margin-top:2px;}
+
+.thread-list{margin-bottom:12px;}
+.thread-item{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:8px;padding:10px 13px;margin-bottom:6px;
+  cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;gap:10px;
+}
+.thread-item:active{background:var(--offwhite);}
+.thread-dot{
+  width:10px;height:10px;border-radius:50%;flex-shrink:0;
+}
+.thread-name{
+  font-family:'Cinzel',serif;font-size:11px;
+  font-weight:700;text-transform:uppercase;
+  letter-spacing:.5px;flex:1;
+}
+.thread-preview{font-size:11px;color:var(--muted);font-style:italic;}
+.thread-arrow{font-size:12px;color:var(--muted);}
+
+.msg-thread{display:none;flex-direction:column;height:100%;}
+.msg-thread.active{display:flex;}
+.msg-thread-header{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 13px;border-bottom:1px solid var(--border);
+  background:var(--card);flex-shrink:0;
+}
+.msg-back{
+  border:none;background:transparent;cursor:pointer;
+  font-size:16px;color:var(--green2);
+}
+.msg-thread-name{
+  font-family:'Cinzel',serif;font-size:12px;
+  font-weight:700;text-transform:uppercase;flex:1;
+}
+.msg-messages{
+  flex:1;overflow-y:auto;padding:12px 13px;
+  display:flex;flex-direction:column;gap:8px;
+}
+.msg-bubble{
+  max-width:80%;padding:9px 12px;
+  border-radius:12px;line-height:1.4;font-size:13px;
+}
+.msg-bubble.sent{
+  align-self:flex-end;background:var(--green);color:var(--white);
+  border-bottom-right-radius:4px;
+}
+.msg-bubble.received{
+  align-self:flex-start;background:var(--offwhite);color:var(--ink);
+  border-bottom-left-radius:4px;
+}
+.msg-bubble-from{font-size:9px;opacity:.7;margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px;}
+.msg-bubble-time{font-size:9px;opacity:.6;margin-top:4px;text-align:right;}
+.msg-compose{
+  display:flex;gap:8px;padding:10px 13px;
+  border-top:1px solid var(--border);background:var(--card);
+  flex-shrink:0;
+}
+.msg-input{
+  flex:1;padding:8px 11px;border:1px solid var(--border);
+  border-radius:20px;font-family:'Lato',sans-serif;
+  font-size:13px;background:var(--cream);color:var(--ink);
+}
+.msg-input:focus{outline:none;border-color:var(--green2);}
+.msg-send{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--green);border:none;cursor:pointer;
+  color:var(--white);font-size:14px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+
+/* FAMILY BOARD */
+.board-compose{margin-bottom:12px;}
+.board-input{
+  width:100%;padding:9px 12px;border:1px solid var(--border);
+  border-radius:8px;font-family:'Lato',sans-serif;font-size:13px;
+  background:var(--card);color:var(--ink);margin-bottom:8px;resize:none;height:70px;
+}
+.board-input:focus{outline:none;border-color:var(--green2);}
+.board-controls{display:flex;gap:8px;align-items:center;}
+.board-from{
+  flex:1;padding:8px 10px;border:1px solid var(--border);
+  border-radius:7px;font-family:'Lato',sans-serif;
+  font-size:12px;background:var(--card);color:var(--ink);
+}
+.board-send{
+  padding:8px 16px;border:none;border-radius:7px;
+  background:var(--green);color:var(--white);
+  font-family:'Cinzel',serif;font-size:11px;
+  font-weight:700;cursor:pointer;
+}
+
+/* LUNCH DROP */
+.lunch-day-tabs{
+  display:flex;gap:6px;margin-bottom:12px;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;
+}
+.lunch-tab-btn{
+  padding:6px 12px;border-radius:20px;
+  border:1px solid var(--border);background:var(--card);
+  font-family:'Cinzel',serif;font-size:9px;
+  letter-spacing:1px;text-transform:uppercase;
+  cursor:pointer;color:var(--muted);white-space:nowrap;flex-shrink:0;
+}
+.lunch-tab-btn.active{background:var(--green);color:var(--white);border-color:var(--green);}
+.lunch-option-row{
+  display:flex;gap:8px;align-items:center;
+  margin-bottom:7px;
+}
+.lunch-opt-input{
+  flex:1;padding:8px 10px;border:1px solid var(--border);
+  border-radius:7px;font-family:'Lato',sans-serif;font-size:13px;
+  background:var(--card);color:var(--ink);
+}
+.lunch-opt-qty{
+  width:56px;padding:8px 8px;border:1px solid var(--border);
+  border-radius:7px;font-family:'Lato',sans-serif;font-size:13px;
+  background:var(--card);color:var(--ink);text-align:center;
+}
+.lunch-opt-remove{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--offwhite);border:1px solid var(--border);
+  cursor:pointer;font-size:14px;color:var(--rust);
+  display:flex;align-items:center;justify-content:center;
+}
+.lunch-add-btn{
+  width:100%;padding:9px;border:1px dashed var(--border);
+  border-radius:7px;background:transparent;cursor:pointer;
+  font-family:'Lato',sans-serif;font-size:12px;color:var(--muted);
+  margin-bottom:8px;
+}
+.lunch-save-btn{
+  width:100%;padding:10px;border:none;border-radius:8px;
+  background:var(--green);color:var(--white);
+  font-family:'Cinzel',serif;font-size:12px;font-weight:700;cursor:pointer;
+}
+
+/* UTILITIES */
+.btn-primary{
+  width:100%;padding:11px;border:none;border-radius:9px;
+  background:var(--green);color:var(--white);
+  font-family:'Cinzel',serif;font-size:12px;font-weight:700;
+  cursor:pointer;margin-bottom:8px;
+}
+.btn-secondary{
+  width:100%;padding:9px;border:1px solid var(--border);
+  border-radius:9px;background:transparent;color:var(--muted);
+  font-family:'Lato',sans-serif;font-size:12px;cursor:pointer;
+}
+.empty-state{
+  text-align:center;padding:24px;
+  color:var(--muted);font-style:italic;font-size:13px;
+}
+.badge{
+  display:inline-flex;align-items:center;gap:3px;
+  padding:2px 7px;border-radius:20px;
+  font-size:9px;font-weight:700;letter-spacing:.3px;
+  text-transform:uppercase;
+}
+.badge-green{background:#edf7f0;color:var(--green2);}
+.badge-amber{background:#fdf6e3;color:#a07000;}
+.badge-red{background:#fdf0eb;color:var(--rust);}
+</style>
+</head>
+<body>
+
+<!-- ═══ PIN SCREEN ═══ -->
+<div class="pin-screen" id="pin-screen">
+  <div class="pin-logo">Stewart Family</div>
+  <h1 class="pin-title">Parent <span style="color:var(--gold2)">HQ</span></h1>
+  <p class="pin-sub">Command &amp; Control</p>
+  <div class="pin-dots">
+    <div class="pin-dot" id="dot-0"></div>
+    <div class="pin-dot" id="dot-1"></div>
+    <div class="pin-dot" id="dot-2"></div>
+    <div class="pin-dot" id="dot-3"></div>
+  </div>
+  <div class="pin-pad">
+    <button class="pin-btn" onclick="pinPress('1')">1</button>
+    <button class="pin-btn" onclick="pinPress('2')">2</button>
+    <button class="pin-btn" onclick="pinPress('3')">3</button>
+    <button class="pin-btn" onclick="pinPress('4')">4</button>
+    <button class="pin-btn" onclick="pinPress('5')">5</button>
+    <button class="pin-btn" onclick="pinPress('6')">6</button>
+    <button class="pin-btn" onclick="pinPress('7')">7</button>
+    <button class="pin-btn" onclick="pinPress('8')">8</button>
+    <button class="pin-btn" onclick="pinPress('9')">9</button>
+    <button class="pin-btn del" onclick="pinDelete()">&#9003;</button>
+    <button class="pin-btn zero" onclick="pinPress('0')">0</button>
+  </div>
+  <div class="pin-error" id="pin-error"></div>
+</div>
+
+<!-- ═══ MAIN APP ═══ -->
+<div class="app" id="main-app">
+
+  <div class="topbar">
+    <div>
+      <div class="topbar-logo">Stewart <span>HQ</span></div>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-sync" id="sync-status" style="color:rgba(255,255,255,.5);">&#9675; Connecting</span>
+      <a href="../index.html" class="topbar-home">&#8962;</a>
+      <button class="topbar-lock" onclick="lockApp()">Lock</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- TAB: OVERVIEW -->
+    <div class="tab active" id="tab-overview">
+      <div id="overview-day-banner" style="margin-bottom:12px;"></div>
+      <div class="sec-hd">Agent Status Today</div>
+      <div class="agent-grid" id="overview-agents"></div>
+      <div class="sec-hd">Weekly Pay</div>
+      <div id="overview-pay" style="margin-bottom:12px;"></div>
+      <div id="overview-familynight" style="margin-bottom:12px;"></div>
+      <div class="sec-hd">Quick Transmission</div>
+      <div class="card indigo-hd">
+        <div class="card-hd"><div class="card-hd-icon">&#128225;</div><div class="card-hd-title">Send to Agents</div></div>
+        <div class="card-bd">
+          <textarea id="quick-trans-text" placeholder="Message to all agents..." style="width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:7px;font-family:'Lato',sans-serif;font-size:13px;background:var(--cream);resize:none;height:60px;margin-bottom:8px;" maxlength="280"></textarea>
+          <div style="display:flex;gap:8px;">
+            <select id="quick-trans-from" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-family:'Lato',sans-serif;font-size:12px;background:var(--card);">
+              <option value="HQ">From: HQ</option>
+              <option value="Dad">From: Dad</option>
+              <option value="Mom">From: Mom</option>
+            </select>
+            <button onclick="sendQuickTransmission()" style="padding:8px 16px;border:none;border-radius:7px;background:var(--indigo);color:white;font-family:'Cinzel',serif;font-size:11px;font-weight:700;cursor:pointer;">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: MESSENGER -->
+    <div class="tab" id="tab-messenger">
+      <!-- Thread list view -->
+      <div id="messenger-list-view">
+        <div class="sec-hd">Family Board</div>
+        <div class="card green-hd" style="margin-bottom:14px;">
+          <div class="card-hd"><div class="card-hd-icon">&#128227;</div><div class="card-hd-title">Post to All Agents</div></div>
+          <div class="card-bd">
+            <textarea class="board-input" id="board-msg" placeholder="Post a message all boys can see..." maxlength="280"></textarea>
+            <div class="board-controls">
+              <select class="board-from" id="board-from">
+                <option value="HQ">From: HQ</option>
+                <option value="Dad">From: Dad</option>
+                <option value="Mom">From: Mom</option>
+              </select>
+              <button class="board-send" onclick="sendBoardMessage()">Post</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="sec-hd">Private Threads</div>
+        <div class="thread-list">
+          <div class="thread-item" onclick="openThread('samuel','Samuel','Agent Alpha','var(--alpha)')">
+            <div class="thread-dot" style="background:#1e3a6e;"></div>
+            <div><div class="thread-name">Samuel</div><div class="thread-preview" id="preview-samuel">Agent Alpha</div></div>
+            <div class="thread-arrow">&#8250;</div>
+          </div>
+          <div class="thread-item" onclick="openThread('johnjr','John Jr.','Agent Bravo','var(--bravo)')">
+            <div class="thread-dot" style="background:#6e1e1e;"></div>
+            <div><div class="thread-name">John Jr.</div><div class="thread-preview" id="preview-johnjr">Agent Bravo</div></div>
+            <div class="thread-arrow">&#8250;</div>
+          </div>
+          <div class="thread-item" onclick="openThread('stephen','Stephen','Agent Dino','var(--dino)')">
+            <div class="thread-dot" style="background:#1e5c2a;"></div>
+            <div><div class="thread-name">Stephen</div><div class="thread-preview" id="preview-stephen">Agent Dino</div></div>
+            <div class="thread-arrow">&#8250;</div>
+          </div>
+          <div class="thread-item" onclick="openThread('daniel','Daniel','Agent Wildcard','var(--wild)')">
+            <div class="thread-dot" style="background:#7a5c1e;"></div>
+            <div><div class="thread-name">Daniel</div><div class="thread-preview" id="preview-daniel">Agent Wildcard</div></div>
+            <div class="thread-arrow">&#8250;</div>
+          </div>
+        </div>
+
+        <div class="sec-hd">Recent Board Posts</div>
+        <div id="board-messages"></div>
+      </div>
+
+      <!-- Thread detail view -->
+      <div id="messenger-thread-view" style="display:none;flex-direction:column;height:calc(100vh - 120px);">
+        <div class="msg-thread-header">
+          <button class="msg-back" onclick="closeThread()">&#8592;</button>
+          <div class="msg-thread-name" id="thread-title">Thread</div>
+          <div style="font-size:10px;color:var(--muted);" id="thread-sub"></div>
+        </div>
+        <div class="msg-messages" id="thread-messages"></div>
+        <div class="msg-compose">
+          <input class="msg-input" type="text" id="thread-input" placeholder="Message..." maxlength="280">
+          <button class="msg-send" onclick="sendThreadMessage()">&#10148;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: LUNCH DROP -->
+    <div class="tab" id="tab-lunch">
+      <div class="sec-hd">Load Lunch Options</div>
+      <div class="card green-hd" style="margin-bottom:12px;">
+        <div class="card-hd"><div class="card-hd-icon">&#127857;</div><div class="card-hd-title">Weekly Lunch Drop</div></div>
+        <div class="card-bd">
+          <p style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:12px;">Load available lunch options for each day. Boys pick from the shared pool — first come first served. Include quantities so the app tracks what's left.</p>
+          <div class="lunch-day-tabs" id="lunch-day-tabs-parent"></div>
+          <div id="lunch-options-parent"></div>
+          <button class="lunch-add-btn" onclick="addLunchOption()">+ Add Option</button>
+          <button class="lunch-save-btn" onclick="saveLunchDay()">Save This Day's Options</button>
+        </div>
+      </div>
+      <div class="sec-hd">Boys' Picks This Week</div>
+      <div id="lunch-picks-overview"></div>
+    </div>
+
+    <!-- TAB: MISSIONS -->
+    <div class="tab" id="tab-missions">
+      <div id="missions-day-header" style="margin-bottom:12px;"></div>
+      <div class="sec-hd">Detailed Mission Status</div>
+      <div id="missions-detail"></div>
+    </div>
+
+    <!-- TAB: SETTINGS -->
+    <div class="tab" id="tab-settings">
+      <div class="sec-hd">Portal Links</div>
+      <div class="card" style="margin-bottom:10px;">
+        <div class="card-bd">
+          <a href="../kitchen/index.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);padding:8px 0;border-bottom:1px solid var(--border);">
+            <span style="font-size:20px;">&#127869;</span>
+            <div><div style="font-weight:700;font-size:13px;">Stewart Kitchen</div><div style="font-size:11px;color:var(--muted);">Meal planning &amp; recipes</div></div>
+            <span style="margin-left:auto;color:var(--muted);">&#8250;</span>
+          </a>
+          <a href="../boys/index.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);padding:8px 0;">
+            <span style="font-size:20px;">&#129346;</span>
+            <div><div style="font-weight:700;font-size:13px;">Agent HQ</div><div style="font-size:11px;color:var(--muted);">Boys missions &amp; pay</div></div>
+            <span style="margin-left:auto;color:var(--muted);">&#8250;</span>
+          </a>
+        </div>
+      </div>
+      <div class="sec-hd">About</div>
+      <div class="card">
+        <div class="card-bd" style="font-size:12px;color:var(--muted);line-height:1.6;">
+          <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--brown);margin-bottom:6px;">Stewart Family Portal</div>
+          Parent Dashboard v1.0<br>
+          Firebase: stewart-family-3cece<br>
+          GitHub: stewartjm-dev.github.io/stewart-family<br><br>
+          <em>Virescit vulnere virtus</em>
+        </div>
+      </div>
+      <button class="btn-secondary" onclick="lockApp()" style="margin-top:10px;">&#128274; Lock Dashboard</button>
+    </div>
+
+  </div>
+
+  <nav class="botnav">
+    <button class="bnb active" onclick="showTab('overview',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Overview
+    </button>
+    <button class="bnb" onclick="showTab('messenger',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Messages
+    </button>
+    <button class="bnb" onclick="showTab('lunch',this);loadLunchParent();">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Lunch
+    </button>
+    <button class="bnb" onclick="showTab('missions',this);loadMissionsDetail();">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Missions
+    </button>
+    <button class="bnb" onclick="showTab('settings',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </button>
+  </nav>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// FIREBASE
+// ══════════════════════════════════════════════════════
+const FB_CONFIG = {
+  apiKey: "AIzaSyAXfFW3rWpChcTDqCiFKwk9QIJMY0fhnfw",
+  authDomain: "stewart-family-3cece.firebaseapp.com",
+  databaseURL: "https://stewart-family-3cece-default-rtdb.firebaseio.com",
+  projectId: "stewart-family-3cece",
+  storageBucket: "stewart-family-3cece.firebasestorage.app",
+  messagingSenderId: "43602660041",
+  appId: "1:43602660041:web:0f3d567cc00e7fdf86db18"
+};
+let _db = null;
+
+function initFirebase(){
+  try{
+    firebase.initializeApp(FB_CONFIG);
+    _db = firebase.database();
+    setSyncStatus('live');
+    _db.ref('.info/connected').on('value', snap => setSyncStatus(snap.val()?'live':'offline'));
+  }catch(e){ setSyncStatus('offline'); }
+}
+
+function setSyncStatus(s){
+  const el = document.getElementById('sync-status');
+  if(!el) return;
+  if(s==='live'){ el.innerHTML='&#9679; Synced'; el.style.color='#a8e8c0'; }
+  else{ el.innerHTML='&#9675; Offline'; el.style.color='rgba(255,255,255,.4)'; }
+}
+
+// ══════════════════════════════════════════════════════
+// PIN
+// ══════════════════════════════════════════════════════
+const CORRECT_PIN = '5683';
+let pinEntry = '';
+
+function pinPress(d){
+  if(pinEntry.length >= 4) return;
+  pinEntry += d;
+  updatePinDots();
+  if(pinEntry.length === 4){
+    setTimeout(() => {
+      if(pinEntry === CORRECT_PIN){
+        document.getElementById('pin-screen').style.display = 'none';
+        document.getElementById('main-app').classList.add('active');
+        initFirebase();
+        setTimeout(() => renderOverview(), 800);
+      } else {
+        document.getElementById('pin-error').textContent = 'Incorrect PIN. Try again.';
+        pinEntry = '';
+        updatePinDots();
+        setTimeout(() => document.getElementById('pin-error').textContent = '', 2000);
+      }
+    }, 200);
+  }
+}
+
+function pinDelete(){
+  pinEntry = pinEntry.slice(0,-1);
+  updatePinDots();
+  document.getElementById('pin-error').textContent = '';
+}
+
+function updatePinDots(){
+  for(let i=0;i<4;i++){
+    document.getElementById(`dot-${i}`).classList.toggle('filled', i < pinEntry.length);
+  }
+}
+
+function lockApp(){
+  pinEntry = '';
+  updatePinDots();
+  document.getElementById('pin-error').textContent = '';
+  document.getElementById('main-app').classList.remove('active');
+  document.getElementById('pin-screen').style.display = 'flex';
+}
+
+// ══════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════
+function showTab(name, btn){
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.bnb').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(name==='overview') renderOverview();
+  if(name==='messenger') renderMessenger();
+}
+
+// ══════════════════════════════════════════════════════
+// AGENTS DATA
+// ══════════════════════════════════════════════════════
+const AGENTS = [
+  {id:'samuel', name:'Samuel', codename:'Agent Alpha', color:'#1e3a6e'},
+  {id:'johnjr', name:'John Jr.', codename:'Agent Bravo', color:'#6e1e1e'},
+  {id:'stephen', name:'Stephen', codename:'Agent Dino', color:'#1e5c2a'},
+  {id:'daniel', name:'Daniel', codename:'Agent Wildcard', color:'#7a5c1e'},
+];
+
+const DAILY_BASE = {
+  samuel: ['bed','bedroom','rabbit-own','floor-laundry'],
+  johnjr: ['bed','bedroom','rabbit-own','floor-living'],
+  stephen:['bed','bedroom','rabbit-own','kitchen-counter','floor-kitchen'],
+  daniel: ['bed','bedroom','rabbit-own','floor-hallway','floor-rabbit','table-set'],
+};
+
+const MISSION_NAMES = {
+  'bed':'Make bed','bedroom':'Tidy bedroom','rabbit-own':'Care for rabbit',
+  'floor-laundry':'Sweep laundry room','floor-living':'Sweep living room',
+  'floor-kitchen':'Sweep kitchen','floor-hallway':'Sweep hallway',
+  'floor-rabbit':'Sweep rabbit area','kitchen-counter':'Clean kitchen counters',
+  'dishwasher-load':'Load dishwasher','dishwasher-unload':'Unload dishwasher',
+  'table-set':'Set table','table-clear':'Clear table','table-wipe':'Wipe table',
+  'drinks':'Pour drinks','stovetop':'Wipe stovetop','microwave':'Wipe microwave',
+  'trash':'Take out trash','bathroom-trash':'Empty bathroom trash',
+};
+
+function getDishTeam(){
+  const now = new Date();
+  const dow = now.getDay();
+  const soy = new Date(now.getFullYear(),0,1);
+  const wk = Math.floor((now-soy)/(7*24*60*60*1000));
+  const A = {0:'sj',1:'sj',2:'sd',3:'sj',4:'sd',5:'sj',6:'sd'};
+  const B = {0:'sd',1:'sd',2:'sj',3:'sd',4:'sj',5:'sd',6:'sj'};
+  return (wk%2===0)?A[dow]:B[dow];
+}
+
+function getExpectedMissions(agentId){
+  const dt = getDishTeam();
+  const onDishes = (agentId==='samuel'||agentId==='johnjr') ? dt==='sj' : dt==='sd';
+  const base = [...(DAILY_BASE[agentId]||[])];
+  if(onDishes){
+    if(agentId==='stephen') base.push('dishwasher-unload','table-clear','table-wipe');
+    else if(agentId==='daniel') base.push('dishwasher-load','table-clear','table-wipe');
+    else base.push('dishwasher-load','dishwasher-unload','table-clear','table-wipe');
+  } else {
+    if(agentId!=='daniel') base.push('stovetop','microwave');
+    if(agentId==='samuel'||agentId==='johnjr') base.push('drinks');
+    if(!base.includes('table-set')) base.push('table-set');
+  }
+  if(new Date().getDay()===3){
+    if(agentId==='samuel'||agentId==='johnjr') base.push('trash');
+    if(agentId==='daniel') base.push('bathroom-trash');
+  }
+  return [...new Set(base)];
+}
+
+function getWeekDays(){
+  const now = new Date();
+  const dow = now.getDay();
+  const diff = dow===0?-6:1-dow;
+  const mon = new Date(now); mon.setDate(now.getDate()+diff);
+  const days = [];
+  for(let i=0;i<5;i++){
+    const d=new Date(mon); d.setDate(mon.getDate()+i);
+    days.push(d.toISOString().slice(0,10));
+  }
+  return days;
+}
+
+// ══════════════════════════════════════════════════════
+// OVERVIEW
+// ══════════════════════════════════════════════════════
+function renderOverview(){
+  if(!_db){ return; }
+  const today = new Date().toISOString().slice(0,10);
+  const dayNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const dayName = dayNames[new Date().getDay()];
+  const isWeekend = new Date().getDay()===0||new Date().getDay()===6;
+  const dt = getDishTeam();
+  const dishLabel = dt==='sj'?'Samuel & John Jr.':'Stephen & Daniel';
+  const setupLabel = dt==='sj'?'Stephen & Daniel':'Samuel & John Jr.';
+
+  document.getElementById('overview-day-banner').innerHTML =
+    `<div style="background:var(--green);border-radius:10px;padding:11px 14px;display:flex;flex-wrap:wrap;gap:7px;align-items:center;">
+      <div style="font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:var(--white);flex:1;">${dayName}</div>
+      ${isWeekend
+        ? '<span class="badge badge-green">Family Service Day</span>'
+        : `<span class="badge badge-green" style="background:rgba(255,255,255,.15);color:var(--gold2);">Dishes: ${dishLabel}</span>
+           <span class="badge badge-amber" style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);">Setup: ${setupLabel}</span>`
+      }
+    </div>`;
+
+  Promise.all(AGENTS.map(a => _db.ref(`stewart/missions/${a.id}/${today}`).once('value')))
+  .then(snaps => {
+    const agentsEl = document.getElementById('overview-agents');
+    agentsEl.innerHTML = AGENTS.map((a,i) => {
+      const done = snaps[i].val()||{};
+      const expected = getExpectedMissions(a.id);
+      const completed = expected.filter(m=>done[m]).length;
+      const total = expected.length;
+      const pct = total>0?Math.round((completed/total)*100):0;
+      const allDone = completed===total&&total>0;
+      const earned = allDone&&!isWeekend;
+      return `<div class="agent-card" style="border-color:${allDone?'#2d6a47':pct>50?'#c8922a':'var(--border)'};">
+        <div class="agent-card-hd" style="background:${a.color};">
+          <div><div class="agent-card-name">${a.name}</div><div class="agent-card-sub">${a.codename}</div></div>
+          <div style="font-size:18px;">${allDone?'✅':pct>50?'⚡':'⏳'}</div>
+        </div>
+        <div class="agent-card-bd">
+          <div class="agent-prog-bar"><div class="agent-prog-fill" style="width:${pct}%;background:${allDone?'#2d6a47':pct>50?'#c8922a':'#b5451b'};"></div></div>
+          <div class="agent-stat">
+            <span class="agent-missions">${completed}/${total} missions</span>
+            <span class="agent-pay" style="color:${earned?'#2d6a47':isWeekend?'var(--muted)':'#b5451b'};">${isWeekend?'Family day':earned?'$1.00':'$0.00'}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  });
+
+  // Weekly pay
+  const weekDays = getWeekDays();
+  Promise.all(AGENTS.map(a => Promise.all(weekDays.map(d => _db.ref(`stewart/missions/${a.id}/${d}`).once('value')))))
+  .then(allData => {
+    const payEl = document.getElementById('overview-pay');
+    payEl.innerHTML = `<div class="card brown-hd">
+      <div class="card-hd"><div class="card-hd-icon">&#128181;</div><div class="card-hd-title">Friday Payout — Week of ${weekDays[0]}</div></div>
+      <div class="card-bd">
+        ${AGENTS.map((a,ai) => {
+          let earned=0;
+          weekDays.forEach((d,di)=>{
+            const done=allData[ai][di].val()||{};
+            const dow=new Date(d).getDay();
+            if(dow===0||dow===6) return;
+            const exp=getExpectedMissions(a.id);
+            if(exp.every(m=>done[m])&&exp.length>0) earned++;
+          });
+          return `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:10px;height:10px;border-radius:50%;background:${a.color};"></div>
+              <span style="font-weight:700;font-size:13px;">${a.name}</span>
+              <span style="font-size:10px;color:var(--muted);">${a.codename}</span>
+            </div>
+            <span style="font-family:'Cinzel',serif;font-size:16px;font-weight:700;color:${earned>=4?'#2d6a47':earned>=2?'#c8922a':'#b5451b'};">$${earned}.00</span>
+          </div>`;
+        }).join('')}
+        <div style="font-size:10px;color:var(--muted);font-style:italic;margin-top:8px;text-align:right;">Max $5.00 per boy &middot; Paid Friday</div>
+      </div>
+    </div>`;
+  });
+
+  // Family night
+  _db.ref(`stewart/familynight/${getWeekDays()[0]}`).once('value', snap => {
+    const el = document.getElementById('overview-familynight');
+    if(snap.val()){
+      el.innerHTML = `<div style="background:linear-gradient(135deg,var(--green),var(--indigo));border:2px solid var(--gold);border-radius:10px;padding:14px;text-align:center;">
+        <div style="font-size:22px;margin-bottom:4px;">&#127881;</div>
+        <div style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:var(--gold2);margin-bottom:3px;">Family Night Unlocked!</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.8);">All four boys completed their weekly missions.</div>
+      </div>`;
+    }
+  });
+}
+
+function sendQuickTransmission(){
+  const msg = document.getElementById('quick-trans-text').value.trim();
+  const from = document.getElementById('quick-trans-from').value;
+  if(!msg||!_db) return;
+  _db.ref('stewart/transmissions').push({message:msg,from,timestamp:Date.now()}).then(()=>{
+    document.getElementById('quick-trans-text').value='';
+    const btn = document.querySelector('#tab-overview button[onclick*="sendQuick"]');
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// MESSENGER
+// ══════════════════════════════════════════════════════
+let currentThread = null;
+
+function renderMessenger(){
+  if(!_db) return;
+  loadBoardMessages();
+  loadThreadPreviews();
+}
+
+function loadBoardMessages(){
+  _db.ref('stewart/transmissions').limitToLast(10).once('value', snap => {
+    const el = document.getElementById('board-messages');
+    const val = snap.val();
+    if(!val){ el.innerHTML='<div class="empty-state">No board posts yet.</div>'; return; }
+    const items = Object.values(val).sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
+    el.innerHTML = items.map(t => {
+      const time = t.timestamp ? new Date(t.timestamp).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : '';
+      return `<div style="background:var(--card);border:1px solid var(--border);border-left:3px solid var(--indigo);border-radius:8px;padding:10px 13px;margin-bottom:7px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--indigo2);margin-bottom:4px;">From: ${t.from||'HQ'}</div>
+        <div style="font-size:13px;color:var(--ink);line-height:1.5;">${t.message||''}</div>
+        ${time?`<div style="font-size:10px;color:var(--muted);margin-top:4px;font-style:italic;">${time}</div>`:''}
+      </div>`;
+    }).join('');
+  });
+}
+
+function loadThreadPreviews(){
+  AGENTS.forEach(a => {
+    _db.ref(`stewart/messages/${a.id}`).limitToLast(1).once('value', snap => {
+      const val = snap.val();
+      if(val){
+        const last = Object.values(val)[0];
+        const el = document.getElementById(`preview-${a.id}`);
+        if(el) el.textContent = last.text ? last.text.slice(0,40)+'...' : a.codename;
+      }
+    });
+  });
+}
+
+function sendBoardMessage(){
+  const msg = document.getElementById('board-msg').value.trim();
+  const from = document.getElementById('board-from').value;
+  if(!msg||!_db) return;
+  _db.ref('stewart/transmissions').push({message:msg,from,timestamp:Date.now()}).then(()=>{
+    document.getElementById('board-msg').value='';
+    loadBoardMessages();
+  });
+}
+
+function openThread(agentId, name, codename, color){
+  currentThread = {agentId, name, codename};
+  document.getElementById('thread-title').textContent = name;
+  document.getElementById('thread-sub').textContent = codename;
+  document.getElementById('messenger-list-view').style.display = 'none';
+  document.getElementById('messenger-thread-view').style.display = 'flex';
+  loadThreadMessages(agentId);
+
+  // Listen for new messages
+  _db.ref(`stewart/messages/${agentId}`).on('value', snap => {
+    if(currentThread && currentThread.agentId === agentId) renderThreadMessages(snap.val()||{});
+  });
+}
+
+function closeThread(){
+  currentThread = null;
+  document.getElementById('messenger-thread-view').style.display = 'none';
+  document.getElementById('messenger-list-view').style.display = 'block';
+  if(_db) _db.ref('stewart/messages').off();
+  renderMessenger();
+}
+
+function loadThreadMessages(agentId){
+  _db.ref(`stewart/messages/${agentId}`).once('value', snap => {
+    renderThreadMessages(snap.val()||{});
+  });
+}
+
+function renderThreadMessages(msgs){
+  const el = document.getElementById('thread-messages');
+  const items = Object.values(msgs).sort((a,b)=>(a.timestamp||0)-(b.timestamp||0));
+  if(!items.length){
+    el.innerHTML = '<div class="empty-state">No messages yet. Start the conversation.</div>';
+    return;
+  }
+  el.innerHTML = items.map(m => {
+    const isParent = m.from==='Dad'||m.from==='Mom'||m.from==='HQ';
+    const time = m.timestamp ? new Date(m.timestamp).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '';
+    return `<div class="msg-bubble ${isParent?'sent':'received'}">
+      <div class="msg-bubble-from">${m.from||'Unknown'}</div>
+      ${m.text||''}
+      <div class="msg-bubble-time">${time}</div>
+    </div>`;
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function sendThreadMessage(){
+  if(!currentThread||!_db) return;
+  const input = document.getElementById('thread-input');
+  const text = input.value.trim();
+  if(!text) return;
+  _db.ref(`stewart/messages/${currentThread.agentId}`).push({
+    text, from:'Dad', timestamp:Date.now()
+  }).then(()=>{ input.value=''; });
+}
+
+// Enter key sends
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.getElementById('thread-input').addEventListener('keydown', e => {
+    if(e.key==='Enter') sendThreadMessage();
+  });
+});
+
+// ══════════════════════════════════════════════════════
+// LUNCH DROP
+// ══════════════════════════════════════════════════════
+const LUNCH_DAYS = ['monday','tuesday','wednesday','thursday','friday'];
+const LUNCH_DAY_LABELS = {monday:'Mon',tuesday:'Tue',wednesday:'Wed',thursday:'Thu',friday:'Fri'};
+let currentLunchDay = 'monday';
+let lunchDayOptions = {};
+
+function loadLunchParent(){
+  const today = new Date().getDay();
+  const dayMap = {1:'monday',2:'tuesday',3:'wednesday',4:'thursday',5:'friday'};
+  currentLunchDay = dayMap[today]||'monday';
+  buildLunchDayTabsParent();
+  loadLunchDayOptions();
+  loadLunchPicksOverview();
+}
+
+function buildLunchDayTabsParent(){
+  const el = document.getElementById('lunch-day-tabs-parent');
+  el.innerHTML = LUNCH_DAYS.map(d =>
+    `<button class="lunch-tab-btn ${d===currentLunchDay?'active':''}" onclick="selectLunchDayParent('${d}',this)">${LUNCH_DAY_LABELS[d]}</button>`
+  ).join('');
+}
+
+function selectLunchDayParent(day, btn){
+  currentLunchDay = day;
+  document.querySelectorAll('.lunch-tab-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  loadLunchDayOptions();
+}
+
+function loadLunchDayOptions(){
+  if(!_db){ renderLunchOptions([]); return; }
+  _db.ref(`stewart/lunch/week/${currentLunchDay}`).once('value', snap => {
+    lunchDayOptions[currentLunchDay] = snap.val()||[];
+    renderLunchOptions(lunchDayOptions[currentLunchDay]);
+  });
+}
+
+function renderLunchOptions(opts){
+  const el = document.getElementById('lunch-options-parent');
+  if(!opts.length){
+    el.innerHTML = '<div class="empty-state" style="padding:12px 0;">No options loaded for this day yet.</div>';
+    return;
+  }
+  el.innerHTML = opts.map((opt,i) =>
+    `<div class="lunch-option-row">
+      <input class="lunch-opt-input" type="text" value="${opt.item||''}" placeholder="Lunch item..." id="lunch-item-${i}">
+      <input class="lunch-opt-qty" type="number" value="${opt.qty||1}" min="1" max="10" id="lunch-qty-${i}">
+      <button class="lunch-opt-remove" onclick="removeLunchOption(${i})">&#215;</button>
+    </div>`
+  ).join('');
+}
+
+function addLunchOption(){
+  if(!lunchDayOptions[currentLunchDay]) lunchDayOptions[currentLunchDay]=[];
+  lunchDayOptions[currentLunchDay].push({item:'',qty:1});
+  renderLunchOptions(lunchDayOptions[currentLunchDay]);
+}
+
+function removeLunchOption(i){
+  lunchDayOptions[currentLunchDay].splice(i,1);
+  renderLunchOptions(lunchDayOptions[currentLunchDay]);
+}
+
+function saveLunchDay(){
+  if(!_db) return;
+  const opts = lunchDayOptions[currentLunchDay]||[];
+  const saved = opts.map((_,i) => ({
+    item: document.getElementById(`lunch-item-${i}`)?.value?.trim()||'',
+    qty: parseInt(document.getElementById(`lunch-qty-${i}`)?.value||'1')
+  })).filter(o => o.item);
+
+  _db.ref(`stewart/lunch/week/${currentLunchDay}`).set(saved).then(()=>{
+    const btn = document.querySelector('.lunch-save-btn');
+    const orig = btn.textContent;
+    btn.textContent='Saved!';
+    btn.style.background='#2d6a47';
+    setTimeout(()=>{btn.textContent=orig;btn.style.background='';},2000);
+    lunchDayOptions[currentLunchDay] = saved;
+  });
+}
+
+function loadLunchPicksOverview(){
+  if(!_db) return;
+  _db.ref('stewart/lunch/picks').once('value', snap => {
+    const picks = snap.val()||{};
+    const el = document.getElementById('lunch-picks-overview');
+    const agentNames = {samuel:'Samuel',johnjr:'John Jr.',stephen:'Stephen',daniel:'Daniel'};
+    const rows = LUNCH_DAYS.map(day => {
+      const dayPicks = AGENTS.map(a => {
+        const p = picks[a.id]&&picks[a.id][day];
+        return p ? `<span style="font-size:10px;color:${a.color};background:var(--offwhite);padding:2px 6px;border-radius:4px;margin-right:3px;">${a.name.split(' ')[0]}: ${p}</span>` : '';
+      }).filter(Boolean).join('');
+      return `<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);">
+        <div style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);width:32px;flex-shrink:0;padding-top:3px;">${LUNCH_DAY_LABELS[day]}</div>
+        <div style="flex:1;flex-wrap:wrap;">${dayPicks||'<span style="font-size:11px;color:var(--muted);font-style:italic;">No picks yet</span>'}</div>
+      </div>`;
+    }).join('');
+    el.innerHTML = `<div class="card"><div class="card-bd">${rows}</div></div>`;
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// MISSIONS DETAIL
+// ══════════════════════════════════════════════════════
+function loadMissionsDetail(){
+  if(!_db) return;
+  const today = new Date().toISOString().slice(0,10);
+  const dayNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+  document.getElementById('missions-day-header').innerHTML =
+    `<div style="background:var(--green);border-radius:10px;padding:10px 14px;">
+      <div style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:var(--white);">${dayNames[new Date().getDay()]} &mdash; ${today}</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px;">Tap a mission to mark complete or incomplete</div>
+    </div>`;
+
+  Promise.all(AGENTS.map(a => _db.ref(`stewart/missions/${a.id}/${today}`).once('value')))
+  .then(snaps => {
+    const el = document.getElementById('missions-detail');
+    el.innerHTML = AGENTS.map((a,i) => {
+      const done = snaps[i].val()||{};
+      const expected = getExpectedMissions(a.id);
+      const completed = expected.filter(m=>done[m]).length;
+      const missionRows = expected.map(m => {
+        const isDone = !!done[m];
+        return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="toggleMissionParent('${a.id}','${m}','${today}')">
+          <div style="width:18px;height:18px;border-radius:4px;border:2px solid ${isDone?'#2d6a47':'var(--border)'};background:${isDone?'#2d6a47':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            ${isDone?'<span style="color:white;font-size:10px;">&#10003;</span>':''}
+          </div>
+          <span style="font-size:12px;color:${isDone?'var(--muted)':'var(--ink)'};${isDone?'text-decoration:line-through;':''}">${MISSION_NAMES[m]||m}</span>
+        </div>`;
+      }).join('');
+      return `<div class="card" style="margin-bottom:10px;border-left:3px solid ${a.color};">
+        <div style="padding:9px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:${a.color};">
+          <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:var(--white);">${a.name} &mdash; ${a.codename}</div>
+          <span style="font-size:11px;color:rgba(255,255,255,.8);">${completed}/${expected.length}</span>
+        </div>
+        <div style="padding:8px 13px;">${missionRows}</div>
+      </div>`;
+    }).join('');
+  });
+}
+
+function toggleMissionParent(agentId, missionId, date){
+  if(!_db) return;
+  const ref = _db.ref(`stewart/missions/${agentId}/${date}/${missionId}`);
+  ref.once('value', snap => {
+    ref.set(snap.val()?null:true).then(()=>loadMissionsDetail());
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+// PIN screen is shown by default — app hidden until correct PIN
+</script>
+</body>
+</html>
