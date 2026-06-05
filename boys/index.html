@@ -675,13 +675,51 @@ body.theme-wild .mission-check.done{background:var(--wild2);border-color:var(--w
 
     <!-- TAB: TRANSMISSIONS -->
     <div class="tab" id="tab-transmissions">
-      <div class="sec-head">
-        <div class="sec-head-diamond"></div>
-        <div class="sec-head-text">Transmissions from HQ</div>
-        <div class="sec-head-line"></div>
+      <!-- BOARD MESSAGES VIEW -->
+      <div id="msg-board-view">
+        <div class="sec-head">
+          <div class="sec-head-diamond"></div>
+          <div class="sec-head-text">Transmissions from HQ</div>
+          <div class="sec-head-line"></div>
+        </div>
+        <div id="transmissions-list">
+          <div class="empty">No transmissions at this time.</div>
+        </div>
+
+        <div class="sec-head" style="margin-top:16px;">
+          <div class="sec-head-diamond"></div>
+          <div class="sec-head-text">Private Message</div>
+          <div class="sec-head-line"></div>
+        </div>
+        <div class="hw-card" style="margin-bottom:10px;cursor:pointer;" onclick="openPrivateThread()">
+          <div class="hw-card-head">
+            <div class="hw-card-icon">&#128274;</div>
+            <div class="hw-card-title" style="flex:1;">Message Dad &amp; Mom</div>
+            <div id="msg-unread-badge" style="display:none;background:var(--gold);color:var(--black);font-family:'Orbitron',sans-serif;font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;">NEW</div>
+            <span style="color:rgba(255,255,255,.4);font-size:14px;margin-left:8px;">&#8250;</span>
+          </div>
+          <div class="hw-card-body" style="font-size:12px;color:rgba(255,255,255,.5);font-style:italic;" id="private-preview">
+            Tap to view your private thread with HQ
+          </div>
+        </div>
       </div>
-      <div id="transmissions-list">
-        <div class="empty">No transmissions at this time.</div>
+
+      <!-- PRIVATE THREAD VIEW -->
+      <div id="msg-thread-view" style="display:none;flex-direction:column;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--dark);z-index:100;">
+        <div style="background:var(--black);border-bottom:2px solid var(--teal);padding:10px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;">
+          <button onclick="closePrivateThread()" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--teal);background:transparent;cursor:pointer;color:var(--teal2);font-size:14px;">&#8592;</button>
+          <div style="flex:1;">
+            <div style="font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;" id="thread-agent-name">Private Thread</div>
+            <div style="font-size:9px;color:rgba(255,255,255,.4);margin-top:1px;">Only you and HQ can see this</div>
+          </div>
+          <div style="font-size:9px;color:var(--teal2);" id="thread-sync">&#9679; Live</div>
+        </div>
+        <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 13px;display:flex;flex-direction:column;gap:8px;" id="private-messages"></div>
+        <div style="display:flex;gap:8px;padding:10px 13px;border-top:2px solid var(--teal);background:var(--black);flex-shrink:0;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));">
+          <input type="text" id="private-input" placeholder="Send a message to Dad &amp; Mom..." maxlength="280"
+            style="flex:1;padding:9px 12px;border-radius:20px;border:1px solid rgba(12,200,200,.3);background:var(--dark2);color:var(--white);font-family:'Exo 2',sans-serif;font-size:13px;">
+          <button onclick="sendPrivateMessage()" style="width:38px;height:38px;border-radius:50%;background:var(--teal);border:none;cursor:pointer;color:var(--black);font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">&#10148;</button>
+        </div>
       </div>
     </div>
 
@@ -831,6 +869,7 @@ function selectAgent(id, codename, name, rank, theme, icon){
   buildLunchDayTabs();
   renderMissions();
   renderPayScreen();
+  loadPrivatePreview();
   // Small delay then re-render missions once Firebase is settled
   setTimeout(() => renderMissions(), 1500);
 }
@@ -1171,24 +1210,54 @@ function buildMissions(agentId){
 
   // ── DISHES TEAM DAILY ──────────────────────────────
   if(onDishes){
-    missions.push({
-      id: 'dishwasher-load',
-      text: 'Load the dishwasher',
-      detail: agentId === 'daniel'
-        ? 'Load all the dirty dishes after meals. Ask Stephen if you need help reaching.'
-        : 'Load all the dirty dishes after meals.',
-      points: 10,
-      category: 'kitchen',
-      always: true
-    });
-    missions.push({
-      id: 'dishwasher-unload',
-      text: 'Unload dishwasher & put away',
-      detail: 'Empty the clean dishes and put everything in its place.',
-      points: 10,
-      category: 'kitchen',
-      always: true
-    });
+    // Dish team is either Sam+John or Stephen+Daniel
+    // Sam+John: both alternate load and unload between themselves
+    // Stephen+Daniel: Stephen UNLOADS, Daniel LOADS — always, no exceptions
+
+    if(agentId === 'samuel' || agentId === 'johnjr'){
+      const partner = agentId === 'samuel' ? 'John Jr.' : 'Samuel';
+      missions.push({
+        id: 'dishwasher-load',
+        text: `Load the dishwasher — with ${partner}`,
+        detail: `You and ${partner} handle dishes today. Load all dirty dishes after meals.`,
+        points: 10,
+        category: 'kitchen',
+        always: true
+      });
+      missions.push({
+        id: 'dishwasher-unload',
+        text: `Unload dishwasher & put away — with ${partner}`,
+        detail: `Empty the clean dishes and put everything in its place. Work with ${partner}.`,
+        points: 10,
+        category: 'kitchen',
+        always: true
+      });
+    }
+
+    if(agentId === 'stephen'){
+      // Stephen ONLY unloads — Daniel loads
+      missions.push({
+        id: 'dishwasher-unload',
+        text: 'Unload dishwasher & put away — with Daniel',
+        detail: 'Empty the clean dishes and put everything in its place. Daniel will load.',
+        points: 10,
+        category: 'kitchen',
+        always: true
+      });
+    }
+
+    if(agentId === 'daniel'){
+      // Daniel ONLY loads — Stephen unloads
+      missions.push({
+        id: 'dishwasher-load',
+        text: 'Load the dishwasher — with Stephen',
+        detail: 'Load all the dirty dishes after meals. Stephen will unload and put away.',
+        points: 10,
+        category: 'kitchen',
+        always: true
+      });
+    }
+
     missions.push({
       id: 'table-clear',
       text: 'Clear the table after dinner',
@@ -1207,7 +1276,7 @@ function buildMissions(agentId){
     });
   }
 
-  // ── SETUP TEAM DAILY ──────────────────────────────
+// ── SETUP TEAM DAILY ──────────────────────────────
   if(onSetup){
     missions.push({
       id: 'table-set',
@@ -1219,10 +1288,11 @@ function buildMissions(agentId){
     });
     // Drinks — only older boys
     if(agentId === 'samuel' || agentId === 'johnjr'){
+      const partner = agentId === 'samuel' ? 'John Jr.' : 'Samuel';
       missions.push({
         id: 'drinks',
-        text: 'Pour drinks before dinner',
-        detail: 'Pour everyone\'s drinks 10 minutes before dinner.',
+        text: `Pour drinks before dinner — with ${partner}`,
+        detail: `Pour everyone's drinks 10 minutes before dinner. You and ${partner} handle setup today.`,
         points: 5,
         category: 'kitchen',
         always: true
@@ -1435,10 +1505,11 @@ function buildMissions(agentId){
 
   // ── WEDNESDAY TRASH ────────────────────────────────
   if(wed && (agentId === 'samuel' || agentId === 'johnjr')){
+    const partner = agentId === 'samuel' ? 'John Jr.' : 'Samuel';
     missions.push({
       id: 'trash',
-      text: 'Take trash to the road by 9am',
-      detail: 'Wednesday mission — Sam and John go together. Long driveway. Out before 9am.',
+      text: `Take trash to the road — with ${partner}`,
+      detail: `Wednesday mission — you and ${partner} go together. Long driveway, out before 9am. Daniel brings the bathroom trash to you.`,
       points: 10,
       category: 'trash',
       always: true,
@@ -1855,7 +1926,94 @@ function checkDishTransfer(missionId, dateStr){
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+// ══════════════════════════════════════════════════════
+// PRIVATE MESSAGING — BOYS SIDE
+// ══════════════════════════════════════════════════════
+let privateThreadListener = null;
+
+function openPrivateThread(){
+  if(!currentAgent) return;
+  document.getElementById('msg-board-view').style.display = 'none';
+  const threadView = document.getElementById('msg-thread-view');
+  threadView.style.display = 'flex';
+  threadView.style.flexDirection = 'column';
+  document.getElementById('thread-agent-name').textContent = currentAgent.codename + ' — Private Thread';
+
+  // Listen for messages
+  if(_db){
+    if(privateThreadListener) _db.ref(`stewart/messages/${currentAgent.id}`).off('value', privateThreadListener);
+    privateThreadListener = _db.ref(`stewart/messages/${currentAgent.id}`).on('value', snap => {
+      renderPrivateMessages(snap.val()||{});
+    });
+  }
+
+  // Focus input
+  setTimeout(() => document.getElementById('private-input').focus(), 300);
+}
+
+function closePrivateThread(){
+  document.getElementById('msg-thread-view').style.display = 'none';
+  document.getElementById('msg-board-view').style.display = 'block';
+  if(_db && privateThreadListener){
+    _db.ref(`stewart/messages/${currentAgent.id}`).off('value', privateThreadListener);
+    privateThreadListener = null;
+  }
+  loadPrivatePreview();
+}
+
+function renderPrivateMessages(msgs){
+  const el = document.getElementById('private-messages');
+  const items = Object.values(msgs).sort((a,b)=>(a.timestamp||0)-(b.timestamp||0));
+  if(!items.length){
+    el.innerHTML = '<div class="empty" style="color:rgba(255,255,255,.3);">No messages yet.<br>Send HQ a message anytime.</div>';
+    return;
+  }
+  el.innerHTML = items.map(m => {
+    const isParent = m.from==='Dad'||m.from==='Mom'||m.from==='HQ';
+    const time = m.timestamp ? new Date(m.timestamp).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '';
+    return `<div style="display:flex;flex-direction:column;align-items:${isParent?'flex-start':'flex-end'};">
+      <div style="max-width:80%;padding:9px 12px;border-radius:12px;${isParent?'background:rgba(12,200,200,.15);border-bottom-left-radius:4px;':'background:var(--teal);color:var(--black);border-bottom-right-radius:4px;'}line-height:1.4;font-size:13px;">
+        <div style="font-size:9px;opacity:.6;margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px;">${m.from||'Unknown'}</div>
+        ${m.text||''}
+        <div style="font-size:9px;opacity:.5;margin-top:4px;text-align:${isParent?'left':'right'};">${time}</div>
+      </div>
+    </div>`;
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function sendPrivateMessage(){
+  if(!currentAgent||!_db) return;
+  const input = document.getElementById('private-input');
+  const text = input.value.trim();
+  if(!text) return;
+  _db.ref(`stewart/messages/${currentAgent.id}`).push({
+    text,
+    from: currentAgent.name,
+    agentId: currentAgent.id,
+    timestamp: Date.now()
+  }).then(() => { input.value = ''; });
+}
+
+function loadPrivatePreview(){
+  if(!currentAgent||!_db) return;
+  _db.ref(`stewart/messages/${currentAgent.id}`).limitToLast(1).once('value', snap => {
+    const val = snap.val();
+    const previewEl = document.getElementById('private-preview');
+    const badgeEl = document.getElementById('msg-unread-badge');
+    if(val){
+      const last = Object.values(val)[0];
+      const isParent = last.from==='Dad'||last.from==='Mom'||last.from==='HQ';
+      if(previewEl) previewEl.textContent = `${last.from}: ${(last.text||'').slice(0,50)}`;
+      if(badgeEl && isParent) badgeEl.style.display = 'block';
+    }
+  });
+}
+
+// Enter key to send
+document.addEventListener('DOMContentLoaded',()=>{
+  const pi = document.getElementById('private-input');
+  if(pi) pi.addEventListener('keydown', e => { if(e.key==='Enter') sendPrivateMessage(); });
   initFirebase();
 });
 </script>
