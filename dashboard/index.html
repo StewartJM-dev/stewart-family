@@ -119,11 +119,11 @@ body{
   align-items:center;justify-content:center;gap:2px;
   border:none;background:transparent;cursor:pointer;
   color:rgba(255,255,255,.4);font-family:'Lato',sans-serif;
-  font-size:8px;letter-spacing:.3px;text-transform:uppercase;
-  padding:8px 2px;transition:color .2s;
+  font-size:7px;letter-spacing:.2px;text-transform:uppercase;
+  padding:7px 1px;transition:color .2s;
 }
 .bnb.active{color:var(--gold2);}
-.bnb svg{width:18px;height:18px;flex-shrink:0;}
+.bnb svg{width:16px;height:16px;flex-shrink:0;}
 
 /* CONTENT */
 .content{
@@ -533,6 +533,30 @@ body{
       <div id="missions-detail"></div>
     </div>
 
+
+    <!-- TAB: COMMANDER DAWN -->
+    <div class="tab" id="tab-dawn">
+      <div id="dawn-day-banner" style="margin-bottom:12px;"></div>
+
+      <div class="sec-hd">Today's Missions</div>
+      <div id="dawn-daily-missions" style="margin-bottom:14px;"></div>
+
+      <div id="dawn-special-section"></div>
+
+      <div class="sec-hd">Weekly Rhythm</div>
+      <div class="card" style="margin-bottom:10px;">
+        <div class="card-bd" style="font-size:12px;color:var(--muted);line-height:2;">
+          <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);"><span><strong style="color:var(--ink);">Monday</strong></span><span>Sam &amp; John laundry day</span></div>
+          <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);"><span><strong style="color:var(--ink);">Tuesday</strong></span><span>Your laundry day (yours, John's, Trail Life uniforms)</span></div>
+          <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);"><span><strong style="color:var(--ink);">Wednesday</strong></span><span>Trash day</span></div>
+          <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);"><span><strong style="color:var(--ink);">Thursday</strong></span><span>Stephen &amp; Daniel laundry day</span></div>
+          <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);"><span><strong style="color:var(--ink);">Friday</strong></span><span>Deep clean with rotating agent</span></div>
+          <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);"><span><strong style="color:var(--ink);">Saturday</strong></span><span>Inventory, shopping, Family Night</span></div>
+          <div style="display:flex;justify-content:space-between;padding:4px 0;"><span><strong style="color:var(--ink);">Sunday</strong></span><span>Rest</span></div>
+        </div>
+      </div>
+    </div>
+
     <!-- TAB: SETTINGS -->
     <div class="tab" id="tab-settings">
       <div class="sec-hd">Portal Links</div>
@@ -581,6 +605,10 @@ body{
     <button class="bnb" onclick="showTab('missions',this);loadMissionsDetail();">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
       Missions
+    </button>
+    <button class="bnb" onclick="showTab('dawn',this);renderDawnTab();">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>
+      Dawn
     </button>
     <button class="bnb" onclick="showTab('settings',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -705,6 +733,8 @@ const MISSION_NAMES = {
   'table-set':'Set table','table-clear':'Clear table','table-wipe':'Wipe table',
   'drinks':'Pour drinks','stovetop':'Wipe stovetop','microwave':'Wipe microwave',
   'trash':'Take out trash','bathroom-trash':'Empty bathroom trash',
+  'laundry-sam':'Laundry Day (with John Jr.)','laundry-john':'Laundry Day (with Samuel)',
+  'laundry-stephen':'Laundry Day (with Daniel)','laundry-daniel':'Laundry Day (with Stephen)',
 };
 
 function getDishTeam(){
@@ -717,22 +747,174 @@ function getDishTeam(){
   return (wk%2===0)?A[dow]:B[dow];
 }
 
+function calculateDayScore(agentId, missions, doneMap){
+  const possible = missions.reduce((sum,m) => sum + (m.points||0), 0);
+  const earned = missions.reduce((sum,m) => sum + (doneMap[m.id] ? (m.points||0) : 0), 0);
+  const pct = possible > 0 ? (earned / possible) : 0;
+  return {
+    earned,
+    possible,
+    pct,
+    points100: Math.round(pct * 100),
+    dollars: Math.round(pct * 100) / 100, // $1.00 max
+    minutes: pct * 6 // 6 min max
+  };
+}
+
+// Apply transfer adjustments to a base score
+// transferAdjust is in points-out-of-100 (e.g. +50 or -50)
+
+function recalculateScore(agentId, dateStr){
+  if(!_db) return;
+
+  Promise.all([
+    _db.ref(`stewart/missions/${agentId}/${dateStr}`).once('value'),
+    _db.ref(`stewart/transferAdjust/${agentId}/${dateStr}`).once('value'),
+    _db.ref(`stewart/deductions/${agentId}/${dateStr}`).once('value')
+  ]).then(([mSnap, tSnap, dSnap]) => {
+    const done = mSnap.val() || {};
+    const transferAdjust = tSnap.val() || 0; // e.g. +50 or -50
+    const deductions = dSnap.val() || {}; // {reasonKey: points, ...}
+
+    // Build expected missions for that date (use date-aware logic)
+    const dayDate = new Date(dateStr);
+    const dayOfWeek = dayDate.getDay();
+    if(dayOfWeek===0||dayOfWeek===6){
+      // Weekend — no score
+      _db.ref(`stewart/scores/${agentId}/${dateStr}`).set(null);
+      return;
+    }
+
+    const missions = buildMissionsForDate(agentId, dayDate);
+    const base = calculateDayScore(agentId, missions, done);
+
+    let score = base.points100;
+    score += transferAdjust;
+    const totalDeductions = Object.values(deductions).reduce((a,b)=>a+b,0);
+    score -= totalDeductions;
+    score = Math.max(0, Math.min(100, score));
+
+    _db.ref(`stewart/scores/${agentId}/${dateStr}`).set(score);
+  });
+}
+
+// Build the expected mission list for ANY date (not just today)
+// Mirrors buildMissions but accepts an explicit date
+
+function buildMissionsForDate(agentId, dayDate){
+  const dayOfWeek = dayDate.getDay();
+  const startOfYear = new Date(dayDate.getFullYear(), 0, 1);
+  const weekNum = Math.floor((dayDate - startOfYear) / (7*24*60*60*1000));
+  const weekParity = weekNum % 2;
+  const weekAPattern = {0:'sj',1:'sj',2:'sd',3:'sj',4:'sd',5:'sj',6:'sd'};
+  const weekBPattern = {0:'sd',1:'sd',2:'sj',3:'sd',4:'sj',5:'sd',6:'sj'};
+  const dishTeam = weekParity===0 ? weekAPattern[dayOfWeek] : weekBPattern[dayOfWeek];
+  const onDishes = (agentId==='samuel'||agentId==='johnjr') ? dishTeam==='sj' : dishTeam==='sd';
+  const onSetup = !onDishes;
+  const wed = dayOfWeek===3;
+  const onLaundry = isLaundryDayFor(agentId, dayOfWeek);
+  const bathroomOrder = ['samuel','johnjr','stephen','daniel'];
+  const isBathroomWeek = (agentId === bathroomOrder[weekNum % 4]);
+
+  const missions = [];
+  missions.push({id:'bed', points:5});
+  missions.push({id:'bedroom', points:5});
+  missions.push({id:'rabbit-own', points:5});
+
+  if(onDishes){
+    if(agentId==='samuel'||agentId==='johnjr'){
+      missions.push({id:'dishwasher-load', points:10});
+      missions.push({id:'dishwasher-unload', points:10});
+    }
+    if(agentId==='stephen') missions.push({id:'dishwasher-unload', points:10});
+    if(agentId==='daniel') missions.push({id:'dishwasher-load', points:10});
+    missions.push({id:'table-clear', points:5});
+    missions.push({id:'table-wipe', points:5});
+  }
+  if(onSetup){
+    missions.push({id:'table-set', points:5});
+    if(agentId==='samuel'||agentId==='johnjr') missions.push({id:'drinks', points:5});
+    if(agentId!=='daniel' && !onLaundry){
+      missions.push({id:'stovetop', points:5});
+      missions.push({id:'microwave', points:5});
+    }
+  }
+
+  if(agentId==='samuel') missions.push({id:'floor-laundry', points:5});
+  if(agentId==='johnjr') missions.push({id:'floor-living', points:5});
+  if(agentId==='stephen'){
+    missions.push({id:'kitchen-counter', points:10});
+    missions.push({id:'floor-kitchen', points:5});
+  }
+  if(agentId==='daniel'){
+    missions.push({id:'floor-hallway', points:5});
+    missions.push({id:'floor-rabbit', points:5});
+  }
+
+  if(onLaundry){
+    if(agentId==='samuel') missions.push({id:'laundry-sam', points:15});
+    if(agentId==='johnjr') missions.push({id:'laundry-john', points:15});
+    if(agentId==='stephen') missions.push({id:'laundry-stephen', points:15});
+    if(agentId==='daniel') missions.push({id:'laundry-daniel', points:10});
+  }
+
+  if(wed && (agentId==='samuel'||agentId==='johnjr')) missions.push({id:'trash', points:10});
+  if(wed && agentId==='daniel') missions.push({id:'bathroom-trash', points:10});
+
+  if(agentId==='samuel'||agentId==='johnjr'||agentId==='stephen') missions.push({id:'fridge', points:10});
+  if(agentId==='stephen') missions.push({id:'hutch', points:10});
+  if(isBathroomWeek) missions.push({id:'bathroom-clean', points:15});
+
+  missions.push({id:'rabbit-cage', points:15});
+
+  return missions;
+}
+
+// ══════════════════════════════════════════════════════
+// RENDER MISSIONS
+// ══════════════════════════════════════════════════════
+
+function isLaundryDayFor(agentId, dayOfWeek){
+  // dayOfWeek: 1=Mon, 4=Thu
+  if((agentId==='samuel'||agentId==='johnjr') && dayOfWeek===1) return true;
+  if((agentId==='stephen'||agentId==='daniel') && dayOfWeek===4) return true;
+  return false;
+}
+
+// Monday = laundry day for Sam & John (pairId 'virtus')
+// Thursday = laundry day for Stephen & Daniel (pairId 'vulnere')
+
+// Monday = laundry day for Sam & John, Thursday = laundry day for Stephen & Daniel
+function isLaundryDay(agentId){
+  const dow = new Date().getDay();
+  if((agentId==='samuel'||agentId==='johnjr') && dow===1) return true;
+  if((agentId==='stephen'||agentId==='daniel') && dow===4) return true;
+  return false;
+}
+
 function getExpectedMissions(agentId){
   const dt = getDishTeam();
   const onDishes = (agentId==='samuel'||agentId==='johnjr') ? dt==='sj' : dt==='sd';
   const base = [...(DAILY_BASE[agentId]||[])];
+  const onLaundryDay = isLaundryDay(agentId);
   if(onDishes){
     if(agentId==='stephen') base.push('dishwasher-unload','table-clear','table-wipe');
     else if(agentId==='daniel') base.push('dishwasher-load','table-clear','table-wipe');
     else base.push('dishwasher-load','dishwasher-unload','table-clear','table-wipe');
   } else {
-    if(agentId!=='daniel') base.push('stovetop','microwave');
+    if(agentId!=='daniel' && !onLaundryDay) base.push('stovetop','microwave');
     if(agentId==='samuel'||agentId==='johnjr') base.push('drinks');
     if(!base.includes('table-set')) base.push('table-set');
   }
   if(new Date().getDay()===3){
     if(agentId==='samuel'||agentId==='johnjr') base.push('trash');
     if(agentId==='daniel') base.push('bathroom-trash');
+  }
+  if(onLaundryDay){
+    if(agentId==='samuel') base.push('laundry-sam');
+    if(agentId==='johnjr') base.push('laundry-john');
+    if(agentId==='stephen') base.push('laundry-stephen');
+    if(agentId==='daniel') base.push('laundry-daniel');
   }
   return [...new Set(base)];
 }
@@ -940,13 +1122,19 @@ function renderThreadMessages(msgs){
     el.innerHTML = '<div class="empty-state">No messages yet. Start the conversation.</div>';
     return;
   }
+  const AGENT_ICONS = {samuel:'&#129413;',johnjr:'&#129409;',stephen:'&#129430;',daniel:'&#128024;'};
+  const HANS_ICON = '&#129441;';
   el.innerHTML = items.map(m => {
     const isParent = m.from==='Dad'||m.from==='Mom'||m.from==='HQ';
+    const icon = isParent ? HANS_ICON : (AGENT_ICONS[m.agentId] || '&#128100;');
     const time = m.timestamp ? new Date(m.timestamp).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '';
-    return `<div class="msg-bubble ${isParent?'sent':'received'}">
-      <div class="msg-bubble-from">${m.from||'Unknown'}</div>
-      ${m.text||''}
-      <div class="msg-bubble-time">${time}</div>
+    return `<div style="display:flex;align-items:flex-end;gap:6px;${isParent?'':'flex-direction:row-reverse;align-self:flex-end;'}max-width:85%;${isParent?'':'margin-left:auto;'}">
+      <div style="font-size:18px;flex-shrink:0;">${icon}</div>
+      <div class="msg-bubble ${isParent?'sent':'received'}" style="max-width:100%;">
+        <div class="msg-bubble-from">${m.from||'Unknown'}</div>
+        ${m.text||''}
+        <div class="msg-bubble-time">${time}</div>
+      </div>
     </div>`;
   }).join('');
   el.scrollTop = el.scrollHeight;
@@ -1086,13 +1274,21 @@ function loadMissionsDetail(){
       <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px;">Tap a mission to mark complete or incomplete</div>
     </div>`;
 
-  Promise.all(AGENTS.map(a => _db.ref(`stewart/missions/${a.id}/${today}`).once('value')))
-  .then(snaps => {
+  Promise.all([
+    Promise.all(AGENTS.map(a => _db.ref(`stewart/missions/${a.id}/${today}`).once('value'))),
+    Promise.all(AGENTS.map(a => _db.ref(`stewart/scores/${a.id}/${today}`).once('value'))),
+    Promise.all(AGENTS.map(a => _db.ref(`stewart/deductions/${a.id}/${today}`).once('value')))
+  ])
+  .then(([missionSnaps, scoreSnaps, deductionSnaps]) => {
     const el = document.getElementById('missions-detail');
     el.innerHTML = AGENTS.map((a,i) => {
-      const done = snaps[i].val()||{};
+      const done = missionSnaps[i].val()||{};
+      const score = scoreSnaps[i].val();
+      const deductions = deductionSnaps[i].val()||{};
       const expected = getExpectedMissions(a.id);
       const completed = expected.filter(m=>done[m]).length;
+      const dollars = score!==null&&score!==undefined ? (score/100).toFixed(2) : '0.00';
+
       const missionRows = expected.map(m => {
         const isDone = !!done[m];
         return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="toggleMissionParent('${a.id}','${m}','${today}')">
@@ -1102,14 +1298,68 @@ function loadMissionsDetail(){
           <span style="font-size:12px;color:${isDone?'var(--muted)':'var(--ink)'};${isDone?'text-decoration:line-through;':''}">${MISSION_NAMES[m]||m}</span>
         </div>`;
       }).join('');
+
+      // Active deductions list
+      const deductionEntries = Object.entries(deductions);
+      const deductionRows = deductionEntries.length
+        ? deductionEntries.map(([key,pts]) => {
+            const reason = BEHAVIOR_REASONS.find(r=>r.key===key);
+            return `<div style="display:flex;align-items:center;justify-content:space-between;background:rgba(181,69,27,.08);border-radius:6px;padding:6px 9px;margin-bottom:4px;">
+              <span style="font-size:11px;color:#b5451b;">${reason?reason.label:key} (-${pts}pts)</span>
+              <button onclick="removeDeduction('${a.id}','${today}','${key}')" style="background:none;border:none;color:#b5451b;font-size:14px;cursor:pointer;padding:0 4px;">&times;</button>
+            </div>`;
+          }).join('')
+        : '';
+
+      // Deduction buttons
+      const deductionButtons = BEHAVIOR_REASONS.map(r =>
+        `<button onclick="applyDeduction('${a.id}','${today}','${r.key}')" style="font-size:10px;padding:5px 9px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;${deductions[r.key]?'opacity:.4;':''}">${r.label} (-${r.points})</button>`
+      ).join('');
+
       return `<div class="card" style="margin-bottom:10px;border-left:3px solid ${a.color};">
         <div style="padding:9px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:${a.color};">
           <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:var(--white);">${a.name} &mdash; ${a.codename}</div>
-          <span style="font-size:11px;color:rgba(255,255,255,.8);">${completed}/${expected.length}</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:11px;color:rgba(255,255,255,.8);">${completed}/${expected.length}</span>
+            <span style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:var(--gold2);">$${dollars}</span>
+          </div>
         </div>
         <div style="padding:8px 13px;">${missionRows}</div>
+        <div style="padding:0 13px 11px;">
+          ${deductionRows}
+          <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:8px 0 6px;">Behavior</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">${deductionButtons}</div>
+        </div>
       </div>`;
     }).join('');
+  });
+}
+
+const BEHAVIOR_REASONS = [
+  {key:'attitude', label:'Attitude', points:25},
+  {key:'disobedience', label:'Disobedience', points:25},
+  {key:'fighting', label:'Fighting', points:25},
+  {key:'dishonesty', label:'Dishonesty', points:25},
+];
+
+function applyDeduction(agentId, date, reasonKey){
+  if(!_db) return;
+  const reason = BEHAVIOR_REASONS.find(r=>r.key===reasonKey);
+  if(!reason) return;
+  _db.ref(`stewart/deductions/${agentId}/${date}/${reasonKey}`).once('value', snap => {
+    if(snap.val()){ return; } // already applied
+    _db.ref(`stewart/deductions/${agentId}/${date}/${reasonKey}`).set(reason.points).then(() => {
+      recalculateScore(agentId, date);
+      setTimeout(() => loadMissionsDetail(), 400);
+    });
+  });
+}
+
+function removeDeduction(agentId, date, reasonKey){
+  if(!_db) return;
+  _db.ref(`stewart/deductions/${agentId}/${date}/${reasonKey}`).remove().then(() => {
+    recalculateScore(agentId, date);
+    setTimeout(() => loadMissionsDetail(), 400);
   });
 }
 
@@ -1118,6 +1368,154 @@ function toggleMissionParent(agentId, missionId, date){
   const ref = _db.ref(`stewart/missions/${agentId}/${date}/${missionId}`);
   ref.once('value', snap => {
     ref.set(snap.val()?null:true).then(()=>loadMissionsDetail());
+  });
+}
+
+
+// ══════════════════════════════════════════════════════
+// COMMANDER DAWN TAB
+// ══════════════════════════════════════════════════════
+
+const DAWN_DAILY_MISSIONS = [
+  {id:'devotional', name:'Devotional &amp; Bible time', icon:'&#128214;', detail:'Quiet time with the Lord before the day gets going.'},
+  {id:'handwash', name:'Hand-wash pots &amp; pans', icon:'&#129385;', detail:'Items that don\'t go in the dishwasher.'},
+];
+
+const DAWN_ROOM_ROTATION = ['samuel','johnjr','stephen','daniel'];
+const DAWN_AGENT_NAMES = {samuel:'Samuel',johnjr:'John Jr.',stephen:'Stephen',daniel:'Daniel'};
+const DAWN_AGENT_ROOMS = {
+  samuel:'laundry room',
+  johnjr:'living room',
+  stephen:'kitchen',
+  daniel:'hallway &amp; rabbit area'
+};
+
+// Friday deep-clean rotation — offset from bathroom rotation so it's a different agent
+function getDeepCleanAgent(){
+  const now = new Date();
+  const startOfYear = new Date(now.getFullYear(), 0, 1);
+  const weekNum = Math.floor((now - startOfYear) / (7*24*60*60*1000));
+  return DAWN_ROOM_ROTATION[(weekNum + 2) % 4]; // offset by 2 from bathroom rotation
+}
+
+function renderDawnTab(){
+  if(!_db) return;
+  const today = new Date().toISOString().slice(0,10);
+  const dow = new Date().getDay(); // 0=Sun, 1=Mon ... 6=Sat
+  const dayNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const dayName = dayNames[dow];
+
+  // Day banner
+  let bannerHtml = `<div style="background:var(--brown);border-radius:10px;padding:11px 14px;">
+    <div style="font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:var(--cream);">${dayName}</div>`;
+
+  if(dow===0){ // Sunday
+    bannerHtml += `<div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px;">Day of rest &mdash; no missions required</div>`;
+  } else if(dow===2){ // Tuesday
+    bannerHtml += `<div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px;">Your laundry day &mdash; yours, John's &amp; Trail Life uniforms</div>`;
+  } else if(dow===5){ // Friday
+    const agent = getDeepCleanAgent();
+    bannerHtml += `<div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px;">Deep clean day with ${DAWN_AGENT_NAMES[agent]} &mdash; ${DAWN_AGENT_ROOMS[agent]}</div>`;
+  } else if(dow===6){ // Saturday
+    bannerHtml += `<div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px;">Inventory before shopping &mdash; check Kitchen app Pantry tab</div>`;
+  } else {
+    bannerHtml += `<div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px;">Daily rhythm</div>`;
+  }
+  bannerHtml += `</div>`;
+  document.getElementById('dawn-day-banner').innerHTML = bannerHtml;
+
+  // Daily missions (Sunday = rest, nothing required)
+  const missionsEl = document.getElementById('dawn-daily-missions');
+  if(dow===0){
+    missionsEl.innerHTML = `<div class="card"><div class="card-bd" style="text-align:center;padding:20px;">
+      <div style="font-size:28px;margin-bottom:8px;">&#9203;</div>
+      <div style="font-family:'Cinzel',serif;font-size:13px;color:var(--brown);">Rest Today</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;">No missions on the Sabbath. Be still.</div>
+    </div></div>`;
+  } else {
+    _db.ref(`stewart/dawnmissions/${today}`).once('value', snap => {
+      const done = snap.val() || {};
+      missionsEl.innerHTML = DAWN_DAILY_MISSIONS.map(m => {
+        const isDone = !!done[m.id];
+        return `<div onclick="toggleDawnMission('${m.id}','${today}')" style="display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:11px 13px;margin-bottom:7px;cursor:pointer;">
+          <div style="width:22px;height:22px;border-radius:5px;border:2px solid ${isDone?'#2d6a47':'var(--border)'};background:${isDone?'#2d6a47':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;color:white;">
+            ${isDone?'&#10003;':''}
+          </div>
+          <div style="font-size:16px;">${m.icon}</div>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:700;color:${isDone?'var(--muted)':'var(--ink)'};${isDone?'text-decoration:line-through;':''}">${m.name}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:1px;">${m.detail}</div>
+          </div>
+        </div>`;
+      }).join('');
+    });
+  }
+
+  // Special section based on day
+  const specialEl = document.getElementById('dawn-special-section');
+  if(dow===2){
+    // Tuesday — laundry mission
+    _db.ref(`stewart/dawnmissions/${today}`).once('value', snap => {
+      const done = snap.val() || {};
+      const isDone = !!done['laundry-dawn'];
+      specialEl.innerHTML = `<div class="sec-hd">Tuesday Laundry</div>
+        <div onclick="toggleDawnMission('laundry-dawn','${today}')" style="display:flex;align-items:center;gap:10px;background:var(--card);border:2px solid ${isDone?'#2d6a47':'var(--gold)'};border-radius:8px;padding:11px 13px;margin-bottom:14px;cursor:pointer;">
+          <div style="width:22px;height:22px;border-radius:5px;border:2px solid ${isDone?'#2d6a47':'var(--border)'};background:${isDone?'#2d6a47':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;color:white;">
+            ${isDone?'&#10003;':''}
+          </div>
+          <div style="font-size:16px;">&#128083;</div>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:700;color:${isDone?'var(--muted)':'var(--ink)'};${isDone?'text-decoration:line-through;':''}">Laundry &mdash; yours, John's &amp; Trail Life uniforms</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:1px;">Wash, dry, fold, put away</div>
+          </div>
+        </div>`;
+    });
+  } else if(dow===5){
+    // Friday — deep clean
+    _db.ref(`stewart/dawnmissions/${today}`).once('value', snap => {
+      const done = snap.val() || {};
+      const isDone = !!done['deepclean'];
+      const agent = getDeepCleanAgent();
+      specialEl.innerHTML = `<div class="sec-hd">Friday Deep Clean</div>
+        <div onclick="toggleDawnMission('deepclean','${today}')" style="display:flex;align-items:center;gap:10px;background:var(--card);border:2px solid ${isDone?'#2d6a47':'var(--gold)'};border-radius:8px;padding:11px 13px;margin-bottom:14px;cursor:pointer;">
+          <div style="width:22px;height:22px;border-radius:5px;border:2px solid ${isDone?'#2d6a47':'var(--border)'};background:${isDone?'#2d6a47':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;color:white;">
+            ${isDone?'&#10003;':''}
+          </div>
+          <div style="font-size:16px;">&#10024;</div>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:700;color:${isDone?'var(--muted)':'var(--ink)'};${isDone?'text-decoration:line-through;':''}">Deep clean ${DAWN_AGENT_ROOMS[agent]} with ${DAWN_AGENT_NAMES[agent]}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:1px;">Baseboards, windows, dusting &mdash; beyond the daily sweep</div>
+          </div>
+        </div>`;
+    });
+  } else if(dow===6){
+    // Saturday — inventory
+    _db.ref(`stewart/dawnmissions/${today}`).once('value', snap => {
+      const done = snap.val() || {};
+      const isDone = !!done['inventory'];
+      specialEl.innerHTML = `<div class="sec-hd">Saturday Inventory</div>
+        <div onclick="toggleDawnMission('inventory','${today}')" style="display:flex;align-items:center;gap:10px;background:var(--card);border:2px solid ${isDone?'#2d6a47':'var(--gold)'};border-radius:8px;padding:11px 13px;margin-bottom:14px;cursor:pointer;">
+          <div style="width:22px;height:22px;border-radius:5px;border:2px solid ${isDone?'#2d6a47':'var(--border)'};background:${isDone?'#2d6a47':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;color:white;">
+            ${isDone?'&#10003;':''}
+          </div>
+          <div style="font-size:16px;">&#128722;</div>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:700;color:${isDone?'var(--muted)':'var(--ink)'};${isDone?'text-decoration:line-through;':''}">Check pantry, fridge &amp; freezer before shopping</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:1px;">Use the Kitchen app Pantry tab &mdash; then generate the week's plan &amp; shopping list</div>
+          </div>
+        </div>
+        <a href="../kitchen/index.html" class="btn-secondary" style="display:block;text-align:center;text-decoration:none;margin-bottom:14px;">Open Kitchen App &#8594;</a>`;
+    });
+  } else {
+    specialEl.innerHTML = '';
+  }
+}
+
+function toggleDawnMission(missionId, date){
+  if(!_db) return;
+  const ref = _db.ref(`stewart/dawnmissions/${date}/${missionId}`);
+  ref.once('value', snap => {
+    ref.set(snap.val()?null:true).then(()=>renderDawnTab());
   });
 }
 
