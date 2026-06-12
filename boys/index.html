@@ -522,6 +522,23 @@ body.theme-wild .mission-check.done{background:var(--wild2);border-color:var(--w
 
 <body>
 
+<!-- CELEBRATION OVERLAY -->
+<div id="celebration-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.88);z-index:9999;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:30px;overflow:hidden;">
+  <canvas id="confetti-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;"></canvas>
+  <div id="celebration-emoji" style="font-size:72px;margin-bottom:16px;animation:celebrate-bounce .5s ease infinite alternate;position:relative;z-index:2;">&#127881;</div>
+  <div id="celebration-title" style="font-family:'Orbitron',sans-serif;font-size:24px;font-weight:900;letter-spacing:3px;margin-bottom:12px;text-transform:uppercase;position:relative;z-index:2;animation:celebrate-flash 1s ease infinite;"></div>
+  <div id="celebration-msg" style="font-size:14px;color:rgba(255,255,255,.85);line-height:1.6;max-width:320px;margin-bottom:26px;position:relative;z-index:2;"></div>
+  <button onclick="closeCelebration()" style="padding:13px 30px;border-radius:24px;background:var(--teal);border:none;color:var(--black);font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer;position:relative;z-index:2;box-shadow:0 0 20px rgba(12,200,200,.6);">CONTINUE MISSION</button>
+</div>
+<style>
+@keyframes celebrate-bounce{from{transform:translateY(0) scale(1);}to{transform:translateY(-16px) scale(1.08);}}
+@keyframes celebrate-flash{
+  0%,100%{color:var(--gold);text-shadow:0 0 10px rgba(232,184,74,.8);}
+  50%{color:#fff;text-shadow:0 0 20px rgba(255,255,255,1),0 0 30px rgba(232,184,74,1);}
+}
+</style>
+
+
 <!-- ═══ AGENT SELECT SCREEN ═══ -->
 <div class="screen active" id="screen-select">
   <div class="owca-header">
@@ -905,6 +922,7 @@ function selectAgent(id, codename, name, rank, theme, icon){
   // Small delay then re-render missions once Firebase is settled
   setTimeout(() => renderMissions(), 1500);
   setTimeout(() => renderGameTime(), 1000);
+  setTimeout(() => checkCelebrations(), 2000);
   setTimeout(() => renderDinnerVote(), 1200);
 }
 
@@ -1202,6 +1220,20 @@ function isWednesday(){
   return new Date().getDay() === 3;
 }
 
+// Date-aware version of isLaundryDay — checks a specific date, not "today"
+function isLaundryDayFor(agentId, dayOfWeek){
+  // dayOfWeek: 1=Mon, 4=Thu
+  if((agentId==='samuel'||agentId==='johnjr') && dayOfWeek===1) return true;
+  if((agentId==='stephen'||agentId==='daniel') && dayOfWeek===4) return true;
+  return false;
+}
+
+// Monday = laundry day for Sam & John (pairId 'virtus')
+// Thursday = laundry day for Stephen & Daniel (pairId 'vulnere')
+function isLaundryDay(agentId){
+  return isLaundryDayFor(agentId, new Date().getDay());
+}
+
 // Build mission list for a given agent based on today
 function buildMissions(agentId){
   const dishTeam = getDishTeam();
@@ -1335,8 +1367,8 @@ function buildMissions(agentId){
         always: true
       });
     }
-    // Appliance wipes — Sam, John, Stephen only
-    if(agentId !== 'daniel'){
+    // Appliance wipes — Sam, John, Stephen only, dropped on their laundry day
+    if(agentId !== 'daniel' && !isLaundryDay(agentId)){
       missions.push({
         id: 'stovetop',
         text: 'Wipe down the stovetop',
@@ -1421,14 +1453,16 @@ function buildMissions(agentId){
   // Only show on weekdays, one per week — app marks when done
 
   if(agentId === 'samuel'){
-    missions.push({
-      id: 'laundry-sam',
-      text: 'Do your laundry',
-      detail: 'Wash, dry, and put away your own clothes. Once this week.',
-      points: 15,
-      category: 'laundry',
-      weekly: true
-    });
+    if(isLaundryDay('samuel')){
+      missions.push({
+        id: 'laundry-sam',
+        text: 'Laundry Day — with John Jr.',
+        detail: 'Wash, dry, and put away your laundry together. This is your main mission today.',
+        points: 15,
+        category: 'laundry',
+        always: true
+      });
+    }
     missions.push({
       id: 'fridge',
       text: 'Wipe down the fridge',
@@ -1451,14 +1485,16 @@ function buildMissions(agentId){
   }
 
   if(agentId === 'johnjr'){
-    missions.push({
-      id: 'laundry-john',
-      text: 'Do your laundry',
-      detail: 'Wash, dry, and put away your own clothes. Once this week.',
-      points: 15,
-      category: 'laundry',
-      weekly: true
-    });
+    if(isLaundryDay('johnjr')){
+      missions.push({
+        id: 'laundry-john',
+        text: 'Laundry Day — with Samuel',
+        detail: 'Wash, dry, and put away your laundry together. This is your main mission today.',
+        points: 15,
+        category: 'laundry',
+        always: true
+      });
+    }
     missions.push({
       id: 'fridge',
       text: 'Wipe down the fridge',
@@ -1481,14 +1517,16 @@ function buildMissions(agentId){
   }
 
   if(agentId === 'stephen'){
-    missions.push({
-      id: 'laundry-stephen',
-      text: 'Do your laundry',
-      detail: 'Wash, dry, and put away your own clothes. Once this week.',
-      points: 15,
-      category: 'laundry',
-      weekly: true
-    });
+    if(isLaundryDay('stephen')){
+      missions.push({
+        id: 'laundry-stephen',
+        text: 'Laundry Day — with Daniel',
+        detail: 'Wash, dry, and put away your laundry together. This is your main mission today.',
+        points: 15,
+        category: 'laundry',
+        always: true
+      });
+    }
     missions.push({
       id: 'hutch',
       text: 'Organize the hutch',
@@ -1519,14 +1557,16 @@ function buildMissions(agentId){
   }
 
   if(agentId === 'daniel'){
-    missions.push({
-      id: 'laundry-daniel',
-      text: 'Help with laundry',
-      detail: 'Do your laundry with Stephen — wash, dry, and put away your own clothes.',
-      points: 10,
-      category: 'laundry',
-      weekly: true
-    });
+    if(isLaundryDay('daniel')){
+      missions.push({
+        id: 'laundry-daniel',
+        text: 'Laundry Day — with Stephen',
+        detail: 'Wash, dry, and put away your laundry together. This is your main mission today.',
+        points: 10,
+        category: 'laundry',
+        always: true
+      });
+    }
     missions.push({
       id: 'bathroom-trash',
       text: 'Empty bathroom trash',
@@ -1580,6 +1620,179 @@ function buildMissions(agentId){
     if(m.wednesday && wed) return true;
     return false;
   });
+}
+
+
+// ══════════════════════════════════════════════════════
+// POINTS SYSTEM — 100 points = $1.00 = 6 minutes per day
+// ══════════════════════════════════════════════════════
+
+// Calculate a boy's score for a given day: returns {earned, possible, pct, dollars, minutes}
+function calculateDayScore(agentId, missions, doneMap){
+  const possible = missions.reduce((sum,m) => sum + (m.points||0), 0);
+  const earned = missions.reduce((sum,m) => sum + (doneMap[m.id] ? (m.points||0) : 0), 0);
+  const pct = possible > 0 ? (earned / possible) : 0;
+  return {
+    earned,
+    possible,
+    pct,
+    points100: Math.round(pct * 100),
+    dollars: Math.round(pct * 100) / 100, // $1.00 max
+    minutes: pct * 6 // 6 min max
+  };
+}
+
+// Apply transfer adjustments to a base score
+// transferAdjust is in points-out-of-100 (e.g. +50 or -50)
+function applyTransferAdjustment(score100, transferAdjust){
+  let adjusted = score100 + (transferAdjust||0);
+  adjusted = Math.max(0, Math.min(100, adjusted));
+  return {
+    points100: adjusted,
+    dollars: adjusted / 100,
+    minutes: (adjusted / 100) * 6
+  };
+}
+
+// Apply Dawn's behavior deductions
+// deductions is array of -25 point entries
+function applyBehaviorDeductions(score100, deductionPoints){
+  let adjusted = score100 - (deductionPoints||0);
+  adjusted = Math.max(0, Math.min(100, adjusted));
+  return {
+    points100: adjusted,
+    dollars: adjusted / 100,
+    minutes: (adjusted / 100) * 6
+  };
+}
+
+// Get the dish mission IDs for a given pair (used in transfer detection)
+const DISH_MISSION_IDS = ['dishwasher-load','dishwasher-unload','table-clear','table-wipe'];
+
+// Check if the OTHER team's dish missions from yesterday are still incomplete,
+// and if THIS agent's team completed them today on top of their own.
+// Returns true if a transfer should be recorded.
+function detectDishTransfer(myDoneToday, partnerDoneToday, myExpectedToday){
+  // Were dish missions part of today's expected list? (i.e. is my team on dishes today?)
+  const onDishesToday = myExpectedToday.some(m => DISH_MISSION_IDS.includes(m.id));
+  if(!onDishesToday) return false;
+
+  // Did both me and my partner complete ALL of today's dish missions?
+  const dishMissionsToday = myExpectedToday.filter(m => DISH_MISSION_IDS.includes(m.id));
+  const allDishesDone = dishMissionsToday.every(m => myDoneToday[m.id]);
+  return allDishesDone;
+}
+
+// ══════════════════════════════════════════════════════
+// SCORE RECALCULATION — writes 0-100 to stewart/scores
+// ══════════════════════════════════════════════════════
+
+// Recalculate and store a boy's score for a given date.
+// Base score from mission completion, then apply transfer adjustment
+// and behavior deductions stored separately.
+function recalculateScore(agentId, dateStr){
+  if(!_db) return;
+
+  Promise.all([
+    _db.ref(`stewart/missions/${agentId}/${dateStr}`).once('value'),
+    _db.ref(`stewart/transferAdjust/${agentId}/${dateStr}`).once('value'),
+    _db.ref(`stewart/deductions/${agentId}/${dateStr}`).once('value')
+  ]).then(([mSnap, tSnap, dSnap]) => {
+    const done = mSnap.val() || {};
+    const transferAdjust = tSnap.val() || 0; // e.g. +50 or -50
+    const deductions = dSnap.val() || {}; // {reasonKey: points, ...}
+
+    // Build expected missions for that date (use date-aware logic)
+    const dayDate = new Date(dateStr);
+    const dayOfWeek = dayDate.getDay();
+    if(dayOfWeek===0||dayOfWeek===6){
+      // Weekend — no score
+      _db.ref(`stewart/scores/${agentId}/${dateStr}`).set(null);
+      return;
+    }
+
+    const missions = buildMissionsForDate(agentId, dayDate);
+    const base = calculateDayScore(agentId, missions, done);
+
+    let score = base.points100;
+    score += transferAdjust;
+    const totalDeductions = Object.values(deductions).reduce((a,b)=>a+b,0);
+    score -= totalDeductions;
+    score = Math.max(0, Math.min(100, score));
+
+    _db.ref(`stewart/scores/${agentId}/${dateStr}`).set(score);
+  });
+}
+
+// Build the expected mission list for ANY date (not just today)
+// Mirrors buildMissions but accepts an explicit date
+function buildMissionsForDate(agentId, dayDate){
+  const dayOfWeek = dayDate.getDay();
+  const startOfYear = new Date(dayDate.getFullYear(), 0, 1);
+  const weekNum = Math.floor((dayDate - startOfYear) / (7*24*60*60*1000));
+  const weekParity = weekNum % 2;
+  const weekAPattern = {0:'sj',1:'sj',2:'sd',3:'sj',4:'sd',5:'sj',6:'sd'};
+  const weekBPattern = {0:'sd',1:'sd',2:'sj',3:'sd',4:'sj',5:'sd',6:'sj'};
+  const dishTeam = weekParity===0 ? weekAPattern[dayOfWeek] : weekBPattern[dayOfWeek];
+  const onDishes = (agentId==='samuel'||agentId==='johnjr') ? dishTeam==='sj' : dishTeam==='sd';
+  const onSetup = !onDishes;
+  const wed = dayOfWeek===3;
+  const onLaundry = isLaundryDayFor(agentId, dayOfWeek);
+  const bathroomOrder = ['samuel','johnjr','stephen','daniel'];
+  const isBathroomWeek = (agentId === bathroomOrder[weekNum % 4]);
+
+  const missions = [];
+  missions.push({id:'bed', points:5});
+  missions.push({id:'bedroom', points:5});
+  missions.push({id:'rabbit-own', points:5});
+
+  if(onDishes){
+    if(agentId==='samuel'||agentId==='johnjr'){
+      missions.push({id:'dishwasher-load', points:10});
+      missions.push({id:'dishwasher-unload', points:10});
+    }
+    if(agentId==='stephen') missions.push({id:'dishwasher-unload', points:10});
+    if(agentId==='daniel') missions.push({id:'dishwasher-load', points:10});
+    missions.push({id:'table-clear', points:5});
+    missions.push({id:'table-wipe', points:5});
+  }
+  if(onSetup){
+    missions.push({id:'table-set', points:5});
+    if(agentId==='samuel'||agentId==='johnjr') missions.push({id:'drinks', points:5});
+    if(agentId!=='daniel' && !onLaundry){
+      missions.push({id:'stovetop', points:5});
+      missions.push({id:'microwave', points:5});
+    }
+  }
+
+  if(agentId==='samuel') missions.push({id:'floor-laundry', points:5});
+  if(agentId==='johnjr') missions.push({id:'floor-living', points:5});
+  if(agentId==='stephen'){
+    missions.push({id:'kitchen-counter', points:10});
+    missions.push({id:'floor-kitchen', points:5});
+  }
+  if(agentId==='daniel'){
+    missions.push({id:'floor-hallway', points:5});
+    missions.push({id:'floor-rabbit', points:5});
+  }
+
+  if(onLaundry){
+    if(agentId==='samuel') missions.push({id:'laundry-sam', points:15});
+    if(agentId==='johnjr') missions.push({id:'laundry-john', points:15});
+    if(agentId==='stephen') missions.push({id:'laundry-stephen', points:15});
+    if(agentId==='daniel') missions.push({id:'laundry-daniel', points:10});
+  }
+
+  if(wed && (agentId==='samuel'||agentId==='johnjr')) missions.push({id:'trash', points:10});
+  if(wed && agentId==='daniel') missions.push({id:'bathroom-trash', points:10});
+
+  if(agentId==='samuel'||agentId==='johnjr'||agentId==='stephen') missions.push({id:'fridge', points:10});
+  if(agentId==='stephen') missions.push({id:'hutch', points:10});
+  if(isBathroomWeek) missions.push({id:'bathroom-clean', points:15});
+
+  missions.push({id:'rabbit-cage', points:15});
+
+  return missions;
 }
 
 // ══════════════════════════════════════════════════════
@@ -1672,7 +1885,13 @@ function toggleMission(missionId, refPath){
     const isDone = snap.val();
     const newVal = isDone ? null : true;
     ref.set(newVal).then(() => {
-      if(newVal) checkDishTransfer(missionId, new Date().toISOString().slice(0,10));
+      const today = new Date().toISOString().slice(0,10);
+      if(newVal) checkDishTransfer(missionId, today);
+      recalculateScore(currentAgent.id, today);
+      if(newVal){
+        // Check immediately for unlock celebrations
+        setTimeout(() => checkCelebrations(), 600);
+      }
       renderMissions();
     });
   });
@@ -1749,6 +1968,7 @@ function getDayStatus(agentId, dateStr, missionData, transferData){
 
   // Core daily missions every boy must do
   const required = ['bed','bedroom','rabbit-own'];
+  const onLaundryDay = isLaundryDayFor(agentId, dayOfWeek);
 
   // Dishes team
   if(onDishes){
@@ -1756,7 +1976,7 @@ function getDayStatus(agentId, dateStr, missionData, transferData){
   } else {
     required.push('table-set');
     if(agentId==='samuel'||agentId==='johnjr') required.push('drinks');
-    if(agentId!=='daniel') required.push('stovetop','microwave');
+    if(agentId!=='daniel' && !onLaundryDay) required.push('stovetop','microwave');
   }
 
   // Agent specific floors
@@ -1764,6 +1984,14 @@ function getDayStatus(agentId, dateStr, missionData, transferData){
   if(agentId==='johnjr') required.push('floor-living');
   if(agentId==='stephen') required.push('kitchen-counter','floor-kitchen');
   if(agentId==='daniel') required.push('floor-hallway','floor-rabbit','table-set');
+
+  // Laundry day — replaces appliance wipe, becomes its own required mission
+  if(onLaundryDay){
+    if(agentId==='samuel') required.push('laundry-sam');
+    if(agentId==='johnjr') required.push('laundry-john');
+    if(agentId==='stephen') required.push('laundry-stephen');
+    if(agentId==='daniel') required.push('laundry-daniel');
+  }
 
   // Check if all required daily missions completed
   const allDone = required.every(m => done[m]);
@@ -1790,40 +2018,44 @@ function renderPayScreen(){
   const weekDays = getWeekDays();
   const weekStart = getWeekStart();
 
-  // Load all mission data and transfers for the week
+  // Ensure today's score is up to date, then load the week's scores
+  const today = new Date().toISOString().slice(0,10);
+  recalculateScore(currentAgent.id, today);
+
   Promise.all([
-    _db.ref(`stewart/missions/${currentAgent.id}`).once('value'),
+    _db.ref(`stewart/scores/${currentAgent.id}`).once('value'),
     _db.ref(`stewart/transfers`).once('value'),
     _db.ref(`stewart/weekly/${currentAgent.id}/${weekStart}`).once('value')
-  ]).then(([mSnap, tSnap, wSnap]) => {
-    const missionData = {};
-    missionData[currentAgent.id] = mSnap.val() || {};
+  ]).then(([sSnap, tSnap, wSnap]) => {
+    const scores = sSnap.val() || {};
     const transferData = tSnap.val() || {};
     const weeklyDone = wSnap.val() || {};
 
-    let totalEarned = 0;
+    let totalDollars = 0;
     const dayLabels = ['Mon','Tue','Wed','Thu','Fri'];
+    const todayStr = new Date().toISOString().slice(0,10);
 
     let daysHtml = '<div style="display:flex;gap:8px;margin-bottom:16px;">';
     weekDays.forEach((dateStr, i) => {
-      const status = getDayStatus(currentAgent.id, dateStr, missionData, transferData);
-      let bg, icon, label, pts;
-      if(status==='earned'){
-        bg='rgba(45,106,71,.2)';icon='&#10003;';label='color:#4aaa6a';pts=1;
-      } else if(status==='missed'){
-        bg='rgba(139,48,16,.2)';icon='&#10007;';label='color:#cc5533';pts=0;
-      } else if(status==='transferred-out'){
-        bg='rgba(139,48,16,.15)';icon='&#8594;';label='color:#cc5533';pts=0;
-      } else if(status==='pending'){
-        bg='rgba(255,255,255,.05)';icon='&#9675;';label='color:rgba(255,255,255,.3)';pts=0;
+      const score = scores[dateStr]; // 0-100 or null/undefined
+      let bg, icon, label, dollars, displayVal;
+
+      if(dateStr > todayStr){
+        bg='rgba(255,255,255,.04)';icon='&mdash;';label='color:rgba(255,255,255,.2)';dollars=0;displayVal='&mdash;';
+      } else if(score===null||score===undefined){
+        bg='rgba(255,255,255,.05)';icon='&#9675;';label='color:rgba(255,255,255,.3)';dollars=0;displayVal='$0.00';
       } else {
-        bg='rgba(255,255,255,.04)';icon='&mdash;';label='color:rgba(255,255,255,.2)';pts=0;
+        dollars = score/100;
+        if(score>=80){ bg='rgba(45,106,71,.2)';icon='&#10003;';label='color:#4aaa6a'; }
+        else if(score>=50){ bg='rgba(232,184,74,.15)';icon='&#9679;';label='color:var(--gold)'; }
+        else { bg='rgba(139,48,16,.2)';icon='&#10007;';label='color:#cc5533'; }
+        displayVal = '$'+dollars.toFixed(2);
       }
-      totalEarned += pts;
+      totalDollars += (dollars||0);
       daysHtml += `<div style="flex:1;background:${bg};border-radius:8px;padding:10px 6px;text-align:center;">
         <div style="font-size:18px;${label}">${icon}</div>
         <div style="font-family:'Orbitron',sans-serif;font-size:7px;letter-spacing:1px;color:rgba(255,255,255,.4);margin-top:4px;">${dayLabels[i]}</div>
-        <div style="font-size:10px;${label};margin-top:2px;">${pts>0?'$1':'$0'}</div>
+        <div style="font-size:10px;${label};margin-top:2px;">${displayVal}</div>
       </div>`;
     });
     daysHtml += '</div>';
@@ -1849,20 +2081,29 @@ function renderPayScreen(){
       const fnData = fnSnap.val() || {};
       const familyNightUnlocked = fnData[weekStart] === true;
 
+      // Transfer notes for this week
       let transferNote = '';
       const weekTransfers = Object.entries(transferData)
         .filter(([date]) => weekDays.includes(date))
-        .filter(([_, t]) => t.to === currentAgent.id || t.from === currentAgent.id);
+        .filter(([_, t]) => {
+          const toList = (t.to||'').split(',');
+          const fromList = (t.from||'').split(',');
+          return toList.includes(currentAgent.id) || fromList.includes(currentAgent.id);
+        });
 
       if(weekTransfers.length){
         transferNote = '<div style="margin-bottom:12px;">';
         weekTransfers.forEach(([date, t]) => {
           const d = new Date(date);
           const dayName = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
-          if(t.to === currentAgent.id){
-            transferNote += `<div style="font-size:11px;color:#4aaa6a;background:rgba(45,106,71,.1);border-radius:6px;padding:5px 9px;margin-bottom:4px;">+$1.00 ${dayName} &mdash; Completed ${AGENT_NAMES[t.from]}'s dishes</div>`;
-          } else {
-            transferNote += `<div style="font-size:11px;color:#cc5533;background:rgba(139,48,16,.1);border-radius:6px;padding:5px 9px;margin-bottom:4px;">-$1.00 ${dayName} &mdash; Dishes transferred to ${AGENT_NAMES[t.to]}</div>`;
+          const toList = (t.to||'').split(',');
+          const fromList = (t.from||'').split(',');
+          if(toList.includes(currentAgent.id)){
+            const fromNames = fromList.map(a=>AGENT_NAMES[a]).join(' & ');
+            transferNote += `<div style="font-size:11px;color:#4aaa6a;background:rgba(45,106,71,.1);border-radius:6px;padding:5px 9px;margin-bottom:4px;">+$0.50 ${dayName} &mdash; Covered ${fromNames}'s dishes from the day before</div>`;
+          } else if(fromList.includes(currentAgent.id)){
+            const toNames = toList.map(a=>AGENT_NAMES[a]).join(' & ');
+            transferNote += `<div style="font-size:11px;color:#cc5533;background:rgba(139,48,16,.1);border-radius:6px;padding:5px 9px;margin-bottom:4px;">-$0.50 ${dayName} &mdash; Dishes left for ${toNames} to finish</div>`;
           }
         });
         transferNote += '</div>';
@@ -1891,11 +2132,11 @@ function renderPayScreen(){
         </div>
         ${daysHtml}
         <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:14px;text-align:center;margin-bottom:14px;">
-          <div style="font-family:'Orbitron',sans-serif;font-size:28px;font-weight:700;color:${totalEarned>=4?'#4aaa6a':totalEarned>=2?'var(--gold)':'#cc5533'};">
-            $${totalEarned}.00
+          <div style="font-family:'Orbitron',sans-serif;font-size:28px;font-weight:700;color:${totalDollars>=4?'#4aaa6a':totalDollars>=2?'var(--gold)':'#cc5533'};">
+            $${totalDollars.toFixed(2)}
           </div>
           <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px;">earned so far this week</div>
-          ${isFriday()?'<div style="font-size:11px;color:var(--gold);margin-top:6px;font-style:italic;">&#9733; Payday! Collect your $'+totalEarned+'.00 from Dad.</div>':''}
+          ${isFriday()?'<div style="font-size:11px;color:var(--gold);margin-top:6px;font-style:italic;">&#9733; Payday! Collect your $'+totalDollars.toFixed(2)+' from Dad.</div>':''}
         </div>
         ${transferNote}
         ${familyNightHtml}`;
@@ -1958,37 +2199,82 @@ function checkDishTransfer(missionId, dateStr){
   if(!DISH_MISSIONS.includes(missionId)) return;
   if(!_db || !currentAgent) return;
 
-  const dayDate = new Date(dateStr);
-  const dayOfWeek = dayDate.getDay();
-  const startOfYear = new Date(dayDate.getFullYear(), 0, 1);
-  const weekNum = Math.floor((dayDate - startOfYear) / (7*24*60*60*1000));
+  const agentId = currentAgent.id;
+  const agentIsSJ = (agentId === 'samuel' || agentId === 'johnjr');
+
+  // Determine which team is scheduled for dishes TODAY
+  const today = new Date(dateStr);
+  const todayDow = today.getDay();
+  const startOfYear = new Date(today.getFullYear(), 0, 1);
+  const weekNum = Math.floor((today - startOfYear) / (7*24*60*60*1000));
   const weekParity = weekNum % 2;
   const weekAPattern = {0:'sj',1:'sj',2:'sd',3:'sj',4:'sd',5:'sj',6:'sd'};
   const weekBPattern = {0:'sd',1:'sd',2:'sj',3:'sd',4:'sj',5:'sd',6:'sj'};
-  const dishTeam = weekParity===0 ? weekAPattern[dayOfWeek] : weekBPattern[dayOfWeek];
-  const scheduledSJ = dishTeam === 'sj';
+  const todayDishTeam = weekParity===0 ? weekAPattern[todayDow] : weekBPattern[todayDow];
+  const scheduledSJToday = todayDishTeam === 'sj';
 
-  const agentId = currentAgent.id;
-  const agentIsSJ = agentId === 'samuel' || agentId === 'johnjr';
+  // Is THIS agent on the scheduled team today?
+  const onScheduledTeamToday = (agentIsSJ && scheduledSJToday) || (!agentIsSJ && !scheduledSJToday);
 
-  // If this agent is NOT on the scheduled team for dishes, it's a transfer
-  if((agentIsSJ && !scheduledSJ) || (!agentIsSJ && scheduledSJ)){
-    // Find who should have done it
-    let fromAgent = null;
-    if(scheduledSJ){
-      // Sam or John should have done it — figure out which one
-      fromAgent = 'samuel'; // simplified — could track individually
-    } else {
-      fromAgent = 'stephen';
-    }
-    if(fromAgent && fromAgent !== agentId){
-      _db.ref(`stewart/transfers/${dateStr}`).set({
-        from: fromAgent,
-        to: agentId,
+  // If I'm NOT on the scheduled team today, but I just completed a dish mission,
+  // check if YESTERDAY's dish missions (my OWN team's responsibility) are still undone —
+  // that means I'm covering for my own team's prior-day failure. Not a transfer.
+  //
+  // A TRANSFER happens when: I complete dish missions today that belong to TODAY'S
+  // schedule (the other team's job), meaning the other team didn't show up at all today
+  // AND yesterday they also left things undone — simplified model: if I am NOT on the
+  // scheduled team today but dish missions are appearing in MY list and I complete them,
+  // it means yesterday's scheduled team (opposite of today's, which is MY team) left
+  // dishes undone and they rolled into today as still-incomplete, now done by the
+  // OTHER team (me).
+
+  if(!onScheduledTeamToday){
+    // I completed a dish mission that wasn't "mine" by today's schedule —
+    // this means yesterday's team (my own team) left it undone, and I'm
+    // covering it a day late. Determine yesterday's date and that team's members.
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate()-1);
+    const yDateStr = yesterday.toISOString().slice(0,10);
+    const yDow = yesterday.getDay();
+
+    // Skip if yesterday was a weekend (no missions to fail)
+    if(yDow===0||yDow===6) return;
+
+    const yWeekNum = Math.floor((yesterday - new Date(yesterday.getFullYear(),0,1)) / (7*24*60*60*1000));
+    const yWeekParity = yWeekNum % 2;
+    const yDishTeam = yWeekParity===0 ? weekAPattern[yDow] : weekBPattern[yDow];
+    const yScheduledSJ = yDishTeam === 'sj';
+
+    // The team that SHOULD have done dishes yesterday
+    const yTeamAgents = yScheduledSJ ? ['samuel','johnjr'] : ['stephen','daniel'];
+    // The team covering today (me + my partner)
+    const myPair = PAIRS[agentId];
+    const coveringAgents = myPair ? [agentId, myPair.partner] : [agentId];
+
+    // Only proceed if I'm covering for the OTHER team (not my own missed day)
+    const overlap = yTeamAgents.some(a => coveringAgents.includes(a));
+    if(overlap) return; // I'm just doing my own late work, not a transfer
+
+    // Check if a transfer was already recorded for yesterday
+    _db.ref(`stewart/transfers/${yDateStr}`).once('value', snap => {
+      if(snap.val()) return; // already recorded
+
+      // Record the transfer
+      _db.ref(`stewart/transfers/${yDateStr}`).set({
+        from: yTeamAgents.join(','),
+        to: coveringAgents.join(','),
         mission: missionId,
         timestamp: Date.now()
       });
-    }
+
+      // Apply flat 50-point swing
+      coveringAgents.forEach(a => {
+        _db.ref(`stewart/transferAdjust/${a}/${dateStr}`).set(50).then(() => recalculateScore(a, dateStr));
+      });
+      yTeamAgents.forEach(a => {
+        _db.ref(`stewart/transferAdjust/${a}/${yDateStr}`).set(-50).then(() => recalculateScore(a, yDateStr));
+      });
+    });
   }
 }
 
@@ -2034,14 +2320,20 @@ function renderPrivateMessages(msgs){
     el.innerHTML = '<div class="empty" style="color:rgba(255,255,255,.3);">No messages yet.<br>Send HQ a message anytime.</div>';
     return;
   }
+  const AGENT_ICONS = {samuel:'&#129413;',johnjr:'&#129409;',stephen:'&#129430;',daniel:'&#128024;'};
+  const HANS_ICON = '&#129441;'; // mad scientist emoji as Hans stand-in
   el.innerHTML = items.map(m => {
     const isParent = m.from==='Dad'||m.from==='Mom'||m.from==='HQ';
+    const icon = isParent ? HANS_ICON : (AGENT_ICONS[m.agentId] || '&#128100;');
     const time = m.timestamp ? new Date(m.timestamp).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '';
     return `<div style="display:flex;flex-direction:column;align-items:${isParent?'flex-start':'flex-end'};">
-      <div style="max-width:80%;padding:9px 12px;border-radius:12px;${isParent?'background:rgba(12,200,200,.15);border-bottom-left-radius:4px;':'background:var(--teal);color:var(--black);border-bottom-right-radius:4px;'}line-height:1.4;font-size:13px;">
-        <div style="font-size:9px;opacity:.6;margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px;">${m.from||'Unknown'}</div>
-        ${m.text||''}
-        <div style="font-size:9px;opacity:.5;margin-top:4px;text-align:${isParent?'left':'right'};">${time}</div>
+      <div style="display:flex;align-items:flex-end;gap:6px;${isParent?'':'flex-direction:row-reverse;'}">
+        <div style="font-size:18px;flex-shrink:0;">${icon}</div>
+        <div style="max-width:75%;padding:9px 12px;border-radius:12px;${isParent?'background:rgba(12,200,200,.15);border-bottom-left-radius:4px;':'background:var(--teal);color:var(--black);border-bottom-right-radius:4px;'}line-height:1.4;font-size:13px;">
+          <div style="font-size:9px;opacity:.6;margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px;">${m.from||'Unknown'}</div>
+          ${m.text||''}
+          <div style="font-size:9px;opacity:.5;margin-top:4px;text-align:${isParent?'left':'right'};">${time}</div>
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -2113,60 +2405,32 @@ function renderGameTime(){
   if(!el) return;
   if(!_db){ el.innerHTML='<div class="empty">Connect to WiFi to view game time.</div>'; return; }
 
-  const pair = PAIRS[currentAgent.id];
-  if(!pair){ el.innerHTML='<div class="empty">Pair not found.</div>'; return; }
-
   const weekDays = getWeekDaysGT();
-  const weekStart = weekDays[0];
+  const pair = PAIRS[currentAgent.id];
 
-  // Load both boys' mission data for the week
-  Promise.all([
-    Promise.all(weekDays.map(d => _db.ref(`stewart/missions/${currentAgent.id}/${d}`).once('value'))),
-    Promise.all(weekDays.map(d => _db.ref(`stewart/missions/${pair.partner}/${d}`).once('value')))
-  ]).then(([mySnaps, partnerSnaps]) => {
+  // Make sure today's score is current
+  const today = new Date().toISOString().slice(0,10);
+  recalculateScore(currentAgent.id, today);
+
+  _db.ref(`stewart/scores/${currentAgent.id}`).once('value').then(snap => {
+    const scores = snap.val() || {};
 
     let totalMinutes = 0;
-    const dayResults = weekDays.map((d, i) => {
-      const myDone = mySnaps[i].val()||{};
-      const partnerDone = partnerSnaps[i].val()||{};
-      const myExpected = getExpectedMissions(currentAgent.id);
-      const partnerExpected = getExpectedMissions(pair.partner);
-
-      // Check if this day is today or past
-      const today = new Date().toISOString().slice(0,10);
+    const dayResults = weekDays.map(d => {
+      const score = scores[d]; // 0-100 or null
       if(d > today) return { day: d, status: 'pending', minutes: 0 };
+      if(score===null||score===undefined) return { day: d, status: 'missed', minutes: 0 };
 
-      const myComplete = myExpected.every(m => myDone[m]) && myExpected.length > 0;
-      const partnerComplete = partnerExpected.every(m => partnerDone[m]) && partnerExpected.length > 0;
-      const bothComplete = myComplete && partnerComplete;
+      const minutes = (score/100) * 6;
+      totalMinutes += minutes;
 
-      if(bothComplete) totalMinutes += 6;
+      let status;
+      if(score >= 80) status = 'earned';
+      else if(score >= 50) status = 'partial';
+      else status = 'missed';
+      if(d === today) status = status === 'earned' ? 'earned' : 'today';
 
-      // Check if this pair completed the other team's dish missions
-      // Transfer rule: if other team left dishes and we did them, we get the 6 min
-      // Max 6 per day — no stacking
-      if(!bothComplete){
-        const dishIds = ['dishwasher-load','dishwasher-unload','table-clear','table-wipe'];
-        const dt = getDishTeam();
-        const scheduledSJ = dt === 'sj';
-        const ourTeamIsSJ = currentAgent.id === 'samuel' || currentAgent.id === 'johnjr';
-        const weWereOnDishes = ourTeamIsSJ ? scheduledSJ : !scheduledSJ;
-        // We were NOT on dishes but completed dish missions anyway = other team's transfer
-        if(!weWereOnDishes){
-          const myDoneCheck = mySnaps[i].val()||{};
-          const partnerDoneCheck = partnerSnaps[i].val()||{};
-          const bothDidDishes = dishIds.every(m => myDoneCheck[m]) && dishIds.every(m => partnerDoneCheck[m]);
-          if(bothDidDishes) totalMinutes += 6; // earned via transfer — still only 6
-        }
-      }
-
-      return {
-        day: d,
-        status: bothComplete ? 'earned' : (d === today ? 'today' : 'missed'),
-        myComplete,
-        partnerComplete,
-        minutes: bothComplete ? 6 : 0
-      };
+      return { day: d, status, minutes, score };
     });
 
     // Payout tier
@@ -2175,19 +2439,17 @@ function renderGameTime(){
     else if(totalMinutes >= 15){ payout='15 min'; payoutColor='#c8922a'; payoutIcon='&#9203;'; }
     else { payout='No game time'; payoutColor='#b5451b'; payoutIcon='&#10060;'; }
 
-    const partnerName = pair.partner === 'johnjr' ? 'John Jr.' :
-      pair.partner.charAt(0).toUpperCase() + pair.partner.slice(1);
-    const agentNames = {samuel:'Samuel',johnjr:'John Jr.',stephen:'Stephen',daniel:'Daniel'};
+    const totalDisplay = Math.round(totalMinutes * 10) / 10;
 
     el.innerHTML = `
-      <!-- PAIR HEADER -->
+      <!-- AGENT HEADER -->
       <div style="background:linear-gradient(135deg,var(--dark2),#0a1a0a);border:1px solid rgba(12,200,200,.2);border-radius:10px;padding:14px;margin-bottom:12px;text-align:center;">
-        <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:2px;color:var(--teal2);margin-bottom:6px;">${pair.label}</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:2px;color:var(--teal2);margin-bottom:6px;">${currentAgent.codename.toUpperCase()} &mdash; INDIVIDUAL TRACKING</div>
         <div style="font-size:22px;margin-bottom:4px;">${payoutIcon}</div>
-        <div style="font-family:'Orbitron',sans-serif;font-size:26px;font-weight:700;color:${payoutColor};">${totalMinutes} min</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:26px;font-weight:700;color:${payoutColor};">${totalDisplay} min</div>
         <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:3px;">earned this week &mdash; max 30 min</div>
         <div style="background:rgba(255,255,255,.06);border-radius:6px;height:6px;overflow:hidden;margin:10px 0 4px;">
-          <div style="height:100%;width:${Math.round((totalMinutes/30)*100)}%;background:${payoutColor};border-radius:6px;transition:width .5s;"></div>
+          <div style="height:100%;width:${Math.min(100,Math.round((totalMinutes/30)*100))}%;background:${payoutColor};border-radius:6px;transition:width .5s;"></div>
         </div>
         <div style="font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;color:${payoutColor};margin-top:6px;">
           Weekend: ${payout}
@@ -2195,52 +2457,40 @@ function renderGameTime(){
       </div>
 
       <!-- DAY BY DAY -->
-      <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:2px;color:var(--teal2);margin-bottom:8px;">Daily Teamwork Log</div>
+      <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:2px;color:var(--teal2);margin-bottom:8px;">Daily Points Log</div>
       <div style="display:flex;gap:6px;margin-bottom:14px;">
         ${dayResults.map(r => {
-          const bg = r.status==='earned'?'rgba(45,106,71,.2)':r.status==='missed'?'rgba(139,48,16,.2)':r.status==='today'?'rgba(12,200,200,.1)':'rgba(255,255,255,.04)';
-          const icon = r.status==='earned'?'&#10003;':r.status==='missed'?'&#10007;':r.status==='today'?'&#9675;':'&mdash;';
-          const col = r.status==='earned'?'#4aaa6a':r.status==='missed'?'#cc5533':r.status==='today'?'var(--teal2)':'rgba(255,255,255,.2)';
+          const bg = r.status==='earned'?'rgba(45,106,71,.2)':r.status==='partial'?'rgba(232,184,74,.15)':r.status==='missed'?'rgba(139,48,16,.2)':r.status==='today'?'rgba(12,200,200,.1)':'rgba(255,255,255,.04)';
+          const icon = r.status==='earned'?'&#10003;':r.status==='partial'?'&#9679;':r.status==='missed'?'&#10007;':r.status==='today'?'&#9675;':'&mdash;';
+          const col = r.status==='earned'?'#4aaa6a':r.status==='partial'?'var(--gold)':r.status==='missed'?'#cc5533':r.status==='today'?'var(--teal2)':'rgba(255,255,255,.2)';
+          const minDisplay = r.minutes ? '+'+(Math.round(r.minutes*10)/10) : '0';
           return `<div style="flex:1;background:${bg};border-radius:8px;padding:8px 4px;text-align:center;">
             <div style="font-size:16px;color:${col};">${icon}</div>
             <div style="font-family:'Orbitron',sans-serif;font-size:7px;letter-spacing:1px;color:rgba(255,255,255,.4);margin-top:3px;">${getDayLabel(r.day)}</div>
-            <div style="font-size:9px;color:${col};margin-top:1px;">${r.status==='earned'?'+6':'0'}</div>
+            <div style="font-size:9px;color:${col};margin-top:1px;">${minDisplay}</div>
           </div>`;
         }).join('')}
       </div>
 
-      <!-- PARTNER STATUS -->
-      <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:2px;color:var(--teal2);margin-bottom:8px;">Today's Teamwork</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
-        ${[
-          {id:currentAgent.id, name:agentNames[currentAgent.id], result:dayResults.find(r=>r.day===new Date().toISOString().slice(0,10))},
-          {id:pair.partner, name:partnerName, result:dayResults.find(r=>r.day===new Date().toISOString().slice(0,10))}
-        ].map(p => {
-          const isMe = p.id === currentAgent.id;
-          const complete = isMe ? p.result?.myComplete : p.result?.partnerComplete;
-          return `<div style="background:var(--dark2);border:1px solid ${complete?'rgba(45,106,71,.4)':'rgba(139,48,16,.3)'};border-radius:8px;padding:10px;text-align:center;">
-            <div style="font-size:16px;">${complete?'&#9989;':'&#10060;'}</div>
-            <div style="font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:1px;color:rgba(255,255,255,.7);margin-top:4px;">${p.name}</div>
-            <div style="font-size:9px;color:${complete?'#4aaa6a':'#cc5533'};margin-top:2px;">${complete?'Complete':'Incomplete'}</div>
-          </div>`;
-        }).join('')}
-      </div>
+      ${pair ? `
+      <!-- TEAM NOTE -->
+      <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:11px 13px;margin-bottom:14px;">
+        <div style="font-size:11px;color:rgba(255,255,255,.5);line-height:1.6;">
+          You're part of <strong style="color:var(--teal2);">${pair.label}</strong> with ${pair.partner==='johnjr'?'John Jr.':pair.partner.charAt(0).toUpperCase()+pair.partner.slice(1)}, but your game time is earned individually based on your own missions.
+        </div>
+      </div>` : ''}
 
       <!-- RULE REMINDER -->
       <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:11px 13px;">
         <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:2px;color:var(--teal2);margin-bottom:6px;">Mission Rules</div>
         <div style="font-size:11px;color:rgba(255,255,255,.5);line-height:1.6;">
-          Both agents must complete ALL missions for the pair to earn 6 minutes.<br>
-          One agent missing = 0 minutes for both that day.<br>
+          Each mission you complete earns points toward your day. A full day = 6 minutes.<br>
+          If a mission is left for the next day and someone else finishes it, points transfer to them.<br>
           <span style="color:var(--gold);">25-30 min = 30 min Xbox &nbsp;&#9670;&nbsp; 15-24 min = 15 min &nbsp;&#9670;&nbsp; Under 15 = no game time</span>
         </div>
       </div>`;
   });
 }
-
-// ══════════════════════════════════════════════════════
-// MONTHLY DINNER VOTE
-// ══════════════════════════════════════════════════════
 
 function renderDinnerVote(){
   if(!currentAgent) return;
@@ -2315,6 +2565,199 @@ function castDinnerVote(option){
   _db.ref(`stewart/dinnervote/${monthKey}/votes/${currentAgent.id}`).set(option)
     .then(() => renderDinnerVote());
 }
+
+
+// ══════════════════════════════════════════════════════
+// CELEBRATIONS
+// ══════════════════════════════════════════════════════
+
+let confettiAnimationId = null;
+
+function showCelebration(emoji, title, msg){
+  document.getElementById('celebration-emoji').innerHTML = emoji;
+  document.getElementById('celebration-title').textContent = title;
+  document.getElementById('celebration-msg').textContent = msg;
+  document.getElementById('celebration-overlay').style.display = 'flex';
+  startConfetti();
+}
+
+function closeCelebration(){
+  document.getElementById('celebration-overlay').style.display = 'none';
+  stopConfetti();
+}
+
+function startConfetti(){
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const colors = ['#0cc8c8','#e8b84a','#ffffff','#4aaa6a','#cc5533'];
+  const pieces = [];
+  for(let i=0;i<80;i++){
+    pieces.push({
+      x: Math.random()*canvas.width,
+      y: -20 - Math.random()*canvas.height*0.5,
+      size: 4 + Math.random()*6,
+      color: colors[Math.floor(Math.random()*colors.length)],
+      speedY: 2 + Math.random()*4,
+      speedX: (Math.random()-0.5)*3,
+      rotation: Math.random()*360,
+      rotationSpeed: (Math.random()-0.5)*10
+    });
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    let stillFalling = false;
+    pieces.forEach(p => {
+      p.y += p.speedY;
+      p.x += p.speedX;
+      p.rotation += p.rotationSpeed;
+      if(p.y < canvas.height + 20) stillFalling = true;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rotation * Math.PI/180);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size*0.6);
+      ctx.restore();
+    });
+    if(stillFalling){
+      confettiAnimationId = requestAnimationFrame(draw);
+    } else {
+      // Restart for continuous celebration while overlay is open
+      pieces.forEach(p => {
+        p.y = -20 - Math.random()*100;
+        p.x = Math.random()*canvas.width;
+      });
+      confettiAnimationId = requestAnimationFrame(draw);
+    }
+  }
+  draw();
+}
+
+function stopConfetti(){
+  if(confettiAnimationId){
+    cancelAnimationFrame(confettiAnimationId);
+    confettiAnimationId = null;
+  }
+}
+
+function checkCelebrations(){
+  if(!currentAgent||!_db) return;
+  const weekStart = getWeekStart();
+  const today = new Date().toISOString().slice(0,10);
+
+  // DAILY COMPLETION celebration — all today's missions done
+  _db.ref(`stewart/missions/${currentAgent.id}/${today}`).once('value', snap => {
+    const done = snap.val() || {};
+    const expected = getExpectedMissionsLocal(currentAgent.id);
+    const allDone = expected.length > 0 && expected.every(m => done[m]);
+    if(allDone){
+      _db.ref(`stewart/celebrations/daily/${currentAgent.id}/${today}`).once('value', seenSnap => {
+        if(!seenSnap.val()){
+          showCelebration('&#9989;', 'Mission Complete!', `All missions complete for today, Agent ${currentAgent.codename.split(' ')[1]}! Outstanding work.`);
+          _db.ref(`stewart/celebrations/daily/${currentAgent.id}/${today}`).set(true);
+          return; // don't stack with other celebrations at the same moment
+        }
+        checkWeeklyCelebrations();
+      });
+    } else {
+      checkWeeklyCelebrations();
+    }
+  });
+}
+
+function checkWeeklyCelebrations(){
+  if(!currentAgent||!_db) return;
+  const weekStart = getWeekStart();
+
+  // FAMILY NIGHT celebration
+  _db.ref(`stewart/familynight/${weekStart}`).once('value', snap => {
+    if(snap.val()){
+      _db.ref(`stewart/celebrations/familynight/${weekStart}/${currentAgent.id}`).once('value', seenSnap => {
+        if(!seenSnap.val()){
+          showCelebration('&#127881;', 'Family Night Unlocked!', 'Every agent completed their missions this week. Time to celebrate together, Agent ' + currentAgent.codename.split(' ')[1] + '!');
+          _db.ref(`stewart/celebrations/familynight/${weekStart}/${currentAgent.id}`).set(true);
+        }
+      });
+    }
+  });
+
+  // GAME TIME celebration — check this agent's pair
+  const pair = PAIRS[currentAgent.id];
+  if(!pair) return;
+
+  const weekDays = getWeekDaysGT();
+  Promise.all([
+    Promise.all(weekDays.map(d => _db.ref(`stewart/missions/${currentAgent.id}/${d}`).once('value'))),
+    Promise.all(weekDays.map(d => _db.ref(`stewart/missions/${pair.partner}/${d}`).once('value')))
+  ]).then(([mySnaps, partnerSnaps]) => {
+    let totalMinutes = 0;
+    const today = new Date().toISOString().slice(0,10);
+    weekDays.forEach((d, i) => {
+      if(d > today) return;
+      const myDone = mySnaps[i].val()||{};
+      const partnerDone = partnerSnaps[i].val()||{};
+      const myExpected = getExpectedMissionsLocal(currentAgent.id);
+      const partnerExpected = getExpectedMissionsLocal(pair.partner);
+      const myComplete = myExpected.every(m => myDone[m]) && myExpected.length > 0;
+      const partnerComplete = partnerExpected.every(m => partnerDone[m]) && partnerExpected.length > 0;
+      if(myComplete && partnerComplete) totalMinutes += 6;
+    });
+
+    let tier = 0;
+    if(totalMinutes >= 25) tier = 30;
+    else if(totalMinutes >= 15) tier = 15;
+
+    if(tier > 0){
+      _db.ref(`stewart/celebrations/gametime/${weekStart}/${pair.pairId}`).once('value', seenSnap => {
+        if(seenSnap.val() !== tier){
+          showCelebration('&#127918;', tier + ' Min Xbox Unlocked!', pair.label + ' earned ' + tier + ' minutes of game time this weekend. Great teamwork, Agents!');
+          _db.ref(`stewart/celebrations/gametime/${weekStart}/${pair.pairId}`).set(tier);
+        }
+      });
+    }
+  });
+}
+
+// Local copy of expected missions logic for celebration checks
+function getExpectedMissionsLocal(agentId){
+  const dt = getDishTeam();
+  const onDishes = (agentId==='samuel'||agentId==='johnjr') ? dt==='sj' : dt==='sd';
+  const base = ['bed','bedroom','rabbit-own'];
+  if(agentId==='samuel') base.push('floor-laundry');
+  if(agentId==='johnjr') base.push('floor-living');
+  if(agentId==='stephen') base.push('kitchen-counter','floor-kitchen');
+  if(agentId==='daniel') base.push('floor-hallway','floor-rabbit','table-set');
+
+  const onLaundryDay = isLaundryDayFor(agentId, new Date().getDay());
+
+  if(onDishes){
+    if(agentId==='stephen') base.push('dishwasher-unload','table-clear','table-wipe');
+    else if(agentId==='daniel') base.push('dishwasher-load','table-clear','table-wipe');
+    else base.push('dishwasher-load','dishwasher-unload','table-clear','table-wipe');
+  } else {
+    if(!base.includes('table-set')) base.push('table-set');
+    if(agentId==='samuel'||agentId==='johnjr') base.push('drinks');
+    if(agentId!=='daniel' && !onLaundryDay) base.push('stovetop','microwave');
+  }
+
+  if(new Date().getDay()===3){
+    if(agentId==='samuel'||agentId==='johnjr') base.push('trash');
+    if(agentId==='daniel') base.push('bathroom-trash');
+  }
+
+  if(onLaundryDay){
+    if(agentId==='samuel') base.push('laundry-sam');
+    if(agentId==='johnjr') base.push('laundry-john');
+    if(agentId==='stephen') base.push('laundry-stephen');
+    if(agentId==='daniel') base.push('laundry-daniel');
+  }
+
+  return [...new Set(base)];
+}
+
 
 document.addEventListener('DOMContentLoaded',()=>{
   const pi = document.getElementById('private-input');
