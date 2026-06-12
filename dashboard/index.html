@@ -114,6 +114,7 @@ body{
   display:flex;flex-shrink:0;
   padding-bottom:env(safe-area-inset-bottom,0px);
 }
+.botnav{overflow-x:auto;-webkit-overflow-scrolling:touch;}
 .bnb{
   flex:1;display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:2px;
@@ -121,6 +122,7 @@ body{
   color:rgba(255,255,255,.4);font-family:'Lato',sans-serif;
   font-size:7px;letter-spacing:.2px;text-transform:uppercase;
   padding:7px 1px;transition:color .2s;
+  min-width:44px;
 }
 .bnb.active{color:var(--gold2);}
 .bnb svg{width:16px;height:16px;flex-shrink:0;}
@@ -429,6 +431,10 @@ body{
       <div class="sec-hd">Weekly Pay</div>
       <div id="overview-pay" style="margin-bottom:12px;"></div>
       <div id="overview-familynight" style="margin-bottom:12px;"></div>
+      <div class="sec-hd">Field Library This Week</div>
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-bd" id="reading-overview"></div>
+      </div>
       <div class="sec-hd">Quick Transmission</div>
       <div class="card indigo-hd">
         <div class="card-hd"><div class="card-hd-icon">&#128225;</div><div class="card-hd-title">Send to Agents</div></div>
@@ -557,8 +563,70 @@ body{
       </div>
     </div>
 
+
+    <!-- TAB: PARENT GROWTH -->
+    <div class="tab" id="tab-growth">
+      <div class="sec-hd">Art of Parenting &mdash; Session Tracker</div>
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-bd">
+          <p style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:10px;">FamilyLife's Art of Parenting &mdash; 8 sessions. Mark your current session and log what you're applying this week.</p>
+          <select id="growth-session" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:'Lato',sans-serif;font-size:13px;background:var(--card);margin-bottom:10px;">
+            <option value="0">Not started yet</option>
+            <option value="1">Session 1 &mdash; The Goal of Parenting</option>
+            <option value="2">Session 2 &mdash; Forming Character</option>
+            <option value="3">Session 3 &mdash; Applying Discipline</option>
+            <option value="4">Session 4 &mdash; Building Relationships</option>
+            <option value="5">Session 5 &mdash; Understanding Identity</option>
+            <option value="6">Session 6 &mdash; Nurturing Identity</option>
+            <option value="7">Session 7 &mdash; Preparing for Mission</option>
+            <option value="8">Session 8 &mdash; The Power of Family</option>
+          </select>
+          <button onclick="saveGrowthSession()" class="btn-primary">Update Current Session</button>
+        </div>
+      </div>
+
+      <div class="sec-hd">This Week's Application</div>
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-bd">
+          <p style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:10px;">What from your session are you and Dawn focusing on applying this week? One or two concrete things.</p>
+          <textarea id="growth-application" placeholder="e.g. This week we're focusing on responding instead of reacting when the boys argue..." style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:'Lato',sans-serif;font-size:13px;background:var(--cream);resize:none;height:80px;margin-bottom:8px;"></textarea>
+          <button onclick="saveGrowthApplication()" class="btn-primary">Save This Week's Focus</button>
+        </div>
+      </div>
+
+      <div class="sec-hd">Weekly Reflection Log</div>
+      <div id="growth-log" style="margin-bottom:12px;"></div>
+
+      <div class="sec-hd">20 Character Qualities to Pray For</div>
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-bd">
+          <p style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:10px;">From Session 2 &mdash; Forming Character. Pray through these for each boy.</p>
+          <div id="character-qualities" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+        </div>
+      </div>
+
+      <div class="sec-hd">Per-Boy Notes</div>
+      <div id="growth-boy-notes"></div>
+    </div>
+
     <!-- TAB: SETTINGS -->
     <div class="tab" id="tab-settings">
+      <div class="sec-hd">Reading Goals</div>
+      <div class="card" style="margin-bottom:10px;">
+        <div class="card-bd">
+          <p style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:10px;">Samuel &amp; John Jr. read chapters daily toward a weekly goal. Stephen &amp; Daniel read one full book per day &mdash; no goal needed.</p>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+            <span style="font-size:13px;font-weight:700;">Samuel &mdash; chapters/day</span>
+            <input type="number" id="goal-samuel" min="1" max="20" value="3" style="width:60px;padding:6px;border:1px solid var(--border);border-radius:6px;text-align:center;font-size:13px;">
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;">
+            <span style="font-size:13px;font-weight:700;">John Jr. &mdash; chapters/day</span>
+            <input type="number" id="goal-johnjr" min="1" max="20" value="3" style="width:60px;padding:6px;border:1px solid var(--border);border-radius:6px;text-align:center;font-size:13px;">
+          </div>
+          <button onclick="saveReadingGoals()" class="btn-primary" style="margin-top:10px;">Save Goals</button>
+        </div>
+      </div>
+
       <div class="sec-hd">Portal Links</div>
       <div class="card" style="margin-bottom:10px;">
         <div class="card-bd">
@@ -610,7 +678,11 @@ body{
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>
       Dawn
     </button>
-    <button class="bnb" onclick="showTab('settings',this)">
+    <button class="bnb" onclick="showTab('growth',this);renderGrowthTab();">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      Growth
+    </button>
+    <button class="bnb" onclick="showTab('settings',this);loadReadingGoals();">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       Settings
     </button>
@@ -735,6 +807,7 @@ const MISSION_NAMES = {
   'trash':'Take out trash','bathroom-trash':'Empty bathroom trash',
   'laundry-sam':'Laundry Day (with John Jr.)','laundry-john':'Laundry Day (with Samuel)',
   'laundry-stephen':'Laundry Day (with Daniel)','laundry-daniel':'Laundry Day (with Stephen)',
+  'dinner-side-starch':'Make the starch side', 'dinner-side-veggie':'Make the vegetable',
 };
 
 function getDishTeam(){
@@ -892,6 +965,53 @@ function isLaundryDay(agentId){
   return false;
 }
 
+const PAIRS = {
+  'samuel':  { partner: 'johnjr',  pairId: 'virtus',   label: 'Team Virtus',   names: 'Samuel & John Jr.' },
+  'johnjr':  { partner: 'samuel',  pairId: 'virtus',   label: 'Team Virtus',   names: 'Samuel & John Jr.' },
+  'stephen': { partner: 'daniel',  pairId: 'vulnere',  label: 'Team Vulnere',  names: 'Stephen & Daniel' },
+  'daniel':  { partner: 'stephen', pairId: 'vulnere',  label: 'Team Vulnere',  names: 'Stephen & Daniel' },
+};
+
+const DINNER_SIDE_DAYS = [1, 3, 4]; // Mon, Wed, Thu
+
+function isDinnerSideDay(){
+  return DINNER_SIDE_DAYS.includes(new Date().getDay());
+}
+
+// Count which "cooking day" this is since a fixed epoch (Mon Jan 1 2024)
+// to get continuous alternation regardless of week
+function getDinnerSideAssignment(dateOverride){
+  const date = dateOverride ? new Date(dateOverride) : new Date();
+  const dow = date.getDay();
+  if(!DINNER_SIDE_DAYS.includes(dow)) return null;
+
+  const epoch = new Date(2024, 0, 1); // Jan 1, 2024 (Monday)
+  const daysSinceEpoch = Math.floor((date - epoch) / (24*60*60*1000));
+  const fullWeeks = Math.floor(daysSinceEpoch / 7);
+  const remainderDays = daysSinceEpoch % 7;
+  // Each full week contributes 3 cooking days (Mon, Wed, Thu)
+  // Count cooking days in the remainder (days 0..remainderDays-1 of this week, Sun-based)
+  let cookingDayIndex = fullWeeks * 3;
+  for(let i=0;i<remainderDays;i++){
+    if(DINNER_SIDE_DAYS.includes(i)) cookingDayIndex++;
+  }
+
+  // Even index = Virtus does starch, Vulnere does veggie. Odd = swap.
+  const virtusGetsStarch = (cookingDayIndex % 2 === 0);
+  return {
+    virtus: virtusGetsStarch ? 'starch' : 'veggie',
+    vulnere: virtusGetsStarch ? 'veggie' : 'starch'
+  };
+}
+
+function getMyDinnerSide(agentId){
+  const pair = PAIRS[agentId];
+  if(!pair) return null;
+  const assignment = getDinnerSideAssignment();
+  if(!assignment) return null;
+  return assignment[pair.pairId];
+}
+
 function getExpectedMissions(agentId){
   const dt = getDishTeam();
   const onDishes = (agentId==='samuel'||agentId==='johnjr') ? dt==='sj' : dt==='sd';
@@ -915,6 +1035,11 @@ function getExpectedMissions(agentId){
     if(agentId==='johnjr') base.push('laundry-john');
     if(agentId==='stephen') base.push('laundry-stephen');
     if(agentId==='daniel') base.push('laundry-daniel');
+  }
+  if(isDinnerSideDay()){
+    const side = getMyDinnerSide(agentId);
+    if(side === 'starch') base.push('dinner-side-starch');
+    else if(side === 'veggie') base.push('dinner-side-veggie');
   }
   return [...new Set(base)];
 }
@@ -1024,6 +1149,8 @@ function renderOverview(){
       </div>`;
     }
   });
+
+  renderReadingOverview();
 }
 
 function sendQuickTransmission(){
@@ -1516,6 +1643,312 @@ function toggleDawnMission(missionId, date){
   const ref = _db.ref(`stewart/dawnmissions/${date}/${missionId}`);
   ref.once('value', snap => {
     ref.set(snap.val()?null:true).then(()=>renderDawnTab());
+  });
+}
+
+
+
+// ══════════════════════════════════════════════════════
+// READING GOALS & FIELD LIBRARY OVERVIEW
+// ══════════════════════════════════════════════════════
+
+const READING_GROUP = {
+  samuel: 'chapters', johnjr: 'chapters',
+  stephen: 'books', daniel: 'books'
+};
+const DEFAULT_CHAPTER_GOAL = 3;
+
+function loadReadingGoals(){
+  if(!_db) return;
+  ['samuel','johnjr'].forEach(id => {
+    _db.ref(`stewart/readinggoals/${id}`).once('value', snap => {
+      const val = snap.val() || DEFAULT_CHAPTER_GOAL;
+      const el = document.getElementById(`goal-${id}`);
+      if(el) el.value = val;
+    });
+  });
+}
+
+function saveReadingGoals(){
+  if(!_db) return;
+  const sam = parseInt(document.getElementById('goal-samuel').value) || DEFAULT_CHAPTER_GOAL;
+  const john = parseInt(document.getElementById('goal-johnjr').value) || DEFAULT_CHAPTER_GOAL;
+  Promise.all([
+    _db.ref('stewart/readinggoals/samuel').set(sam),
+    _db.ref('stewart/readinggoals/johnjr').set(john)
+  ]).then(() => {
+    const btn = document.querySelector('#tab-settings .btn-primary');
+    const orig = btn.textContent;
+    btn.textContent = 'Saved!';
+    btn.style.background = '#2d6a47';
+    setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 2000);
+  });
+}
+
+function renderReadingOverview(){
+  if(!_db) return;
+  const weekStart = getWeekDays()[0];
+
+  Promise.all([
+    Promise.all(AGENTS.map(a => _db.ref(`stewart/reading/${a.id}/${weekStart}`).once('value'))),
+    _db.ref('stewart/readinggoals').once('value')
+  ]).then(([readingSnaps, goalsSnap]) => {
+    const goals = goalsSnap.val() || {};
+    const el = document.getElementById('reading-overview');
+    if(!el) return;
+    const today = new Date().toISOString().slice(0,10);
+
+    el.innerHTML = AGENTS.map((a,i) => {
+      const log = readingSnaps[i].val() || {};
+      const group = READING_GROUP[a.id];
+      const weekDays = getWeekDays();
+      let progressLabel, pct;
+
+      if(group === 'books'){
+        const daysCompleted = weekDays.filter(d => log[d] && log[d].title).length;
+        pct = Math.round((daysCompleted/5)*100);
+        const titles = weekDays.filter(d=>log[d]&&log[d].title).map(d=>log[d].title).join(', ');
+        progressLabel = `${daysCompleted}/5 days${titles ? ' — '+titles : ''}`;
+      } else {
+        const goal = goals[a.id] || DEFAULT_CHAPTER_GOAL;
+        const weeklyGoal = goal * 5;
+        let totalChapters = 0;
+        weekDays.forEach(d => { if(log[d] && log[d].chapters) totalChapters += Number(log[d].chapters); });
+        pct = Math.min(100, Math.round((totalChapters/weeklyGoal)*100));
+        const lastBook = weekDays.slice().reverse().map(d=>log[d]&&log[d].title).find(t=>t) || '';
+        progressLabel = `${totalChapters}/${weeklyGoal} chapters${lastBook?' — '+lastBook:''}`;
+      }
+
+      // Today's entry verification status
+      const todayEntry = log[today];
+      let verifyHtml = '';
+      if(todayEntry && (todayEntry.title || todayEntry.chapters)){
+        const detail = group==='books' ? todayEntry.title : `${todayEntry.title||''} (${todayEntry.chapters||0} ch)`;
+        if(todayEntry.verified){
+          verifyHtml = `<div style="font-size:10px;color:#2d6a47;margin-top:2px;">&#10003; Verified: ${detail}</div>`;
+        } else {
+          verifyHtml = `<div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
+            <span style="font-size:10px;color:var(--muted);flex:1;">Today: ${detail}</span>
+            <button onclick="verifyReading('${a.id}','${today}')" style="font-size:9px;padding:3px 8px;border-radius:5px;border:1px solid var(--green2);background:#edf7f0;color:var(--green2);cursor:pointer;">Verify</button>
+          </div>`;
+        }
+      }
+
+      return `<div style="padding:8px 0;border-bottom:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:10px;height:10px;border-radius:50%;background:${a.color};flex-shrink:0;"></div>
+          <div style="flex:1;">
+            <div style="font-size:12px;font-weight:700;">${a.name}</div>
+            <div style="font-size:10px;color:var(--muted);">${progressLabel}</div>
+          </div>
+          <div style="font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:${pct>=80?'#2d6a47':pct>=40?'#c8922a':'var(--muted)'};">${pct}%</div>
+        </div>
+        ${verifyHtml}
+      </div>`;
+    }).join('');
+  });
+}
+
+function verifyReading(agentId, date){
+  if(!_db) return;
+  _db.ref(`stewart/reading/${agentId}/${getWeekDays()[0]}/${date}/verified`).set(true).then(() => {
+    renderReadingOverview();
+  });
+}
+
+
+// ══════════════════════════════════════════════════════
+// PARENT GROWTH — Art of Parenting tracker
+// ══════════════════════════════════════════════════════
+
+const ART_OF_PARENTING_SESSIONS = [
+  '', // index 0 = not started
+  'The Goal of Parenting',
+  'Forming Character',
+  'Applying Discipline',
+  'Building Relationships',
+  'Understanding Identity',
+  'Nurturing Identity',
+  'Preparing for Mission',
+  'The Power of Family'
+];
+
+const CHARACTER_QUALITIES = [
+  {name:'Patience', ref:'Galatians 5:22-23'},
+  {name:'Faithfulness', ref:'Galatians 5:22-23'},
+  {name:'Self-Control', ref:'Galatians 5:22-23'},
+  {name:'Goodness', ref:'Galatians 5:22-23'},
+  {name:'Truthfulness', ref:'Proverbs 19:1'},
+  {name:'Wisdom', ref:'Proverbs 4:5-7'},
+  {name:'Virtue', ref:'Proverbs 20:11'},
+  {name:'Gentleness', ref:'Galatians 5:22-23'},
+  {name:'Humility', ref:'Philippians 2:3'},
+  {name:'Serving', ref:'Mark 10:45'},
+  {name:'Kindness', ref:'Galatians 5:22-23'},
+  {name:'Compassion', ref:'Colossians 3:12'},
+  {name:'Obedience', ref:'Deuteronomy 11:1'},
+  {name:'Teachable', ref:'Psalm 143:10'},
+  {name:'Faithfulness (Diligence)', ref:'Luke 16:10'},
+  {name:'Contentment', ref:'1 Timothy 6:6-7'},
+  {name:'Responsibility', ref:'Colossians 3:23-24'},
+  {name:'Endurance', ref:'Hebrews 12:1-3'},
+  {name:'Discernment', ref:'Philippians 1:9-10'},
+  {name:'Generosity', ref:'2 Corinthians 9:6-7'},
+];
+
+function renderGrowthTab(){
+  if(!_db) return;
+
+  // Load current session
+  _db.ref('stewart/growth/session').once('value', snap => {
+    const session = snap.val() || 0;
+    document.getElementById('growth-session').value = session;
+  });
+
+  // Load this week's application focus
+  const weekStart = getWeekDays()[0];
+  _db.ref(`stewart/growth/weekly/${weekStart}/application`).once('value', snap => {
+    document.getElementById('growth-application').value = snap.val() || '';
+  });
+
+  // Render character qualities reference
+  const qEl = document.getElementById('character-qualities');
+  qEl.innerHTML = CHARACTER_QUALITIES.map(q =>
+    `<div style="background:var(--offwhite);border-radius:6px;padding:6px 10px;font-size:11px;">
+      <span style="font-weight:700;color:var(--brown);">${q.name}</span>
+      <span style="color:var(--muted);"> &mdash; ${q.ref}</span>
+    </div>`
+  ).join('');
+
+  // Load weekly reflection log (last 8 weeks)
+  renderGrowthLog();
+
+  // Per-boy notes
+  renderGrowthBoyNotes();
+}
+
+function saveGrowthSession(){
+  if(!_db) return;
+  const session = document.getElementById('growth-session').value;
+  _db.ref('stewart/growth/session').set(parseInt(session)).then(() => {
+    const btn = document.querySelector('#tab-growth .btn-primary');
+    flashSaved(btn);
+  });
+}
+
+function saveGrowthApplication(){
+  if(!_db) return;
+  const weekStart = getWeekDays()[0];
+  const text = document.getElementById('growth-application').value.trim();
+  _db.ref(`stewart/growth/weekly/${weekStart}/application`).set(text).then(() => {
+    const btns = document.querySelectorAll('#tab-growth .btn-primary');
+    flashSaved(btns[1]);
+    renderGrowthLog();
+  });
+}
+
+function flashSaved(btn){
+  if(!btn) return;
+  const orig = btn.textContent;
+  btn.textContent = 'Saved!';
+  btn.style.background = '#2d6a47';
+  setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 2000);
+}
+
+function renderGrowthLog(){
+  if(!_db) return;
+  _db.ref('stewart/growth/weekly').once('value', snap => {
+    const data = snap.val() || {};
+    const el = document.getElementById('growth-log');
+    const weeks = Object.keys(data).sort().reverse().slice(0, 8);
+
+    if(!weeks.length){
+      el.innerHTML = '<div class="empty-state">No weekly reflections logged yet.</div>';
+      return;
+    }
+
+    el.innerHTML = weeks.map(weekStart => {
+      const entry = data[weekStart];
+      const application = entry.application || '';
+      const reflection = entry.reflection || '';
+      const d = new Date(weekStart);
+      const label = d.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+
+      return `<div class="card" style="margin-bottom:8px;">
+        <div class="card-bd">
+          <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:var(--brown);margin-bottom:4px;">Week of ${label}</div>
+          ${application ? `<div style="font-size:12px;color:var(--ink);margin-bottom:6px;"><strong>Focus:</strong> ${application}</div>` : ''}
+          ${reflection ? `<div style="font-size:12px;color:var(--muted);font-style:italic;"><strong>How it went:</strong> ${reflection}</div>` :
+            `<div style="display:flex;gap:8px;">
+              <input type="text" id="reflect-${weekStart}" placeholder="How did this week go?" style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;">
+              <button onclick="saveGrowthReflection('${weekStart}')" style="padding:7px 12px;border:none;border-radius:6px;background:var(--green2);color:white;font-size:11px;cursor:pointer;">Save</button>
+            </div>`}
+        </div>
+      </div>`;
+    }).join('');
+  });
+}
+
+function saveGrowthReflection(weekStart){
+  if(!_db) return;
+  const input = document.getElementById(`reflect-${weekStart}`);
+  const text = input.value.trim();
+  if(!text) return;
+  _db.ref(`stewart/growth/weekly/${weekStart}/reflection`).set(text).then(() => renderGrowthLog());
+}
+
+function renderGrowthBoyNotes(){
+  if(!_db) return;
+  Promise.all([
+    Promise.all(AGENTS.map(a => _db.ref(`stewart/growth/boynotes/${a.id}`).once('value'))),
+    Promise.all(AGENTS.map(a => _db.ref(`stewart/selfassessment/${a.id}`).once('value')))
+  ]).then(([notesSnaps, selfSnaps]) => {
+    const el = document.getElementById('growth-boy-notes');
+    el.innerHTML = AGENTS.map((a,i) => {
+      const notes = notesSnaps[i].val() || {};
+      const self = selfSnaps[i].val() || {};
+      const hasSelf = self.strength || self.mission || self.step;
+
+      const selfHtml = hasSelf ? `
+          <div style="background:rgba(74,112,96,.08);border:1px solid rgba(74,112,96,.2);border-radius:8px;padding:10px 12px;margin-bottom:10px;">
+            <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--green2);margin-bottom:6px;">${a.name}'s Own Self-Assessment</div>
+            ${self.strength?`<div style="font-size:12px;margin-bottom:4px;"><strong>My Strength:</strong> ${self.strength}</div>`:''}
+            ${self.mission?`<div style="font-size:12px;margin-bottom:4px;"><strong>My Mission:</strong> ${self.mission}</div>`:''}
+            ${self.step?`<div style="font-size:12px;"><strong>This Week's Step:</strong> ${self.step}</div>`:''}
+          </div>` : '';
+
+      return `<div class="card" style="margin-bottom:10px;border-left:3px solid ${a.color};">
+        <div style="padding:9px 13px;background:${a.color};">
+          <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:white;">${a.name} &mdash; ${a.codename}</div>
+        </div>
+        <div class="card-bd">
+          ${selfHtml}
+          <div style="margin-bottom:8px;">
+            <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;">Strengths</div>
+            <textarea id="strengths-${a.id}" placeholder="Character strengths you see in ${a.name}..." style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;resize:none;height:50px;">${notes.strengths||''}</textarea>
+          </div>
+          <div style="margin-bottom:8px;">
+            <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;">Growth Areas</div>
+            <textarea id="needs-${a.id}" placeholder="Areas to work on with ${a.name}..." style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;resize:none;height:50px;">${notes.needs||''}</textarea>
+          </div>
+          <div style="margin-bottom:8px;">
+            <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;">Action Step (with date)</div>
+            <input type="text" id="action-${a.id}" placeholder="e.g. Daily one-on-one time, starting June 16" value="${notes.action||''}" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;">
+          </div>
+          <button onclick="saveBoyGrowthNotes('${a.id}')" style="width:100%;padding:8px;border:none;border-radius:6px;background:${a.color};color:white;font-size:12px;font-weight:700;cursor:pointer;">Save Notes</button>
+        </div>
+      </div>`;
+    }).join('');
+  });
+}
+
+function saveBoyGrowthNotes(agentId){
+  if(!_db) return;
+  const strengths = document.getElementById(`strengths-${agentId}`).value.trim();
+  const needs = document.getElementById(`needs-${agentId}`).value.trim();
+  const action = document.getElementById(`action-${agentId}`).value.trim();
+  _db.ref(`stewart/growth/boynotes/${agentId}`).set({strengths, needs, action}).then(() => {
+    renderGrowthBoyNotes();
   });
 }
 
