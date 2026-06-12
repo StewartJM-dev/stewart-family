@@ -627,6 +627,8 @@ body.theme-wild .mission-check.done{background:var(--wild2);border-color:var(--w
 
     <!-- TAB: RATIONS (meals) -->
     <div class="tab active" id="tab-rations">
+      <div id="status-summary" style="margin-bottom:16px;"></div>
+
       <div class="sec-head">
         <div class="sec-head-diamond"></div>
         <div class="sec-head-text">Tonight's Field Ration</div>
@@ -760,6 +762,37 @@ body.theme-wild .mission-check.done{background:var(--wild2);border-color:var(--w
           <div class="training-coming">Full agent training module coming soon.<br><br>Scripture &middot; Reflection &middot; Dinner Table Question &middot; Prayer Prompt</div>
         </div>
       </div>
+
+      <div class="hw-card">
+        <div class="hw-card-head">
+          <div class="hw-card-icon">&#127919;</div>
+          <div class="hw-card-title">Agent Self-Assessment</div>
+        </div>
+        <div class="hw-card-body">
+          <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:12px;line-height:1.6;">Every agent has strengths and a mission to grow. This is just between you and HQ &mdash; your brothers won't see it. Update it whenever you want.</div>
+
+          <div style="margin-bottom:10px;">
+            <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:2px;color:var(--teal2);margin-bottom:5px;">MY STRENGTH</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.4);margin-bottom:5px;">Something I'm good at or proud of</div>
+            <textarea id="self-strength" placeholder="I'm good at..." maxlength="200" style="width:100%;padding:9px 11px;border-radius:8px;border:1px solid rgba(12,200,200,.3);background:var(--dark2);color:var(--white);font-family:'Exo 2',sans-serif;font-size:13px;resize:none;height:50px;"></textarea>
+          </div>
+
+          <div style="margin-bottom:10px;">
+            <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:2px;color:var(--teal2);margin-bottom:5px;">MY MISSION</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.4);margin-bottom:5px;">Something I want to get better at</div>
+            <textarea id="self-mission" placeholder="I want to get better at..." maxlength="200" style="width:100%;padding:9px 11px;border-radius:8px;border:1px solid rgba(12,200,200,.3);background:var(--dark2);color:var(--white);font-family:'Exo 2',sans-serif;font-size:13px;resize:none;height:50px;"></textarea>
+          </div>
+
+          <div style="margin-bottom:12px;">
+            <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:2px;color:var(--teal2);margin-bottom:5px;">THIS WEEK'S STEP</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.4);margin-bottom:5px;">One small thing I'm going to try</div>
+            <textarea id="self-step" placeholder="This week I'm going to try..." maxlength="200" style="width:100%;padding:9px 11px;border-radius:8px;border:1px solid rgba(12,200,200,.3);background:var(--dark2);color:var(--white);font-family:'Exo 2',sans-serif;font-size:13px;resize:none;height:50px;"></textarea>
+          </div>
+
+          <button onclick="saveSelfAssessment()" style="width:100%;padding:10px;border-radius:8px;border:none;background:var(--teal);color:var(--black);font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;cursor:pointer;">SAVE TO MY FILE</button>
+          <div id="self-assessment-saved" style="font-size:10px;color:#4aaa6a;text-align:center;margin-top:6px;display:none;">&#10003; Saved to your agent file</div>
+        </div>
+      </div>
     </div>
 
     <!-- TAB: PAY -->
@@ -775,8 +808,7 @@ body.theme-wild .mission-check.done{background:var(--wild2);border-color:var(--w
     </div>
 
     <!-- TAB: XBOX GAME TIME -->
-    <div class="tab" id="tab-xbox">
-      <div class="sec-head">
+    <div class="tab" id="tab-xbox"><div class="sec-head">
         <div class="sec-head-diamond"></div>
         <div class="sec-head-text">Xbox Game Time</div>
         <div class="sec-head-line"></div>
@@ -784,17 +816,14 @@ body.theme-wild .mission-check.done{background:var(--wild2);border-color:var(--w
       <div id="gametime-content">
         <div class="empty">Loading game time data...</div>
       </div>
-    </div>
 
-    <!-- TAB: DINNER VOTE -->
-    <div class="tab" id="tab-vote">
-      <div class="sec-head">
+      <div class="sec-head" style="margin-top:18px;">
         <div class="sec-head-diamond"></div>
-        <div class="sec-head-text">Monthly Dinner Vote</div>
+        <div class="sec-head-text">Field Library</div>
         <div class="sec-head-line"></div>
       </div>
-      <div id="dinner-vote-content">
-        <div class="empty">Loading vote...</div>
+      <div id="readinglog-content">
+        <div class="empty">Loading reading log...</div>
       </div>
     </div>
 
@@ -829,10 +858,6 @@ body.theme-wild .mission-check.done{background:var(--wild2);border-color:var(--w
     <button class="bnb" onclick="showTab('xbox',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M12 12h.01"/><path d="M7 12h.01"/><path d="M17 12h.01"/><path d="M12 8v8"/></svg>
       Xbox
-    </button>
-    <button class="bnb" onclick="showTab('vote',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/><polyline points="9 9 10 9 12 9"/></svg>
-      Vote
     </button>
   </nav>
 
@@ -922,8 +947,10 @@ function selectAgent(id, codename, name, rank, theme, icon){
   // Small delay then re-render missions once Firebase is settled
   setTimeout(() => renderMissions(), 1500);
   setTimeout(() => renderGameTime(), 1000);
+  setTimeout(() => renderReadingLog(), 1100);
+  renderStatusSummary();
+  renderSelfAssessment();
   setTimeout(() => checkCelebrations(), 2000);
-  setTimeout(() => renderDinnerVote(), 1200);
 }
 
 function backToSelect(){
@@ -950,9 +977,9 @@ function showTab(name, btn){
   if(name === 'lunch') renderLunch();
   if(name === 'missions') renderMissions();
   if(name === 'pay') renderPayScreen();
-  if(name === 'xbox') renderGameTime();
-  if(name === 'vote') renderDinnerVote();
+  if(name === 'xbox'){ renderGameTime(); renderReadingLog(); }
   if(name === 'transmissions') renderTransmissions();
+  if(name === 'training') renderSelfAssessment();
 }
 
 // ══════════════════════════════════════════════════════
@@ -993,6 +1020,29 @@ function renderTonightMeal(){
   const defrostHtml = slot.defrost ?
     `<div class="meal-alert" style="margin-top:6px;color:var(--teal2);border-color:rgba(12,200,200,.3);background:rgba(12,200,200,.08);">&#10052; ${slot.defrost}</div>` : '';
 
+  // Friday — boys cook their own simple meal
+  const boysMealHtml = slot.boysMeal ?
+    `<div style="margin-top:10px;padding-top:10px;border-top:1px dashed rgba(12,200,200,.25);">
+      <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:2px;color:var(--teal2);margin-bottom:4px;">&#127869; YOUR DINNER TONIGHT</div>
+      <div style="font-size:14px;font-weight:700;color:var(--white);">${slot.boysMeal}</div>
+      ${slot.boysMealSides?`<div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:2px;">${slot.boysMealSides}</div>`:''}
+      <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px;font-style:italic;">Mom &amp; Dad are on date night &mdash; you've got this, Agents.</div>
+    </div>` : '';
+
+  // Mon/Wed/Thu — dinner side reminder
+  let dinnerSideHtml = '';
+  if(currentAgent && isDinnerSideDay()){
+    const side = getMyDinnerSide(currentAgent.id);
+    const pair = PAIRS[currentAgent.id];
+    if(side && pair){
+      const partner = pair.partner==='johnjr'?'John Jr.':pair.partner.charAt(0).toUpperCase()+pair.partner.slice(1);
+      dinnerSideHtml = `<div style="margin-top:10px;padding-top:10px;border-top:1px dashed rgba(232,184,74,.25);">
+        <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:2px;color:var(--gold);margin-bottom:4px;">&#127858; YOUR SIDE TONIGHT</div>
+        <div style="font-size:13px;color:var(--white);">${side==='starch'?'Starch (potatoes, rice, or pasta)':'The vegetable'} &mdash; with ${partner}</div>
+      </div>`;
+    }
+  }
+
   el.innerHTML = `<div class="meal-tonight">
     <div class="meal-label">Today &mdash; ${todayCap}</div>
     <div class="meal-name">${slot.mealName}</div>
@@ -1001,6 +1051,8 @@ function renderTonightMeal(){
     ${defrostHtml}
     ${slot.chainName ? `<div style="font-size:10px;color:rgba(12,200,200,.5);margin-top:6px;">&#9851; ${slot.chainName}</div>` : ''}
     ${slot.dessert ? `<div style="font-size:11px;color:var(--gold);margin-top:5px;">&#127856; Dessert: ${slot.dessert}</div>` : ''}
+    ${boysMealHtml}
+    ${dinnerSideHtml}
   </div>`;
 }
 
@@ -1612,6 +1664,34 @@ function buildMissions(agentId){
     weekly: true
   });
 
+  // ── DINNER SIDE DISH (Mon/Wed/Thu) ────────────────
+  if(isDinnerSideDay()){
+    const side = getMyDinnerSide(agentId);
+    const pair = PAIRS[agentId];
+    if(side && pair){
+      const partner = pair.partner === 'johnjr' ? 'John Jr.' : pair.partner.charAt(0).toUpperCase() + pair.partner.slice(1);
+      if(side === 'starch'){
+        missions.push({
+          id: 'dinner-side-starch',
+          text: `Make the starch side — with ${partner}`,
+          detail: `Potatoes, rice, pasta, or similar. Work with ${partner} to get it ready for dinner.`,
+          points: 10,
+          category: 'kitchen',
+          always: true
+        });
+      } else {
+        missions.push({
+          id: 'dinner-side-veggie',
+          text: `Make the vegetable — with ${partner}`,
+          detail: `Heat the vegetable on the stove or microwave with ${partner} for dinner tonight.`,
+          points: 5,
+          category: 'kitchen',
+          always: true
+        });
+      }
+    }
+  }
+
   // Filter by day type
   return missions.filter(m => {
     if(m.always) return true;
@@ -1792,6 +1872,17 @@ function buildMissionsForDate(agentId, dayDate){
 
   missions.push({id:'rabbit-cage', points:15});
 
+  // Dinner sides — Mon/Wed/Thu
+  if(DINNER_SIDE_DAYS.includes(dayOfWeek)){
+    const assignment = getDinnerSideAssignment(dayDate);
+    const pair = PAIRS[agentId];
+    if(assignment && pair){
+      const side = assignment[pair.pairId];
+      if(side === 'starch') missions.push({id:'dinner-side-starch', points:10});
+      else missions.push({id:'dinner-side-veggie', points:5});
+    }
+  }
+
   return missions;
 }
 
@@ -1893,6 +1984,8 @@ function toggleMission(missionId, refPath){
         setTimeout(() => checkCelebrations(), 600);
       }
       renderMissions();
+      renderStatusSummary();
+  renderSelfAssessment();
     });
   });
 }
@@ -2025,11 +2118,13 @@ function renderPayScreen(){
   Promise.all([
     _db.ref(`stewart/scores/${currentAgent.id}`).once('value'),
     _db.ref(`stewart/transfers`).once('value'),
-    _db.ref(`stewart/weekly/${currentAgent.id}/${weekStart}`).once('value')
-  ]).then(([sSnap, tSnap, wSnap]) => {
+    _db.ref(`stewart/weekly/${currentAgent.id}/${weekStart}`).once('value'),
+    _db.ref(`stewart/deductions/${currentAgent.id}`).once('value')
+  ]).then(([sSnap, tSnap, wSnap, dSnap]) => {
     const scores = sSnap.val() || {};
     const transferData = tSnap.val() || {};
     const weeklyDone = wSnap.val() || {};
+    const allDeductions = dSnap.val() || {};
 
     let totalDollars = 0;
     const dayLabels = ['Mon','Tue','Wed','Thu','Fri'];
@@ -2109,6 +2204,26 @@ function renderPayScreen(){
         transferNote += '</div>';
       }
 
+      // Behavior deduction notes for the week
+      let deductionNote = '';
+      const weekDeductions = weekDays
+        .filter(d => allDeductions[d])
+        .map(d => ({ date: d, items: allDeductions[d] }));
+
+      if(weekDeductions.length){
+        deductionNote = '<div style="margin-bottom:12px;">';
+        weekDeductions.forEach(({date, items}) => {
+          const d = new Date(date);
+          const dayName = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
+          Object.entries(items).forEach(([reasonKey, pts]) => {
+            const label = BEHAVIOR_LABELS[reasonKey] || reasonKey;
+            const dollarAmt = (pts/100).toFixed(2);
+            deductionNote += `<div style="font-size:11px;color:#cc5533;background:rgba(139,48,16,.1);border-radius:6px;padding:5px 9px;margin-bottom:4px;">-$${dollarAmt} ${dayName} &mdash; ${label}</div>`;
+          });
+        });
+        deductionNote += '</div>';
+      }
+
       const familyNightHtml = familyNightUnlocked
         ? `<div style="background:linear-gradient(135deg,var(--teal),var(--indigo));border-radius:12px;padding:16px;text-align:center;margin-bottom:14px;border:2px solid var(--gold);">
             <div style="font-size:28px;margin-bottom:6px;">&#127881;</div>
@@ -2139,6 +2254,7 @@ function renderPayScreen(){
           ${isFriday()?'<div style="font-size:11px;color:var(--gold);margin-top:6px;font-style:italic;">&#9733; Payday! Collect your $'+totalDollars.toFixed(2)+' from Dad.</div>':''}
         </div>
         ${transferNote}
+        ${deductionNote}
         ${familyNightHtml}`;
     });
   });
@@ -2412,8 +2528,17 @@ function renderGameTime(){
   const today = new Date().toISOString().slice(0,10);
   recalculateScore(currentAgent.id, today);
 
-  _db.ref(`stewart/scores/${currentAgent.id}`).once('value').then(snap => {
-    const scores = snap.val() || {};
+  const weekStart = weekDays[0];
+  const group = READING_GROUP[currentAgent.id];
+
+  Promise.all([
+    _db.ref(`stewart/scores/${currentAgent.id}`).once('value'),
+    _db.ref(`stewart/reading/${currentAgent.id}/${weekStart}`).once('value'),
+    _db.ref(`stewart/readinggoals/${currentAgent.id}`).once('value')
+  ]).then(([scoreSnap, readingSnap, goalSnap]) => {
+    const scores = scoreSnap.val() || {};
+    const readingLog = readingSnap.val() || {};
+    const chapterGoal = goalSnap.val() || DEFAULT_CHAPTER_GOAL;
 
     let totalMinutes = 0;
     const dayResults = weekDays.map(d => {
@@ -2433,13 +2558,32 @@ function renderGameTime(){
       return { day: d, status, minutes, score };
     });
 
-    // Payout tier
+    const missionMinutes = totalMinutes;
+
+    // Reading bonus calculation
+    let readingBonus = 0;
+    if(group === 'books'){
+      const daysCompleted = weekDays.filter(d => readingLog[d] && readingLog[d].title && readingLog[d].verified).length;
+      readingBonus = (daysCompleted/5) * 15;
+    } else {
+      const weeklyGoal = chapterGoal * 5;
+      let totalChapters = 0;
+      weekDays.forEach(d => { if(readingLog[d] && readingLog[d].chapters && readingLog[d].verified) totalChapters += Number(readingLog[d].chapters); });
+      readingBonus = Math.min(15, (totalChapters/weeklyGoal) * 15);
+    }
+
+    const combinedMinutes = missionMinutes + readingBonus;
+
+    // Payout tier based on COMBINED total (max 45)
     let payout, payoutColor, payoutIcon;
-    if(totalMinutes >= 25){ payout='30 min'; payoutColor='#2d6a47'; payoutIcon='&#127918;'; }
-    else if(totalMinutes >= 15){ payout='15 min'; payoutColor='#c8922a'; payoutIcon='&#9203;'; }
+    if(combinedMinutes >= 37.5){ payout='45 min'; payoutColor='#2d6a47'; payoutIcon='&#127918;'; }
+    else if(combinedMinutes >= 25){ payout='30 min'; payoutColor='#2d6a47'; payoutIcon='&#127918;'; }
+    else if(combinedMinutes >= 15){ payout='15 min'; payoutColor='#c8922a'; payoutIcon='&#9203;'; }
     else { payout='No game time'; payoutColor='#b5451b'; payoutIcon='&#10060;'; }
 
-    const totalDisplay = Math.round(totalMinutes * 10) / 10;
+    const totalDisplay = Math.round(combinedMinutes * 10) / 10;
+    const missionDisplay = Math.round(missionMinutes * 10) / 10;
+    const readingDisplay = Math.round(readingBonus * 10) / 10;
 
     el.innerHTML = `
       <!-- AGENT HEADER -->
@@ -2447,12 +2591,16 @@ function renderGameTime(){
         <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:2px;color:var(--teal2);margin-bottom:6px;">${currentAgent.codename.toUpperCase()} &mdash; INDIVIDUAL TRACKING</div>
         <div style="font-size:22px;margin-bottom:4px;">${payoutIcon}</div>
         <div style="font-family:'Orbitron',sans-serif;font-size:26px;font-weight:700;color:${payoutColor};">${totalDisplay} min</div>
-        <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:3px;">earned this week &mdash; max 30 min</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:3px;">earned this week &mdash; max 45 min</div>
         <div style="background:rgba(255,255,255,.06);border-radius:6px;height:6px;overflow:hidden;margin:10px 0 4px;">
-          <div style="height:100%;width:${Math.min(100,Math.round((totalMinutes/30)*100))}%;background:${payoutColor};border-radius:6px;transition:width .5s;"></div>
+          <div style="height:100%;width:${Math.min(100,Math.round((combinedMinutes/45)*100))}%;background:${payoutColor};border-radius:6px;transition:width .5s;"></div>
         </div>
         <div style="font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;color:${payoutColor};margin-top:6px;">
           Weekend: ${payout}
+        </div>
+        <div style="display:flex;justify-content:center;gap:14px;margin-top:10px;font-size:10px;color:rgba(255,255,255,.5);">
+          <span>&#127918; Missions: ${missionDisplay} min</span>
+          <span>&#128218; Reading: +${readingDisplay} min</span>
         </div>
       </div>
 
@@ -2484,87 +2632,16 @@ function renderGameTime(){
       <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:11px 13px;">
         <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:2px;color:var(--teal2);margin-bottom:6px;">Mission Rules</div>
         <div style="font-size:11px;color:rgba(255,255,255,.5);line-height:1.6;">
-          Each mission you complete earns points toward your day. A full day = 6 minutes.<br>
+          Each mission you complete earns points toward your day. A full day = 6 minutes (max 30/week).<br>
+          Reading adds up to 15 more minutes &mdash; see Field Library below.<br>
           If a mission is left for the next day and someone else finishes it, points transfer to them.<br>
-          <span style="color:var(--gold);">25-30 min = 30 min Xbox &nbsp;&#9670;&nbsp; 15-24 min = 15 min &nbsp;&#9670;&nbsp; Under 15 = no game time</span>
+          <span style="color:var(--gold);">37.5+ min = 45 min &nbsp;&#9670;&nbsp; 25-37.4 = 30 min &nbsp;&#9670;&nbsp; 15-24.9 = 15 min &nbsp;&#9670;&nbsp; Under 15 = none</span>
         </div>
       </div>`;
   });
 }
 
-function renderDinnerVote(){
-  if(!currentAgent) return;
-  const el = document.getElementById('dinner-vote-content');
-  if(!el) return;
-  if(!_db){ el.innerHTML='<div class="empty">Connect to WiFi to vote.</div>'; return; }
 
-  const monthKey = new Date().toISOString().slice(0,7); // YYYY-MM
-
-  Promise.all([
-    _db.ref(`stewart/dinnervote/${monthKey}/options`).once('value'),
-    _db.ref(`stewart/dinnervote/${monthKey}/votes`).once('value')
-  ]).then(([optSnap, voteSnap]) => {
-    const options = optSnap.val();
-    const votes = voteSnap.val()||{};
-    const myVote = votes[currentAgent.id];
-
-    if(!options || !Array.isArray(options) || !options.length){
-      el.innerHTML = `<div style="background:var(--dark2);border:1px solid rgba(12,200,200,.2);border-radius:10px;padding:20px;text-align:center;">
-        <div style="font-size:32px;margin-bottom:10px;">&#127860;</div>
-        <div style="font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:2px;color:var(--teal2);margin-bottom:6px;">Monthly Special Dinner Vote</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.4);font-style:italic;">HQ hasn't loaded this month's options yet.<br>Check back soon, Agent.</div>
-      </div>`;
-      return;
-    }
-
-    // Count votes per option
-    const voteCounts = {};
-    options.forEach(o => voteCounts[o] = 0);
-    Object.values(votes).forEach(v => { if(voteCounts[v] !== undefined) voteCounts[v]++; });
-    const totalVotes = Object.values(voteCounts).reduce((a,b)=>a+b,0);
-
-    el.innerHTML = `
-      <div style="background:var(--dark2);border:1px solid rgba(12,200,200,.2);border-radius:10px;overflow:hidden;margin-bottom:10px;">
-        <div style="background:linear-gradient(90deg,#3a1a0a,#1a0a0a);padding:10px 13px;border-bottom:1px solid rgba(255,165,0,.2);">
-          <div style="font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:2px;color:var(--gold2);">&#127860; Monthly Special Dinner Vote</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:3px;">One vote per agent &mdash; majority wins</div>
-        </div>
-        <div style="padding:12px 13px;">
-          ${myVote
-            ? `<div style="background:rgba(45,106,71,.15);border:1px solid rgba(45,106,71,.3);border-radius:8px;padding:10px;text-align:center;margin-bottom:12px;">
-                <div style="font-size:12px;color:#4aaa6a;">&#10003; You voted for <strong>${myVote}</strong></div>
-                <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:3px;">You can change your vote by tapping another option</div>
-               </div>`
-            : `<div style="font-size:12px;color:rgba(255,255,255,.5);font-style:italic;margin-bottom:12px;text-align:center;">Cast your vote, Agent ${currentAgent.codename.split(' ')[1]}!</div>`
-          }
-          ${options.map(opt => {
-            const count = voteCounts[opt]||0;
-            const pct = totalVotes>0?Math.round((count/totalVotes)*100):0;
-            const isMyVote = myVote===opt;
-            return `<div onclick="castDinnerVote('${opt}')" style="background:${isMyVote?'rgba(12,200,200,.1)':'rgba(255,255,255,.04)'};border:2px solid ${isMyVote?'var(--teal)':'rgba(255,255,255,.08)'};border-radius:8px;padding:11px 13px;margin-bottom:8px;cursor:pointer;transition:all .2s;">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                <div style="font-size:14px;color:var(--white);font-weight:${isMyVote?'700':'400'};">${opt}</div>
-                <div style="display:flex;align-items:center;gap:6px;">
-                  ${isMyVote?'<span style="font-size:10px;color:var(--teal2);">Your vote</span>':''}
-                  <span style="font-family:\'Orbitron\',sans-serif;font-size:9px;color:rgba(255,255,255,.4);">${count} vote${count!==1?'s':''}</span>
-                </div>
-              </div>
-              <div style="background:rgba(255,255,255,.06);border-radius:3px;height:4px;overflow:hidden;">
-                <div style="height:100%;width:${pct}%;background:${isMyVote?'var(--teal)':'rgba(255,255,255,.2)'};border-radius:3px;transition:width .5s;"></div>
-              </div>
-            </div>`;
-          }).join('')}
-        </div>
-      </div>`;
-  });
-}
-
-function castDinnerVote(option){
-  if(!currentAgent||!_db) return;
-  const monthKey = new Date().toISOString().slice(0,7);
-  _db.ref(`stewart/dinnervote/${monthKey}/votes/${currentAgent.id}`).set(option)
-    .then(() => renderDinnerVote());
-}
 
 
 // ══════════════════════════════════════════════════════
@@ -2758,6 +2835,330 @@ function getExpectedMissionsLocal(agentId){
   return [...new Set(base)];
 }
 
+
+
+// ══════════════════════════════════════════════════════
+// FIELD LIBRARY — READING LOG
+// ══════════════════════════════════════════════════════
+
+const READING_GROUP = {
+  samuel: 'chapters', johnjr: 'chapters',
+  stephen: 'books', daniel: 'books'
+};
+
+const DEFAULT_CHAPTER_GOAL = 3; // per day, Sam & John
+
+const BEHAVIOR_LABELS = {
+  attitude: 'Attitude',
+  disobedience: 'Disobedience',
+  fighting: 'Fighting',
+  dishonesty: 'Dishonesty'
+};
+
+// ══════════════════════════════════════════════════════
+// DINNER SIDES — Mon/Wed/Thu, Virtus & Vulnere alternate
+// starch/veggie, continuous across weeks
+// ══════════════════════════════════════════════════════
+
+const DINNER_SIDE_DAYS = [1, 3, 4]; // Mon, Wed, Thu
+
+function isDinnerSideDay(){
+  return DINNER_SIDE_DAYS.includes(new Date().getDay());
+}
+
+// Count which "cooking day" this is since a fixed epoch (Mon Jan 1 2024)
+// to get continuous alternation regardless of week
+function getDinnerSideAssignment(dateOverride){
+  const date = dateOverride ? new Date(dateOverride) : new Date();
+  const dow = date.getDay();
+  if(!DINNER_SIDE_DAYS.includes(dow)) return null;
+
+  const epoch = new Date(2024, 0, 1); // Jan 1, 2024 (Monday)
+  const daysSinceEpoch = Math.floor((date - epoch) / (24*60*60*1000));
+  const fullWeeks = Math.floor(daysSinceEpoch / 7);
+  const remainderDays = daysSinceEpoch % 7;
+  // Each full week contributes 3 cooking days (Mon, Wed, Thu)
+  // Count cooking days in the remainder (days 0..remainderDays-1 of this week, Sun-based)
+  let cookingDayIndex = fullWeeks * 3;
+  for(let i=0;i<remainderDays;i++){
+    if(DINNER_SIDE_DAYS.includes(i)) cookingDayIndex++;
+  }
+
+  // Even index = Virtus does starch, Vulnere does veggie. Odd = swap.
+  const virtusGetsStarch = (cookingDayIndex % 2 === 0);
+  return {
+    virtus: virtusGetsStarch ? 'starch' : 'veggie',
+    vulnere: virtusGetsStarch ? 'veggie' : 'starch'
+  };
+}
+
+function getMyDinnerSide(agentId){
+  const pair = PAIRS[agentId];
+  if(!pair) return null;
+  const assignment = getDinnerSideAssignment();
+  if(!assignment) return null;
+  return assignment[pair.pairId];
+}
+
+
+function getWeekDaysReading(){
+  return getWeekDaysGT(); // Mon-Fri, same as game time
+}
+
+function renderReadingLog(){
+  if(!currentAgent) return;
+  const el = document.getElementById('readinglog-content');
+  if(!el) return;
+  if(!_db){ el.innerHTML='<div class="empty">Connect to WiFi to view reading log.</div>'; return; }
+
+  const weekDays = getWeekDaysReading();
+  const weekStart = weekDays[0];
+  const today = new Date().toISOString().slice(0,10);
+  const group = READING_GROUP[currentAgent.id];
+
+  Promise.all([
+    _db.ref(`stewart/reading/${currentAgent.id}/${weekStart}`).once('value'),
+    _db.ref(`stewart/readinggoals/${currentAgent.id}`).once('value')
+  ]).then(([logSnap, goalSnap]) => {
+    const log = logSnap.val() || {};
+    const chapterGoal = goalSnap.val() || DEFAULT_CHAPTER_GOAL;
+
+    let bonusMinutes = 0;
+    let progressLabel = '';
+    let progressPct = 0;
+
+    if(group === 'books'){
+      // One book per day, Mon-Fri
+      const daysCompleted = weekDays.filter(d => log[d] && log[d].title && log[d].verified).length;
+      progressPct = Math.round((daysCompleted/5)*100);
+      bonusMinutes = (daysCompleted/5) * 15;
+      progressLabel = `${daysCompleted} / 5 days &mdash; one book per day`;
+    } else {
+      // Chapters per day toward weekly goal
+      const weeklyGoal = chapterGoal * 5;
+      let totalChapters = 0;
+      weekDays.forEach(d => { if(log[d] && log[d].chapters && log[d].verified) totalChapters += Number(log[d].chapters); });
+      progressPct = Math.min(100, Math.round((totalChapters/weeklyGoal)*100));
+      bonusMinutes = Math.min(15, (totalChapters/weeklyGoal) * 15);
+      progressLabel = `${totalChapters} / ${weeklyGoal} chapters this week &mdash; ${chapterGoal}/day goal`;
+    }
+
+    const bonusDisplay = Math.round(bonusMinutes*10)/10;
+    const todayEntry = log[today] || {};
+
+    let formHtml = '';
+    if(group === 'books'){
+      formHtml = `
+        <div style="margin-bottom:8px;">
+          <input type="text" id="reading-title-input" placeholder="Book title read today..." value="${todayEntry.title||''}"
+            style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid rgba(12,200,200,.3);background:var(--dark2);color:var(--white);font-family:'Exo 2',sans-serif;font-size:13px;">
+        </div>
+        <button onclick="saveReadingEntry()" style="width:100%;padding:10px;border-radius:8px;border:none;background:var(--teal);color:var(--black);font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;cursor:pointer;">
+          ${todayEntry.title ? 'UPDATE TODAYS BOOK' : 'LOG TODAYS BOOK'}
+        </button>`;
+    } else {
+      formHtml = `
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <input type="text" id="reading-title-input" placeholder="Book title..." value="${todayEntry.title||''}"
+            style="flex:2;padding:9px 12px;border-radius:8px;border:1px solid rgba(12,200,200,.3);background:var(--dark2);color:var(--white);font-family:'Exo 2',sans-serif;font-size:13px;">
+          <input type="number" id="reading-chapters-input" placeholder="Ch." min="0" max="30" value="${todayEntry.chapters||''}"
+            style="flex:1;padding:9px 12px;border-radius:8px;border:1px solid rgba(12,200,200,.3);background:var(--dark2);color:var(--white);font-family:'Exo 2',sans-serif;font-size:13px;text-align:center;">
+        </div>
+        <button onclick="saveReadingEntry()" style="width:100%;padding:10px;border-radius:8px;border:none;background:var(--teal);color:var(--black);font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;cursor:pointer;">
+          ${todayEntry.chapters ? 'UPDATE TODAYS READING' : 'LOG TODAYS READING'}
+        </button>`;
+    }
+
+    // Week-at-a-glance
+    const dayLabels = ['Mon','Tue','Wed','Thu','Fri'];
+    const weekTiles = weekDays.map((d,i) => {
+      const entry = log[d];
+      const hasEntry = entry && (entry.title || entry.chapters);
+      const isVerified = hasEntry && entry.verified;
+      const isToday = d === today;
+      const isFuture = d > today;
+      let bg, icon;
+      if(isFuture){ bg='rgba(255,255,255,.04)'; icon='&mdash;'; }
+      else if(isVerified){ bg='rgba(45,106,71,.2)'; icon='&#10003;'; }
+      else if(hasEntry){ bg='rgba(232,184,74,.12)'; icon='&#9203;'; }
+      else if(isToday){ bg='rgba(12,200,200,.1)'; icon='&#9675;'; }
+      else { bg='rgba(139,48,16,.2)'; icon='&#10007;'; }
+      const detail = group==='books' ? (entry?.title ? entry.title.slice(0,10) : '') : (entry?.chapters ? entry.chapters+' ch' : '');
+      return `<div style="flex:1;background:${bg};border-radius:8px;padding:8px 4px;text-align:center;">
+        <div style="font-size:14px;">${icon}</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:7px;letter-spacing:1px;color:rgba(255,255,255,.4);margin-top:3px;">${dayLabels[i]}</div>
+        <div style="font-size:8px;color:rgba(255,255,255,.5);margin-top:1px;overflow:hidden;white-space:nowrap;">${detail}</div>
+      </div>`;
+    }).join('');
+
+    el.innerHTML = `
+      <div style="background:linear-gradient(135deg,var(--dark2),#0a1a0a);border:1px solid rgba(232,184,74,.2);border-radius:10px;padding:14px;margin-bottom:12px;text-align:center;">
+        <div style="font-size:22px;margin-bottom:4px;">&#128218;</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:24px;font-weight:700;color:var(--gold);">+${bonusDisplay} min</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:3px;">reading bonus this week &mdash; max 15 min</div>
+        <div style="background:rgba(255,255,255,.06);border-radius:6px;height:6px;overflow:hidden;margin:10px 0 4px;">
+          <div style="height:100%;width:${progressPct}%;background:var(--gold);border-radius:6px;transition:width .5s;"></div>
+        </div>
+        <div style="font-size:10px;color:rgba(255,255,255,.4);">${progressLabel}</div>
+      </div>
+
+      <div style="display:flex;gap:6px;margin-bottom:14px;">${weekTiles}</div>
+
+      <div class="hw-card" style="margin-bottom:12px;">
+        <div class="hw-card-head"><div class="hw-card-icon">&#9999;</div><div class="hw-card-title">Today's Reading</div></div>
+        <div class="hw-card-body">${formHtml}</div>
+      </div>
+
+      <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:11px 13px;">
+        <div style="font-size:11px;color:rgba(255,255,255,.5);line-height:1.6;">
+          ${group==='books'
+            ? 'Read one full book every day, Monday through Friday. Complete all 5 days for the full 15-minute bonus.'
+            : `Read ${chapterGoal} chapters every day, Monday through Friday (${chapterGoal*5} chapters total). Hit the weekly goal for the full 15-minute bonus.`}<br>
+          <span style="color:var(--gold);">&#9203; Gold = logged, waiting on Mom or Dad to verify. &#10003; Green = verified and counted.</span><br>
+          <span style="color:var(--gold);">Mission minutes (max 30) + Reading bonus (max 15) = 45 min total possible each week.</span>
+        </div>
+      </div>`;
+  });
+}
+
+function saveReadingEntry(){
+  if(!currentAgent||!_db) return;
+  const today = new Date().toISOString().slice(0,10);
+  const weekStart = getWeekDaysReading()[0];
+  const group = READING_GROUP[currentAgent.id];
+
+  const title = document.getElementById('reading-title-input').value.trim();
+  if(!title) return;
+
+  let entry = { title };
+  if(group === 'chapters'){
+    const chapters = document.getElementById('reading-chapters-input').value;
+    entry.chapters = chapters ? Number(chapters) : 0;
+  }
+
+  _db.ref(`stewart/reading/${currentAgent.id}/${weekStart}/${today}`).set(entry).then(() => {
+    renderReadingLog();
+    setTimeout(() => checkCelebrations(), 600);
+  });
+}
+
+
+// ══════════════════════════════════════════════════════
+// STATUS SUMMARY — whole picture at a glance
+// ══════════════════════════════════════════════════════
+
+function renderStatusSummary(){
+  if(!currentAgent) return;
+  const el = document.getElementById('status-summary');
+  if(!el) return;
+  if(!_db){ el.innerHTML=''; return; }
+
+  const today = new Date().toISOString().slice(0,10);
+  const weekStart = getWeekStart();
+  recalculateScore(currentAgent.id, today);
+
+  Promise.all([
+    _db.ref(`stewart/scores/${currentAgent.id}/${today}`).once('value'),
+    _db.ref(`stewart/missions/${currentAgent.id}/${today}`).once('value'),
+    _db.ref(`stewart/weekly/${currentAgent.id}/${weekStart}`).once('value'),
+    _db.ref(`stewart/familynight/${weekStart}`).once('value')
+  ]).then(([scoreSnap, missionSnap, weeklySnap, fnSnap]) => {
+    const score = scoreSnap.val();
+    const done = missionSnap.val() || {};
+    const weeklyDone = weeklySnap.val() || {};
+    const familyNightUnlocked = fnSnap.val() === true;
+
+    const missions = buildMissions(currentAgent.id);
+    const completed = missions.filter(m => done[m.id]).length;
+    const total = missions.length;
+    const dollars = score!==null&&score!==undefined ? (score/100).toFixed(2) : '0.00';
+    const minutes = score!==null&&score!==undefined ? Math.round((score/100)*6*10)/10 : 0;
+
+    // Weekly completion for Family Night progress
+    const bathroomAgent = getBathroomAgent();
+    const weeklyMissionsForAgent = WEEKLY_MISSIONS.filter(m => {
+      if(m==='laundry-sam') return currentAgent.id==='samuel';
+      if(m==='laundry-john') return currentAgent.id==='johnjr';
+      if(m==='laundry-stephen') return currentAgent.id==='stephen';
+      if(m==='laundry-daniel') return currentAgent.id==='daniel';
+      if(m==='hutch') return currentAgent.id==='stephen';
+      if(m==='bathroom-trash') return currentAgent.id==='daniel';
+      if(m==='bathroom-clean') return currentAgent.id===bathroomAgent;
+      return true;
+    });
+    const weeklyTotal = weeklyMissionsForAgent.length;
+    const weeklyComplete = weeklyMissionsForAgent.filter(m => weeklyDone[m]).length;
+
+    const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const dayName = dayNames[new Date().getDay()];
+
+    el.innerHTML = `
+      <div style="background:linear-gradient(135deg,var(--dark2),#0a1a0a);border:1px solid rgba(12,200,200,.2);border-radius:10px;padding:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div style="font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:2px;color:var(--teal2);">${dayName.toUpperCase()} STATUS</div>
+          ${familyNightUnlocked ? '<span style="font-size:10px;color:var(--gold);">&#127881; Family Night Unlocked</span>' : ''}
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;">
+          <div style="text-align:center;">
+            <div style="font-family:'Orbitron',sans-serif;font-size:18px;font-weight:700;color:var(--teal2);">${completed}/${total}</div>
+            <div style="font-size:8px;letter-spacing:1px;color:rgba(255,255,255,.4);text-transform:uppercase;margin-top:2px;">Missions</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-family:'Orbitron',sans-serif;font-size:18px;font-weight:700;color:var(--gold);">$${dollars}</div>
+            <div style="font-size:8px;letter-spacing:1px;color:rgba(255,255,255,.4);text-transform:uppercase;margin-top:2px;">Today</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-family:'Orbitron',sans-serif;font-size:18px;font-weight:700;color:#4aaa6a;">${minutes}m</div>
+            <div style="font-size:8px;letter-spacing:1px;color:rgba(255,255,255,.4);text-transform:uppercase;margin-top:2px;">Game Time</div>
+          </div>
+        </div>
+        <div style="background:rgba(255,255,255,.06);border-radius:6px;height:5px;overflow:hidden;margin-bottom:4px;">
+          <div style="height:100%;width:${total>0?Math.round((completed/total)*100):0}%;background:var(--teal);border-radius:6px;transition:width .5s;"></div>
+        </div>
+        <div style="font-size:10px;color:rgba(255,255,255,.35);text-align:center;">
+          Weekly chores: ${weeklyComplete}/${weeklyTotal} &mdash; Family Night ${familyNightUnlocked?'ready!':'in progress'}
+        </div>
+      </div>`;
+  });
+}
+
+
+// ══════════════════════════════════════════════════════
+// AGENT SELF-ASSESSMENT — My Strength / My Mission / Step
+// ══════════════════════════════════════════════════════
+
+function renderSelfAssessment(){
+  if(!currentAgent || !_db) return;
+  _db.ref(`stewart/selfassessment/${currentAgent.id}`).once('value', snap => {
+    const data = snap.val() || {};
+    const strengthEl = document.getElementById('self-strength');
+    const missionEl = document.getElementById('self-mission');
+    const stepEl = document.getElementById('self-step');
+    if(strengthEl) strengthEl.value = data.strength || '';
+    if(missionEl) missionEl.value = data.mission || '';
+    if(stepEl) stepEl.value = data.step || '';
+    const savedEl = document.getElementById('self-assessment-saved');
+    if(savedEl) savedEl.style.display = 'none';
+  });
+}
+
+function saveSelfAssessment(){
+  if(!currentAgent || !_db) return;
+  const strength = document.getElementById('self-strength').value.trim();
+  const mission = document.getElementById('self-mission').value.trim();
+  const step = document.getElementById('self-step').value.trim();
+
+  _db.ref(`stewart/selfassessment/${currentAgent.id}`).set({
+    strength, mission, step,
+    updatedAt: Date.now()
+  }).then(() => {
+    const savedEl = document.getElementById('self-assessment-saved');
+    if(savedEl){
+      savedEl.style.display = 'block';
+      setTimeout(() => { savedEl.style.display = 'none'; }, 3000);
+    }
+  });
+}
 
 document.addEventListener('DOMContentLoaded',()=>{
   const pi = document.getElementById('private-input');
