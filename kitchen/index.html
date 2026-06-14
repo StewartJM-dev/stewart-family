@@ -135,6 +135,15 @@ body{font-family:'Lato',sans-serif;background:var(--cream);color:var(--ink);font
 .sec-lbl{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
 .nosnack{background:var(--rust);color:white;text-align:center;padding:9px 14px;font-size:11px;font-style:italic;}
 .nosnack strong{font-style:normal;letter-spacing:.8px;font-size:10px;text-transform:uppercase;}
+
+.sug-grp{margin-bottom:12px;}
+.sug-grp-t{font-size:12px;font-weight:700;color:var(--ink);margin-bottom:6px;}
+.sug-item{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-radius:8px;margin-bottom:5px;cursor:pointer;border:1px solid var(--border);}
+.sug-ready{background:rgba(45,106,71,.07);border-color:rgba(45,106,71,.25);}
+.sug-close{background:rgba(200,146,42,.07);border-color:rgba(200,146,42,.25);}
+.sug-nm{font-size:13px;font-weight:600;color:var(--ink);}
+.sug-pct{font-size:11px;color:#2d6a47;font-weight:700;}
+.sug-miss{font-size:10px;color:#c8922a;}
 </style>
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -176,6 +185,11 @@ body{font-family:'Lato',sans-serif;background:var(--cream);color:var(--ink);font
     <div class="sc-title">Weekly Planner</div>
     <div class="sc-sub">Generate &middot; Review &middot; Send to calendar</div>
     <button class="plan-btn" onclick="generatePlan()">&#10022; Generate This Week's Plan</button>
+    <button class="plan-btn" onclick="renderMealSuggestions();showSuggestions()" style="background:var(--sage);margin-top:8px;">&#128161; What Can I Make?</button>
+    <div id="meal-suggestions-wrap" style="display:none;margin-top:12px;">
+      <div class="sc-sub" style="margin-bottom:8px;">Based on what's in your inventory right now</div>
+      <div id="meal-suggestions"></div>
+    </div>
     <button class="plan-btn sec" onclick="sendToShopping()">&rarr; Build Shopping List</button>
     <button class="plan-btn cal" id="cal-btn" style="display:none" onclick="sendToCalendar()">&#128197; Send to Home Calendar</button>
     <div class="cal-confirm" id="cal-confirm"></div>
@@ -195,9 +209,9 @@ body{font-family:'Lato',sans-serif;background:var(--cream);color:var(--ink);font
   </div>
   <div class="screen" id="screen-shopping">
     <div class="sc-title">Shopping List</div>
-    <div class="sc-sub">Generated from plan vs what you have on hand</div>
-    <button class="shop-gen" onclick="sendToShopping()">&#8635; Rebuild from This Week's Plan</button>
-    <button class="shop-clr" onclick="clearChecked()">Clear Checked Items</button>
+    <div class="sc-sub">Low-stock items and meal-plan needs. Stays here until you pick them up.</div>
+    <button class="shop-gen" onclick="sendToShopping()">&#8635; Add Missing Items from This Week's Plan</button>
+    <button class="shop-clr" onclick="clearChecked()">Clear Picked-Up Items</button>
     <div id="shopping-list"></div>
   </div>
   <div class="screen" id="screen-health">
@@ -297,6 +311,9 @@ const CB={
 "Chicken and Broccoli":{y:"4-5 servings",t:"275F then high",p:"30 min + marinate",c:"20 min",s:[{h:"Chicken",i:["3/4-1 lb chicken breast (3/4-inch cubes)"]},{h:"Velvet Marinade",i:["1 egg white","1 Tbsp cornstarch","1/4 tsp salt"]},{h:"Sauce",i:["2 Tbsp oyster sauce","1 Tbsp light soy","1 Tbsp dark soy","1 Tbsp water"]},{h:"Vegetables",i:["1 lb broccoli","2 garlic cloves crushed","1 tsp cornstarch plus 1 Tbsp water","1/2 Cup water, 1/4 tsp salt, 1/2 tsp sugar","2 Cups plus 4 Tbsp oil"]}],d:["Whisk egg white, cornstarch, salt. Add chicken, coat. Refrigerate 30 min.","Mix sauce ingredients. Mix thickener. Cut broccoli into pieces.","Heat 2 Cups oil to 275F. Add chicken, cook 30 sec, separate gently. Remove when white. Drain.","Drain oil. Heat 2 Tbsp oil on high. Add garlic, stir-fry 10 sec. Add broccoli, salt, sugar. Stir-fry 30 sec. Add water, cover, steam 4-5 min until bright green. Remove, drain.","Heat 2 Tbsp oil. Add broccoli and chicken, toss to cook through. Pour sauce in center, add thickener, stir to thicken. Toss together. Serve over rice."]},
 "Chinese Pork Fried Rice":{y:"4-5 servings",t:"High heat",p:"10 min",c:"10-15 min",n:"Day-old rice is essential for best results",s:[{h:"Ingredients",i:["2 Cups cooked rice (day-old best)","2 Tbsp oil divided","1 small onion chopped","1 bag frozen peas with carrots","2 oz scallions sliced","2 tsp Garlic Powder","1/4 tsp soy sauce","1 tsp MSG","1/2 tsp salt","1/2 tsp ginger","1/2 tsp pepper","2 eggs scrambled","Char Siu cooked pork diced"]}],d:["Break up day-old rice. Heat wok on high. Add 1/2 Tbsp oil, add half rice, stir-fry 3 min until toasted. Transfer. Repeat with remaining rice.","Add 1/2 Tbsp oil, scramble eggs. Add to rice.","Heat final 1/2 Tbsp oil. Add onion, carrot, white scallions. Stir-fry 2 min.","Return rice and eggs. Add peas, pork, garlic, ginger, MSG, salt, pepper, soy sauce. Toss 2-3 min. Add green scallions, toss 30 sec."]},
 "Chinese Char Siu Sauce":{y:"Marinade for 2-3 lbs",t:"Med-low",p:"5 min",c:"5 min",s:[{h:"Ingredients",i:["2 Tbsp light soy sauce","1 Tbsp oyster sauce","1 Tbsp rice wine","3 Tbsp sugar","1 tsp garlic powder","1/4 Cup honey","1/4 tsp salt","1/4 tsp five-spice","2 Tbsp water","1/4 tsp MSG"]}],d:["Combine all in saucepan. Heat over medium-low stirring until sugar dissolves, 3-5 min. Do not boil.","Cool completely. Use as marinade 4+ hours or overnight.","Roast marinated meat at 375F, basting with remaining sauce."]},
+"Cracker Barrel Baked Chicken & Broccoli":{y:"4 servings",t:"Oven 350F",p:"15 min",c:"40-45 min",n:"Based on Cracker Barrel. Chicken breasts baked under cheddar sauce and broccoli with a buttery Ritz topping. Pairs well with mashed potatoes or rice.",s:[{h:"Ingredients",i:["4 boneless skinless chicken breasts","1/2 tsp kosher salt","1/2 tsp black pepper","10.5 oz can cheddar cheese soup","1/2 cup whole milk","1 tsp paprika","1.5 cups shredded cheddar cheese (divided)","2 cups frozen broccoli florets, thawed","1 cup crushed Ritz crackers","3 Tbsp unsalted butter, melted"]}],d:["Preheat oven to 350F. Prepare a baking dish with cooking spray.","Season chicken breasts with salt and pepper on both sides. Place in a single layer in the baking dish.","In a bowl, combine cheddar cheese soup, milk, and paprika. Stir until smooth.","Distribute thawed broccoli over the chicken. Sprinkle 1 cup shredded cheddar over the broccoli.","Pour the cheese sauce evenly over the chicken and broccoli.","In a separate bowl, mix crushed Ritz, melted butter, and remaining 1/2 cup cheddar. Sprinkle over the top.","Bake 40-45 minutes until chicken is cooked through and topping is golden brown.","Cool a few minutes before serving. Pairs well with mashed potatoes or rice."]},
+"Stewart Family Pot Pie":{y:"6-8 servings",t:"Oven 425F",p:"20 min",c:"35 min",n:"The family pot pie -- works with chicken or turkey. Made in a 13x9 with a single top crust using Grandma's pie crust. No onion. Uses canned vegetables.",s:[{h:"Ingredients",i:["1/3 cup butter","1/3 cup flour","1/2 tsp salt","1/4 tsp pepper","1 3/4 cups chicken broth","2/3 cup milk","2.5-3 cups cut-up cooked chicken or turkey","2 cans mixed vegetables, drained","1 can corn, drained","1-2 cans potatoes, drained (2 cans if the mixed veg has no potatoes)","Grandma's pie crust (top only)"]}],d:["Melt butter in a large saucepan over medium heat. Stir in flour, salt and pepper (no onion). Cook stirring constantly with a whisk until bubbly, then remove from heat.","Stir in broth and milk. Heat to boiling stirring constantly, boil and stir 1 minute.","Stir in the chicken or turkey and all the canned vegetables (2 cans mixed veg, 1 can corn, 1-2 cans potatoes). Remove from heat.","Heat oven to 425F. Pour the filling into an ungreased 13x9 casserole dish.","Roll out Grandma's pie crust to fit the 13x9. Place over the filling, turn edges under and crimp to the dish edge.","Bake about 35 minutes or until the crust is golden brown."]},
+"Pineapple Upside-Down Cake (Dutch Oven)":{y:"10-12 servings",t:"Dutch Oven",p:"15 min",c:"35-45 min",n:"Trail Life Dutch oven dessert that also works at home. Pineapple and cherries in a brown sugar glaze under spice or pineapple cake.",s:[{h:"Ingredients",i:["1 can pineapple rings, drained (retain juice)","2 cans crushed pineapple, drained (retain juice)","1 jar maraschino cherries","1 box spice or pineapple cake mix + box ingredients","Cinnamon","1/2 stick butter or margarine","approx 1.5 cups brown sugar"]}],d:["Melt the butter in the bottom of the Dutch oven over medium heat. Add brown sugar and heat until melted and it forms a thin paste with the butter.","Line the bottom with pineapple rings in the sugar glaze. Place a cherry in the center of each ring.","Add the crushed pineapple on top of the rings, press down with the back of a spoon -- DO NOT STIR.","Mix the cake mix according to box directions. Pour evenly over the pineapple mixture.","Place the Dutch oven on 14-16 briquets and add 16-18 to the lid. Bake until a knife inserted in the center comes out clean.","Cool 5-10 minutes. Run a knife around the edges to release. Gently turn upside-down over a large plate -- the cake drops out with pineapple on top. Replace any stray garnish with a spatula.","Note: too much bottom heat dries out the glaze. Check at 30 minutes, then every 5-10 minutes after."]},
 "Chinese Green Pepper Steak":{y:"4-5 servings",t:"Stovetop / Wok",p:"20 min + marinate",c:"15 min",n:"Family recipe. Velveted steak with green peppers and onion in a rich hoisin-oyster sauce. Serve over rice.",s:[{h:"Ingredients",i:["1 lb steak, pounded thin","Velvet: 1 egg white, 1 Tbsp cornstarch","Sauce: 3 Tbsp Hoisin sauce","2 Tbsp Fish sauce","2 Tbsp oyster sauce","2 Tbsp low sodium soy sauce","2 cups chicken broth","2 Tbsp MSG","1/2 Tbsp garlic powder","3 green peppers, sliced","1 large onion, sliced","Thickener: 3 Tbsp cornstarch + 1/4 cup water"]}],d:["Velvet steak: Whisk egg white and 1 Tbsp cornstarch. Add steak, coat well. Refrigerate 30 minutes.","Heat 2 cups oil to 275°F in wok. Add steak, cook 2-3 minutes, separating pieces gently. Remove and drain oil from wok.","Add all sauce ingredients to wok and heat until bubbling. Add peppers and onion and cook until tender.","Add steak back to wok.","Add cornstarch thickener while stirring.","Heat until sauce has thickened. Serve over rice."]},
 "Garlic Parmesan Wing Sauce":{y:"Sauce for 3-4 lbs wings",t:"350F for garlic",p:"10 min + chill",c:"20-25 min",s:[{h:"Ingredients",i:["6 whole cloves garlic peeled","2 Tbsp olive oil","1/2 Cup mayonnaise or plain yogurt","1 Tbsp corn syrup","2 Tbsp grated Parmesan cheese","1 Tbsp fresh lemon juice","1 Tbsp apple cider vinegar","1/4 tsp each dried thyme, marjoram, oregano, basil","1/2 tsp red pepper flakes","1/2 tsp salt","1/4 tsp black pepper"]}],d:["Preheat oven to 350F. Place peeled garlic cloves in a small oven-safe dish. Drizzle with olive oil.","Cover tightly with aluminum foil. Roast 20-25 minutes until garlic is very soft and golden.","While garlic roasts, whisk together mayonnaise, corn syrup, Parmesan, lemon juice, vinegar, and all herbs.","When garlic is done, let cool 5 minutes. Crush roasted garlic into the sauce using a garlic press or fork.","Stir well to incorporate garlic throughout.","Cover and refrigerate at least 2-3 hours or overnight. Flavors improve significantly.","Toss with hot wings when ready to serve."]}
 };
@@ -350,7 +367,7 @@ const MEALS=[
 {id:46,name:"Chicken and Rice Casserole",cat:"Comfort",method:"Oven",cookTime:60,health:"amber",serves:6,sides:"Vegetable, dinner rolls",cal:460,pro:36,carb:36,fat:18,healthNote:"Cream of chicken base adds sodium. One dish, minimal effort.",proteins:["chicken"],ingredients:["chicken pieces","white rice","cream of chicken soup","chicken broth","onion","garlic","salt","pepper"]},
 {id:47,name:"Chicken Broccoli Casserole",cat:"Comfort",method:"Oven",cookTime:50,health:"amber",serves:6,sides:"Rice or dinner rolls",cal:480,pro:38,carb:24,fat:26,healthNote:"Cream of mushroom base adds sodium.",note:"From the cookbook",proteins:["chicken"],cbKey:"Chicken Broccoli and Rice Casserole",ingredients:["2 Cups cream soup","1.5 Cups uncooked rice","sharp cheddar","onion soup mix","1 lb broccoli florets","1 lb chicken breast","garlic powder","salt","pepper","2.5 Cups broth","breadcrumbs"]},
 {id:48,name:"Baked Whole Chicken",cat:"Comfort",method:"Oven",cookTime:90,health:"green",serves:6,sides:"Boxed stuffing, mashed potatoes, vegetable",cal:420,pro:44,carb:12,fat:18,healthNote:"Whole roasted chicken -- clean real food. One of the best meals on any table.",note:"Boxed stuffing served separately",leftovers:"chicken",proteins:["chicken"],ingredients:["whole chicken","butter","garlic","salt","pepper","herbs","lemon optional"]},
-{id:49,name:"Chicken Pot Pie",cat:"Comfort",method:"Oven",cookTime:60,health:"amber",serves:6,sides:"Side salad",cal:500,pro:30,carb:44,fat:24,healthNote:"Homemade crust and real chicken is genuinely good.",note:"Best use of baked chicken leftovers",leftovers:"chicken",proteins:["chicken"],cbKey:"Grandma's Pie Crust",ingredients:["2 cups leftover chicken","mixed canned veg","cream of chicken soup","chicken broth","Grandma's pie crust","milk"]},
+{id:49,name:"Chicken Pot Pie",cat:"Comfort",method:"Oven",cookTime:60,health:"amber",serves:6,sides:"Side salad",cal:500,pro:30,carb:44,fat:24,healthNote:"Homemade crust and real chicken is genuinely good.",note:"Best use of baked chicken leftovers",leftovers:"chicken",proteins:["chicken"],cbKey:"Stewart Family Pot Pie",ingredients:["2.5-3 cups cooked chicken","2 cans mixed veg","1 can corn","1-2 cans potatoes","cream of chicken soup","chicken broth","milk","butter","flour","Grandma's pie crust"]},
 {id:50,name:"Chicken and Waffles",cat:"Comfort",method:"Waffle Iron",cookTime:30,health:"amber",serves:6,sides:"Mashed potatoes, gravy, corn",cal:560,pro:34,carb:52,fat:22,healthNote:"Leftover chicken or turkey over Grandma's waffles with gravy.",note:"Use leftover chicken or turkey",leftovers:"chicken",proteins:["chicken"],ingredients:["leftover chicken or turkey","waffle batter","butter","mashed potatoes","gravy","corn"]},
 {id:51,name:"Ham Steak",cat:"Comfort",method:"Stovetop",cookTime:15,health:"amber",serves:6,sides:"Mashed potatoes or Knorr broccoli cheese rice, vegetable",cal:400,pro:36,carb:18,fat:20,healthNote:"Ham is cured and sodium-heavy. A couple times a month is fine.",leftovers:"ham",proteins:["ham"],ingredients:["ham steak","butter","brown sugar glaze optional"]},
 {id:52,name:"Burgers on the Grill",cat:"Grill",method:"Grill",cookTime:20,health:"green",serves:6,sides:"Grandma's potato salad, baked beans or corn",cal:500,pro:34,carb:32,fat:26,healthNote:"Ground beef, real buns, real sides. The 1960s diet in action.",proteins:["beef"],ingredients:["2 lb ground beef","burger buns","cheese","lettuce","tomato","onion","condiments"]},
@@ -382,11 +399,11 @@ const MEALS=[
 {id:78,name:"Seven Can Soup Boys Cook",cat:"Simple",method:"Stovetop",cookTime:15,health:"amber",serves:8,sides:"Garlic bread or crusty bread",cal:320,pro:18,carb:42,fat:8,healthNote:"Boys can handle this completely. Open, dump, heat. Done.",note:"Tuesday boys-cook option -- completely independent",cbKey:"Seven Can Soup",proteins:[],ingredients:["7 assorted cans chili tomatoes beans corn","salt","pepper","sharp cheese shredded"]},
 {id:79,name:"Holiday Ham",cat:"Holiday",method:"Oven",cookTime:240,health:"amber",serves:10,sides:"Boxed stuffing, mashed potatoes, vegetable, rolls, green bean casserole",cal:440,pro:38,carb:22,fat:22,healthNote:"The real value is the leftover chain -- one ham unlocks 8+ meals.",note:"Easter and Christmas.",leftovers:"ham",proteins:["ham"],ingredients:["whole ham","brown sugar glaze","cloves","pineapple optional"]},
 {id:80,name:"Thanksgiving Turkey",cat:"Holiday",method:"Oven",cookTime:300,health:"amber",serves:12,sides:"Grandma's stuffing, mashed potatoes, gravy, cranberry, rolls, green bean casserole",cal:420,pro:46,carb:18,fat:16,healthNote:"Turkey is lean protein. The real value is the leftover chain.",note:"Grandma's from-scratch stuffing. Unlocks 6+ meals.",leftovers:"turkey",proteins:["turkey"],ingredients:["whole turkey","butter","herbs","salt","pepper","broth"]},
-{id:81,name:"Turkey Pot Pie",cat:"Leftover",method:"Oven",cookTime:60,health:"amber",serves:6,sides:"Side salad",cal:480,pro:28,carb:42,fat:22,healthNote:"Same as chicken pot pie. Great use of Christmas turkey.",note:"Christmas turkey leftover",leftovers:"turkey",proteins:["turkey"],cbKey:"Grandma's Pie Crust",ingredients:["2 cups leftover turkey","mixed canned veg","cream of chicken soup","Grandma's pie crust","milk","chicken broth"]},
+{id:81,name:"Turkey Pot Pie",cat:"Leftover",method:"Oven",cookTime:60,health:"amber",serves:6,sides:"Side salad",cal:480,pro:28,carb:42,fat:22,healthNote:"Same as chicken pot pie. Great use of Christmas turkey.",note:"Christmas turkey leftover",leftovers:"turkey",proteins:["turkey"],cbKey:"Stewart Family Pot Pie",ingredients:["2.5-3 cups cooked turkey","2 cans mixed veg","1 can corn","1-2 cans potatoes","cream of chicken soup","chicken broth","milk","butter","flour","Grandma's pie crust"]},
 {id:82,name:"Turkey Broccoli Cheese Rice Casserole",cat:"Leftover",method:"Oven",cookTime:45,health:"amber",serves:6,sides:"Dinner rolls, side salad",cal:440,pro:30,carb:36,fat:18,healthNote:"Turkey, broccoli, Knorr packet, cheese -- solid leftover meal.",note:"Christmas turkey leftover",leftovers:"turkey",proteins:["turkey"],ingredients:["leftover turkey","broccoli","Knorr broccoli cheese rice packet","cheddar","cream of chicken soup"]},
 {id:83,name:"Turkey Salad",cat:"Leftover",method:"No Cook",cookTime:10,health:"green",serves:5,sides:"Bread or crackers",cal:280,pro:28,carb:8,fat:14,healthNote:"Lean turkey, Hellman's, celery -- clean leftover meal.",note:"Christmas turkey leftover",leftovers:"turkey",proteins:["turkey"],ingredients:["leftover turkey","Hellman's mayonnaise","diced celery","salt","pepper"]},
 {id:84,name:"Chicken Salad",cat:"Leftover",method:"No Cook",cookTime:10,health:"green",serves:5,sides:"Bread, crackers, or on lettuce",cal:280,pro:28,carb:6,fat:14,healthNote:"Lean chicken, real mayo, real vegetables.",note:"Rotisserie or baked chicken leftovers",leftovers:"chicken",proteins:["chicken"],ingredients:["leftover chicken","Hellman's mayonnaise","diced celery","salt","pepper"]},
-{id:85,name:"Ham Pot Pie",cat:"Leftover",method:"Oven",cookTime:60,health:"amber",serves:6,sides:"Side salad",cal:480,pro:26,carb:42,fat:24,healthNote:"Same as chicken pot pie -- diced ham instead of chicken.",note:"Leftover holiday ham",leftovers:"ham",proteins:["ham"],cbKey:"Grandma's Pie Crust",ingredients:["2 cups leftover diced ham","mixed canned veg","cream of chicken soup","Grandma's pie crust","milk","chicken broth"]},
+{id:85,name:"Ham Pot Pie",cat:"Leftover",method:"Oven",cookTime:60,health:"amber",serves:6,sides:"Side salad",cal:480,pro:26,carb:42,fat:24,healthNote:"Same as chicken pot pie -- diced ham instead of chicken.",note:"Leftover holiday ham",leftovers:"ham",proteins:["ham"],cbKey:"Stewart Family Pot Pie",ingredients:["2.5-3 cups diced ham","2 cans mixed veg","1 can corn","1-2 cans potatoes","cream of chicken soup","chicken broth","milk","butter","flour","Grandma's pie crust"]},
 {id:86,name:"Ham Fried Rice",cat:"Leftover",method:"Stovetop",cookTime:20,health:"amber",serves:5,sides:"Standalone or alongside Chinese mains",cal:380,pro:22,carb:44,fat:14,healthNote:"Same technique as pork fried rice -- great use of holiday ham.",note:"Leftover ham variation",leftovers:"ham",proteins:["ham"],cbKey:"Chinese Pork Fried Rice",ingredients:["day-old white rice","leftover diced ham","eggs","soy sauce","sesame oil","green onions","frozen peas and carrots","garlic"]},
 {id:87,name:"Turkey and Waffles",cat:"Leftover",method:"Waffle Iron",cookTime:30,health:"amber",serves:6,sides:"Mashed potatoes, gravy, corn",cal:540,pro:32,carb:50,fat:20,healthNote:"Christmas turkey over Grandma's waffles with gravy and corn.",note:"Christmas turkey variation",leftovers:"turkey",proteins:["turkey"],ingredients:["leftover turkey","waffle batter","butter","mashed potatoes","gravy","corn"]},
 {id:88,name:"John's Snickerdoodles",cat:"Desserts",method:"Oven",cookTime:10,health:"amber",serves:48,sides:"Whole milk",cal:120,pro:1,carb:18,fat:5,healthNote:"Real butter, real sugar, real eggs. Proper homemade cookies.",cbKey:"John's Snickerdoodles",ingredients:["1 Cup butter","1.5 Cups sugar","2 eggs","2.75 Cups flour","cream of tartar","baking soda","salt","cinnamon sugar coating"]},
@@ -399,7 +416,7 @@ const MEALS=[
 {id:95,name:"Mom's Cheesecake",cat:"Desserts",method:"Oven",cookTime:120,health:"red",serves:12,sides:"",cal:380,pro:7,carb:32,fat:24,healthNote:"Special occasion only. Rich, dense, real cream cheese.",note:"Special occasion -- John's mom's recipe",cbKey:"Mom's Cheesecake",ingredients:["graham cracker crumbs","butter","16 oz cream cheese","sugar","eggs","vanilla","16 oz sour cream"]},
 {id:96,name:"Surprise Muffins",cat:"Desserts",method:"Oven",cookTime:25,health:"amber",serves:12,sides:"Whole milk",cal:180,pro:3,carb:28,fat:7,healthNote:"Homemade muffins with jam inside. Real food.",note:"Also a boys breakfast option",cbKey:"Surprise Muffins",ingredients:["egg","milk","oil","flour","sugar","baking powder","salt","jam or jelly for filling"]},
 {id:97,name:"Crazy Bread",cat:"Breads",method:"Oven",cookTime:8,health:"amber",serves:8,sides:"Soup or pasta",cal:180,pro:4,carb:28,fat:6,healthNote:"Homemade breadsticks with garlic butter. Real yeast bread.",note:"Great alongside any soup or Italian meal",cbKey:"Crazy Bread",ingredients:["1 Cup warm water","instant yeast","sugar","flour","salt","butter","garlic salt","Parmesan"]},
-{id:99,name:"Grandma's Potato Salad",cat:"Comfort",method:"Stovetop",cookTime:20,health:"amber",serves:8,sides:"Great with grilled meats or sandwiches",cal:280,pro:3,carb:32,fat:16,healthNote:"Classic summer side -- real mayonnaise, real potatoes. Worth it.",note:"Chill before serving -- make it first",cbKey:"Grandma's Potato Salad",ingredients:["3-5 lbs potatoes","1/3 Cup cider vinegar","1.25 Cups Hellman's mayonnaise","1.25 tsp salt","small to medium onion diced","fresh black pepper"]},
+{id:99,name:"Grandma's Potato Salad",cat:"Comfort",method:"Stovetop",cookTime:20,health:"amber",serves:8,sides:"Great with grilled meats or sandwiches",cal:280,pro:3,carb:32,fat:16,healthNote:"Classic summer side -- real mayonnaise, real potatoes. Worth it.",note:"Chill before serving -- make it first",cbKey:"Grandma's Potato Salad",ingredients:["3-5 lbs potatoes","1/3 Cup cider vinegar","1.25 Cups Hellman's mayonnaise","1.25 tsp salt","small to medium onion diced","fresh black pepper"]},{id:100,name:"Cracker Barrel Baked Chicken & Broccoli",cat:"Comfort",method:"Oven",cookTime:55,health:"amber",serves:4,sides:"Mashed potatoes or rice",cal:480,pro:42,carb:18,fat:28,healthNote:"Chicken, broccoli, cheddar, Ritz topping. Hearty comfort bake.",note:"Based on Cracker Barrel -- family favorite",proteins:["chicken"],cbKey:"Cracker Barrel Baked Chicken & Broccoli",ingredients:["4 chicken breasts","cheddar cheese soup","whole milk","paprika","shredded cheddar","frozen broccoli","Ritz crackers","butter"]},
 {id:98,name:"Olive Garden Breadsticks",cat:"Breads",method:"Oven",cookTime:14,health:"amber",serves:7,sides:"Soup or pasta",cal:200,pro:5,carb:32,fat:7,healthNote:"Homemade copycat Olive Garden breadsticks. Real yeast bread.",cbKey:"Olive Garden Breadsticks",ingredients:["warm water","active dry yeast","flour","butter melted","sugar","salt","butter garlic powder salt for topping"]}
 ];
 
@@ -486,7 +503,7 @@ const TUESDAY=[
 {name:"Quesadillas with Leftover Meat",sides:"Salsa or beans",health:"green"},
 {name:"Bagel Bites or Mini Pizzas",sides:"Fruit or veggie sticks",health:"amber"}
 ];
-const DESSERTS=["Box cake","John's Snickerdoodles","Chocolate Cookies","Chocolate Chip Cookies","No Bake Cookies","Grandma's Rice Pudding","Apple Crumble","Apple Cobbler","Strawberry Shortcake (in season)",null,null,null];
+const DESSERTS=["Box cake","Pineapple Upside-Down Cake (Dutch Oven)","John's Snickerdoodles","Chocolate Cookies","Chocolate Chip Cookies","No Bake Cookies","Grandma's Rice Pudding","Apple Crumble","Apple Cobbler","Strawberry Shortcake (in season)",null,null,null];
 const WEEK_SLOTS=[
 {day:"Sunday",type:"Family",label:"",cats:["Comfort","Holiday","Grill"]},
 {day:"Monday",type:"Family",label:"Dinner Sides: Boys Help",cats:["Comfort","Soups"]},
@@ -540,7 +557,17 @@ function renderPlan(plan){
   if(!plan||!plan.length){g.innerHTML='<div class="empty">Tap Generate This Week\'s Plan to get started</div>';return;}
   const hcls=h=>h==='green'?'bg':h==='amber'?'ba':'br';
   const hlbl=h=>h==='green'?'Eat Freely':h==='amber'?'Eat Regularly':'Limit Frequency';
-  g.innerHTML=plan.map(s=>`<div class="day-card"><div class="day-hd"><span class="day-nm">${s.day}</span><span class="day-tp">${s.type}${s.label?' &middot; '+s.label:''}</span></div><div class="day-bd"><div class="day-meal">${s.mealName}</div>${s.sides?`<div class="day-sides">${s.sides}</div>`:''}<span class="badge ${hcls(s.health)}">${hlbl(s.health)}</span>${s.boysMeal?`<div class="day-sides" style="margin-top:6px;padding-top:6px;border-top:1px dashed var(--border);"><strong>Boys' dinner:</strong> ${s.boysMeal}${s.boysMealSides?` &mdash; ${s.boysMealSides}`:''}</div>`:''}${s.bread?`<div class="day-bread">&#127838; ${s.bread}</div>`:''}${s.alert?`<div class="day-alert">&#9200; ${s.alert.label}</div>`:''}${s.defrost?`<div class="day-defrost">&#10052; ${s.defrost}</div>`:''}${s.chain?`<div class="day-left">&#9851; Unlocks: ${s.chain.name}</div>`:''}${s.dessert?`<div class="day-dess">&#127856; ${s.dessert}</div>`:''}</div></div>`).join('');
+  g.innerHTML=plan.map(s=>{
+    let readyBadge='';
+    if(s.mealObj&&s.mealObj.ingredients){
+      const r=mealReadiness(s.mealObj);
+      const tier=readinessTier(r.pct);
+      const tc=tier==='ready'?'#2d6a47':tier==='close'?'#c8922a':'#b5451b';
+      const tl=tier==='ready'?'Have ingredients':tier==='close'?('Need: '+r.missing.slice(0,2).join(', ')):('Shop: '+r.missing.slice(0,2).join(', '));
+      readyBadge=`<div class="day-ready" style="color:${tc};font-size:11px;margin-top:4px;">${tier==='ready'?'&#10003;':'&#128717;'} ${tl}</div>`;
+    }
+    return `<div class="day-card"><div class="day-hd"><span class="day-nm">${s.day}</span><span class="day-tp">${s.type}${s.label?' &middot; '+s.label:''}</span></div><div class="day-bd"><div class="day-meal">${s.mealName}</div>${readyBadge}${s.sides?`<div class="day-sides">${s.sides}</div>`:''}<span class="badge ${hcls(s.health)}">${hlbl(s.health)}</span>${s.boysMeal?`<div class="day-sides" style="margin-top:6px;padding-top:6px;border-top:1px dashed var(--border);"><strong>Boys' dinner:</strong> ${s.boysMeal}${s.boysMealSides?` &mdash; ${s.boysMealSides}`:''}</div>`:''}${s.bread?`<div class="day-bread">&#127838; ${s.bread}</div>`:''}${s.alert?`<div class="day-alert">&#9200; ${s.alert.label}</div>`:''}${s.defrost?`<div class="day-defrost">&#10052; ${s.defrost}</div>`:''}${s.chain?`<div class="day-left">&#9851; Unlocks: ${s.chain.name}</div>`:''}${s.dessert?`<div class="day-dess">&#127856; ${s.dessert}</div>`:''}</div></div>`;
+  }).join('');
 }
 
 function renderNutrition(plan){
@@ -734,9 +761,9 @@ function renderChains(){
 }
 
 const DEFAULT_INV={
-freezer:[{id:'f1',name:'Ground Beef',qty:4,unit:'pkgs',low:2},{id:'f2',name:'Whole Chicken or Pieces',qty:0,unit:'pkg',low:1},{id:'f3',name:'Pork Chops',qty:0,unit:'pkg',low:1},{id:'f4',name:'Italian Sausage',qty:0,unit:'lb',low:1},{id:'f5',name:'Steak',qty:0,unit:'pieces',low:1},{id:'f6',name:'Hot Dogs',qty:24,unit:'count',low:8},{id:'f7',name:'Chicken Breasts',qty:1,unit:'pkg',low:2},{id:'f8',name:'Pork Loin',qty:0,unit:'roast',low:1},{id:'f9',name:'Pork Shoulder',qty:0,unit:'roast',low:1},{id:'f10',name:'Ham whole or steak',qty:0,unit:'item',low:1},{id:'f11',name:'Bacon',qty:1,unit:'pkg',low:1},{id:'f12',name:'Turkey whole',qty:1,unit:'bird',low:0},{id:'f13',name:'Deer Roast',qty:1,unit:'roast',low:0},{id:'f14',name:'Ribs',qty:1,unit:'rack',low:0},{id:'f15',name:'Chicken Thighs/Leg',qty:1,unit:'pkg',low:1},{id:'f16',name:'Ground Turkey',qty:1,unit:'pkg',low:1},{id:'f17',name:'Pork Ribs',qty:1,unit:'rack',low:0},{id:'f18',name:'Fish/Seafood',qty:0,unit:'pkg',low:1},{id:'f19',name:'Chicken Legs',qty:2,unit:'pkg',low:1},{id:'f20',name:'Ground Chicken',qty:3,unit:'pkg',low:1},{id:'f21',name:'BBQ Thigh/Leg',qty:1,unit:'pkg',low:0},{id:'f22',name:'Turkey Tenderloin',qty:1,unit:'pkg',low:0},{id:'f23',name:'Ham Bone',qty:1,unit:'bone',low:0},{id:'f24',name:'Velvet Chicken',qty:2,unit:'pkg',low:0},{id:'f25',name:'Breakfast Patties',qty:1,unit:'pkg',low:1},{id:'f26',name:'Lamb Meat',qty:1,unit:'pkg',low:0},{id:'f27',name:'Velvet Steak',qty:1,unit:'pkg',low:0}],
-pantry:[{id:'p1',name:'Spaghetti',qty:9,unit:'boxes',low:2},{id:'p2',name:'Ziti/Penne/Rotini',qty:1,unit:'boxes',low:2},{id:'p3',name:'Elbow Macaroni',qty:1,unit:'box',low:1},{id:'p4',name:'Lasagna Noodles',qty:1,unit:'box',low:1},{id:'p5',name:'Egg Noodles',qty:0,unit:'bag',low:1},{id:'p6',name:'Jarred Pasta Sauce',qty:1,unit:'jars',low:2},{id:'p7',name:'Diced Tomatoes',qty:0,unit:'cans',low:2},{id:'p8',name:'Crushed Tomatoes',qty:0,unit:'cans',low:2},{id:'p9',name:'Tomato Sauce',qty:0,unit:'cans',low:2},{id:'p10',name:'Beef Broth',qty:0,unit:'boxes',low:2},{id:'p11',name:'Chicken Broth',qty:0,unit:'boxes',low:2},{id:'p12',name:'Cream of Mushroom Soup',qty:0,unit:'cans',low:2},{id:'p13',name:'Cream of Chicken Soup',qty:0,unit:'cans',low:2},{id:'p14',name:'All Meat Chili',qty:0,unit:'cans',low:1},{id:'p15',name:'Kidney Beans',qty:0,unit:'cans',low:2},{id:'p16',name:'Black Beans',qty:0,unit:'cans',low:2},{id:'p17',name:'Navy Beans',qty:0,unit:'cans',low:1},{id:'p18',name:'Small Red Beans',qty:0,unit:'cans',low:1},{id:'p19',name:'Corn',qty:0,unit:'cans',low:3},{id:'p20',name:'Mixed Veg',qty:0,unit:'cans',low:3},{id:'p21',name:'White Rice',qty:1,unit:'bag',low:1},{id:'p22',name:'Brown Rice',qty:1,unit:'bag',low:1},{id:'p23',name:'Split Peas',qty:0,unit:'bag',low:1},{id:'p24',name:'Flour',qty:0,unit:'bag',low:1},{id:'p25',name:'Sugar',qty:0,unit:'bag',low:1},{id:'p26',name:'Brown Sugar',qty:0,unit:'bag',low:1},{id:'p27',name:'Powdered Sugar',qty:0,unit:'bag',low:1},{id:'p28',name:'Cocoa Powder',qty:0,unit:'container',low:1},{id:'p29',name:'Oats quick',qty:0,unit:'container',low:1},{id:'p30',name:'Baking Soda',qty:0,unit:'box',low:1},{id:'p31',name:'Baking Powder',qty:0,unit:'can',low:1},{id:'p32',name:'Cream of Tartar',qty:0,unit:'jar',low:1},{id:'p33',name:'Breadcrumbs',qty:1,unit:'canister',low:1},{id:'p34',name:'Taco Shells hard',qty:0,unit:'box',low:1},{id:'p35',name:'Flour Tortillas',qty:0,unit:'pkg',low:1},{id:'p36',name:'Stove Top Stuffing',qty:7,unit:'boxes',low:2},{id:'p37',name:'Knorr Broccoli Cheese Rice',qty:0,unit:'pkts',low:2},{id:'p38',name:'Rice-a-Roni Beef',qty:1,unit:'box',low:1},{id:'p39',name:'Hamburger Helper',qty:5,unit:'boxes',low:2},{id:'p40',name:'Peanut Butter',qty:3,unit:'jars',low:1},{id:'p41',name:'Vanilla Extract',qty:0,unit:'bottle',low:1},{id:'p42',name:'Vegetable Oil',qty:2,unit:'bottles',low:1},{id:'p43',name:'Olive Oil',qty:0,unit:'bottle',low:1},{id:'p44',name:'Apple Cider Vinegar',qty:1,unit:'bottle (half)',low:1},{id:'p45',name:'Soy Sauce',qty:1,unit:'bottle (half)',low:1},{id:'p46',name:'Worcestershire Sauce',qty:0,unit:'bottle',low:1},{id:'p47',name:'BBQ Sauce',qty:0,unit:'bottle',low:1},{id:'p48',name:'Ketchup',qty:0,unit:'bottle',low:1},{id:'p49',name:'Graham Cracker Crumbs',qty:0,unit:'box',low:1},{id:'p50',name:'Chocolate Chips',qty:0,unit:'bag',low:1},{id:'p51',name:'Mac & Cheese boxed',qty:10,unit:'boxes',low:4},{id:'p52',name:'Au Gratin Potatoes',qty:7,unit:'boxes',low:2},{id:'p53',name:'Instant Potatoes',qty:4,unit:'boxes',low:1},{id:'p54',name:'Pancake Mix',qty:4,unit:'boxes',low:1},{id:'p55',name:'Muffin Mix',qty:10,unit:'boxes',low:2},{id:'p56',name:'Cake Mix',qty:5,unit:'boxes',low:1},{id:'p57',name:'Cereal',qty:3,unit:'boxes',low:2},{id:'p58',name:'Garlic Powder',qty:1,unit:'jar',low:1}],
-fridge:[{id:'r1',name:'Eggs',qty:36,unit:'eggs',low:12},{id:'r2',name:'Whole Milk',qty:1,unit:'gallons (1.5)',low:1},{id:'r3',name:'Butter',qty:4,unit:'sticks (4.5)',low:4},{id:'r4',name:'Sharp Cheddar Cheese',qty:0,unit:'block',low:1},{id:'r5',name:'Mozzarella Cheese',qty:0,unit:'pkg',low:1},{id:'r6',name:'Ricotta Cheese',qty:0,unit:'container',low:1},{id:'r7',name:'Parmesan Cheese',qty:0,unit:'container',low:1},{id:'r8',name:'Cream Cheese',qty:0,unit:'block',low:1},{id:'r9',name:'Sour Cream',qty:0,unit:'tub',low:1},{id:'r10',name:'Deli Ham',qty:3,unit:'pkg',low:1},{id:'r11',name:'Deli Turkey',qty:0,unit:'pkg',low:1},{id:'r12',name:'Bologna',qty:1,unit:'pkg',low:1},{id:'r13',name:'Chicken Lunch Meat',qty:6,unit:'pkg',low:2},{id:'r14',name:'Potatoes',qty:3,unit:'bags',low:1},{id:'r15',name:'Onions',qty:0,unit:'onions',low:2},{id:'r16',name:'Green Peppers',qty:0,unit:'peppers',low:2},{id:'r17',name:'Carrots',qty:0,unit:'bag',low:1},{id:'r18',name:'Celery',qty:0,unit:'bunch',low:1},{id:'r19',name:'Garlic heads',qty:0,unit:'heads',low:1},{id:'r20',name:'Lettuce',qty:0,unit:'head',low:1},{id:'r21',name:'Tomatoes',qty:0,unit:'tomatoes',low:2},{id:'r22',name:'Apples',qty:0,unit:'apples',low:3},{id:'r23',name:'Lemon/Lime',qty:0,unit:'count',low:1},{id:'r24',name:'Dill Mustard',qty:0,unit:'jar',low:1},{id:'r25',name:'Dijon Mustard',qty:0,unit:'jar',low:1},{id:'r26',name:'Colby Cheese',qty:0,unit:'block',low:1},{id:'r27',name:'American Cheese Slices',qty:0,unit:'pkg',low:1},{id:'r28',name:"Hellman's Mayonnaise",qty:0,unit:'jar',low:1},{id:'r29',name:'Hot Sauce/Salsa',qty:0,unit:'jar',low:1},{id:'r30',name:'Pineapple Chunks',qty:0,unit:'can',low:1}]
+freezer:[{id:'f1',name:'Ground Beef',qty:4,unit:'pkgs',low:2},{id:'f2',name:'Whole Chicken or Pieces',qty:0,unit:'pkg',low:1},{id:'f3',name:'Pork Chops',qty:0,unit:'pkg',low:1},{id:'f4',name:'Italian Sausage',qty:0,unit:'lb',low:1},{id:'f5',name:'Steak',qty:0,unit:'pieces',low:1},{id:'f6',name:'Hot Dogs',qty:24,unit:'count',low:8},{id:'f7',name:'Chicken Breasts',qty:1,unit:'pkg',low:2},{id:'f8',name:'Pork Loin',qty:0,unit:'roast',low:1},{id:'f9',name:'Pork Shoulder',qty:0,unit:'roast',low:1},{id:'f10',name:'Ham whole or steak',qty:0,unit:'item',low:1},{id:'f11',name:'Bacon',qty:1,unit:'pkg',low:1},{id:'f12',name:'Turkey whole',qty:1,unit:'bird',low:0},{id:'f13',name:'Deer Roast',qty:1,unit:'roast',low:0},{id:'f14',name:'Ribs',qty:1,unit:'rack',low:0},{id:'f15',name:'Chicken Thighs/Leg',qty:1,unit:'pkg',low:1},{id:'f16',name:'Ground Turkey',qty:1,unit:'pkg',low:1},{id:'f17',name:'Pork Ribs',qty:1,unit:'rack',low:0},{id:'f18',name:'Fish/Seafood',qty:0,unit:'pkg',low:1},{id:'f19',name:'Chicken Legs',qty:2,unit:'pkg',low:1},{id:'f20',name:'Ground Chicken',qty:3,unit:'pkg',low:1},{id:'f21',name:'BBQ Thigh/Leg',qty:1,unit:'pkg',low:0},{id:'f22',name:'Turkey Tenderloin',qty:1,unit:'pkg',low:0},{id:'f23',name:'Ham Bone',qty:1,unit:'bone',low:0},{id:'f24',name:'Velvet Chicken',qty:2,unit:'pkg',low:0},{id:'f25',name:'Breakfast Patties',qty:1,unit:'pkg',low:1},{id:'f26',name:'Lamb Meat',qty:1,unit:'pkg',low:0},{id:'f27',name:'Velvet Steak',qty:1,unit:'pkg',low:0},{id:'f28',name:'Frozen Corn',qty:0,unit:'bags',low:2},{id:'f29',name:'Frozen Mixed Vegetables',qty:0,unit:'bags',low:2},{id:'f30',name:'Frozen Peas',qty:0,unit:'bags',low:1},{id:'f32',name:'Frozen Peas and Carrots',qty:0,unit:'bags',low:1},{id:'f31',name:'Frozen Broccoli',qty:0,unit:'bags',low:1},{id:'f33',name:'Meatballs frozen',qty:0,unit:'bag',low:1},{id:'f34',name:'Ravioli',qty:0,unit:'pkg',low:1},{id:'f35',name:'Chip Steak',qty:0,unit:'pkg',low:1}],
+pantry:[{id:'p1',name:'Spaghetti',qty:9,unit:'boxes',low:2},{id:'p2',name:'Ziti/Penne/Rotini',qty:1,unit:'boxes',low:2},{id:'p3',name:'Elbow Macaroni',qty:1,unit:'box',low:1},{id:'p4',name:'Lasagna Noodles',qty:1,unit:'box',low:1},{id:'p5',name:'Egg Noodles',qty:0,unit:'bag',low:1},{id:'p6',name:'Jarred Pasta Sauce',qty:1,unit:'jars',low:2},{id:'p7',name:'Diced Tomatoes',qty:0,unit:'cans',low:2},{id:'p8',name:'Crushed Tomatoes',qty:0,unit:'cans',low:2},{id:'p9',name:'Tomato Sauce',qty:0,unit:'cans',low:2},{id:'p10',name:'Beef Broth',qty:0,unit:'boxes',low:2},{id:'p11',name:'Chicken Broth',qty:0,unit:'boxes',low:2},{id:'p12',name:'Cream of Mushroom Soup',qty:0,unit:'cans',low:2},{id:'p13',name:'Cream of Chicken Soup',qty:0,unit:'cans',low:2},{id:'p14',name:'All Meat Chili',qty:0,unit:'cans',low:1},{id:'p15',name:'Kidney Beans',qty:0,unit:'cans',low:2},{id:'p16',name:'Black Beans',qty:0,unit:'cans',low:2},{id:'p17',name:'Navy Beans',qty:0,unit:'cans',low:1},{id:'p18',name:'Small Red Beans',qty:0,unit:'cans',low:1},{id:'p19',name:'Corn',qty:0,unit:'cans',low:3},{id:'p20',name:'Mixed Veg',qty:0,unit:'cans',low:3},{id:'p21',name:'White Rice',qty:1,unit:'bag',low:1},{id:'p22',name:'Brown Rice',qty:1,unit:'bag',low:1},{id:'p23',name:'Split Peas',qty:0,unit:'bag',low:1},{id:'p24',name:'Flour',qty:0,unit:'bag',low:1},{id:'p25',name:'Sugar',qty:0,unit:'bag',low:1},{id:'p26',name:'Brown Sugar',qty:0,unit:'bag',low:1},{id:'p27',name:'Powdered Sugar',qty:0,unit:'bag',low:1},{id:'p28',name:'Cocoa Powder',qty:0,unit:'container',low:1},{id:'p29',name:'Oats quick',qty:0,unit:'container',low:1},{id:'p30',name:'Baking Soda',qty:0,unit:'box',low:1},{id:'p31',name:'Baking Powder',qty:0,unit:'can',low:1},{id:'p32',name:'Cream of Tartar',qty:0,unit:'jar',low:1},{id:'p33',name:'Breadcrumbs',qty:1,unit:'canister',low:1},{id:'p34',name:'Taco Shells hard',qty:0,unit:'box',low:1},{id:'p35',name:'Flour Tortillas',qty:0,unit:'pkg',low:1},{id:'p36',name:'Stove Top Stuffing',qty:7,unit:'boxes',low:2},{id:'p37',name:'Knorr Broccoli Cheese Rice',qty:0,unit:'pkts',low:2},{id:'p38',name:'Rice-a-Roni Beef',qty:1,unit:'box',low:1},{id:'p39',name:'Hamburger Helper',qty:5,unit:'boxes',low:2},{id:'p40',name:'Peanut Butter',qty:3,unit:'jars',low:1},{id:'p41',name:'Vanilla Extract',qty:0,unit:'bottle',low:1},{id:'p42',name:'Vegetable Oil',qty:2,unit:'bottles',low:1},{id:'p43',name:'Olive Oil',qty:0,unit:'bottle',low:1},{id:'p44',name:'Apple Cider Vinegar',qty:1,unit:'bottle (half)',low:1},{id:'p45',name:'Soy Sauce',qty:1,unit:'bottle (half)',low:1},{id:'p46',name:'Worcestershire Sauce',qty:0,unit:'bottle',low:1},{id:'p47',name:'BBQ Sauce',qty:0,unit:'bottle',low:1},{id:'p48',name:'Ketchup',qty:0,unit:'bottle',low:1},{id:'p49',name:'Graham Cracker Crumbs',qty:0,unit:'box',low:1},{id:'p50',name:'Chocolate Chips',qty:0,unit:'bag',low:1},{id:'p51',name:'Mac & Cheese boxed',qty:10,unit:'boxes',low:4},{id:'p52',name:'Au Gratin Potatoes',qty:7,unit:'boxes',low:2},{id:'p53',name:'Instant Potatoes',qty:4,unit:'boxes',low:1},{id:'p54',name:'Pancake Mix',qty:4,unit:'boxes',low:1},{id:'p55',name:'Muffin Mix',qty:10,unit:'boxes',low:2},{id:'p56',name:'Cake Mix',qty:5,unit:'boxes',low:1},{id:'p57',name:'Cereal',qty:3,unit:'boxes',low:2},{id:'p58',name:'Garlic Powder',qty:1,unit:'jar',low:1},{id:'p59',name:'Salt',qty:0,unit:'container',low:1},{id:'p60',name:'Black Pepper',qty:0,unit:'container',low:1},{id:'p61',name:'Cornstarch',qty:0,unit:'box',low:1},{id:'p62',name:'Hoisin Sauce',qty:0,unit:'bottle',low:1},{id:'p63',name:'Oyster Sauce',qty:0,unit:'bottle',low:1},{id:'p64',name:'Fish Sauce',qty:0,unit:'bottle',low:1},{id:'p65',name:'MSG',qty:0,unit:'container',low:1},{id:'p66',name:'Sesame Oil',qty:0,unit:'bottle',low:1},{id:'p67',name:'Paprika',qty:0,unit:'jar',low:1},{id:'p68',name:'Cinnamon',qty:0,unit:'jar',low:1},{id:'p69',name:'Rice Wine',qty:0,unit:'bottle',low:1},{id:'p70',name:'Dried Red Chilies',qty:0,unit:'bag',low:1},{id:'p71',name:'Honey',qty:0,unit:'bottle',low:1},{id:'p72',name:'Onion Soup Mix',qty:0,unit:'boxes',low:1},{id:'p73',name:'Chicken Bouillon',qty:0,unit:'jar',low:1},{id:'p74',name:'Onion Powder',qty:0,unit:'jar',low:1},{id:'p75',name:'Italian Seasoning',qty:0,unit:'jar',low:1},{id:'p76',name:'Chili Seasoning',qty:0,unit:'pkts',low:1},{id:'p77',name:'Taco Seasoning',qty:0,unit:'pkts',low:1},{id:'p78',name:'Shake & Bake',qty:0,unit:'boxes',low:1},{id:'p79',name:'Worcestershire Sauce',qty:0,unit:'bottle',low:1},{id:'p80',name:'Cheddar Cheese Soup',qty:0,unit:'cans',low:1},{id:'p81',name:'Ritz Crackers',qty:0,unit:'boxes',low:1},{id:'p82',name:'Cannellini Beans',qty:0,unit:'cans',low:1},{id:'p83',name:'Enchilada Sauce',qty:0,unit:'cans',low:1}],
+fridge:[{id:'r1',name:'Eggs',qty:36,unit:'eggs',low:12},{id:'r2',name:'Whole Milk',qty:1,unit:'gallons (1.5)',low:1},{id:'r3',name:'Butter',qty:4,unit:'sticks (4.5)',low:4},{id:'r4',name:'Sharp Cheddar Cheese',qty:0,unit:'block',low:1},{id:'r5',name:'Mozzarella Cheese',qty:0,unit:'pkg',low:1},{id:'r6',name:'Ricotta Cheese',qty:0,unit:'container',low:1},{id:'r7',name:'Parmesan Cheese',qty:0,unit:'container',low:1},{id:'r8',name:'Cream Cheese',qty:0,unit:'block',low:1},{id:'r9',name:'Sour Cream',qty:0,unit:'tub',low:1},{id:'r10',name:'Deli Ham',qty:3,unit:'pkg',low:1},{id:'r11',name:'Deli Turkey',qty:0,unit:'pkg',low:1},{id:'r12',name:'Bologna',qty:1,unit:'pkg',low:1},{id:'r13',name:'Chicken Lunch Meat',qty:6,unit:'pkg',low:2},{id:'r14',name:'Potatoes',qty:3,unit:'bags',low:1},{id:'r15',name:'Onions',qty:0,unit:'onions',low:2},{id:'r16',name:'Green Peppers',qty:0,unit:'peppers',low:2},{id:'r17',name:'Carrots',qty:0,unit:'bag',low:1},{id:'r18',name:'Celery',qty:0,unit:'bunch',low:1},{id:'r19',name:'Garlic heads',qty:0,unit:'heads',low:1},{id:'r20',name:'Lettuce',qty:0,unit:'head',low:1},{id:'r21',name:'Tomatoes',qty:0,unit:'tomatoes',low:2},{id:'r22',name:'Apples',qty:0,unit:'apples',low:3},{id:'r23',name:'Lemon/Lime',qty:0,unit:'count',low:1},{id:'r24',name:'Dill Mustard',qty:0,unit:'jar',low:1},{id:'r25',name:'Dijon Mustard',qty:0,unit:'jar',low:1},{id:'r26',name:'Colby Cheese',qty:0,unit:'block',low:1},{id:'r27',name:'American Cheese Slices',qty:0,unit:'pkg',low:1},{id:'r28',name:"Hellman's Mayonnaise",qty:0,unit:'jar',low:1},{id:'r29',name:'Hot Sauce/Salsa',qty:0,unit:'jar',low:1},{id:'r30',name:'Pineapple Chunks',qty:0,unit:'can',low:1},{id:'r31',name:'Cooper Sharp Cheese',qty:0,unit:'vac bags',low:2},{id:'r32',name:'Shredded Cheddar Cheese',qty:0,unit:'bags',low:1},{id:'r33',name:'Provolone',qty:0,unit:'pkg',low:1},{id:'r34',name:'Fresh Ginger',qty:0,unit:'root',low:1},{id:'r35',name:'Green Onions/Scallions',qty:0,unit:'bunch',low:1},{id:'r36',name:'Maraschino Cherries',qty:0,unit:'jar',low:1}]
 };
 
 // Storage functions overridden by Firebase block below
@@ -746,17 +773,25 @@ function renderInv(){
   const secs=[{key:'freezer',label:'Freezer'},{key:'pantry',label:'Pantry & Dry Goods'},{key:'fridge',label:'Refrigerator & Fresh'}];
   document.getElementById('inventory-list').innerHTML=secs.map(sec=>`<div class="inv-sec"><div class="inv-sec-t">${sec.label}</div>${inv[sec.key].map(item=>`<div class="inv-item"><div><div class="inv-nm">${item.name}</div><div class="inv-un">${item.unit}</div></div><div class="inv-ct"><button class="qb" onclick="adjQty('${sec.key}','${item.id}',-1)">-</button><span class="qs ${item.qty<=item.low?'q-lo':'q-ok'}" id="q-${item.id}">${item.qty}</span><button class="qb" onclick="adjQty('${sec.key}','${item.id}',1)">+</button></div></div>`).join('')}<div class="add-row"><input class="add-inp" type="text" placeholder="Add to ${sec.label.toLowerCase()}..." id="ai-${sec.key}"><button class="add-btn" onclick="addItem('${sec.key}')">Add</button></div></div>`).join('');
 }
-function adjQty(sec,id,d){const inv=getInv();const item=inv[sec].find(i=>i.id===id);if(!item)return;item.qty=Math.max(0,item.qty+d);saveInv(inv);const el=document.getElementById('q-'+id);if(el){el.textContent=item.qty;el.className='qs '+(item.qty<=item.low?'q-lo':'q-ok');}}
+function adjQty(sec,id,d){const inv=getInv();const item=inv[sec].find(i=>i.id===id);if(!item)return;item.qty=Math.max(0,item.qty+d);saveInv(inv);const el=document.getElementById('q-'+id);if(el){el.textContent=item.qty;el.className='qs '+(item.qty<=item.low?'q-lo':'q-ok');}if(item.qty<=item.low){addToShopping([item.name],'low stock');}updateShopBadge();}
 function addItem(sec){const inp=document.getElementById('ai-'+sec);const name=inp.value.trim();if(!name)return;const inv=getInv();inv[sec].push({id:sec[0]+Date.now(),name,qty:1,unit:'item',low:1});saveInv(inv);inp.value='';renderInv();}
 
 function sendToShopping(){
   if(!currentPlan)generatePlan();
-  const inv=getInv();
-  const allInv=[...inv.freezer,...inv.pantry,...inv.fridge].filter(i=>i.qty>0).map(i=>i.name.toLowerCase());
-  const needed=new Map();
-  currentPlan.forEach(s=>{if(!s.mealObj)return;s.mealObj.ingredients.forEach(ing=>{const k=ing.toLowerCase().replace(/[\d./]+(lb|lbs|oz|pkg|cup|cups|tbsp|tsp|pieces|cans|jars|boxes|cloves|optional|\s)+/gi,'').trim();if(k.length<3)return;const kw=k.split(' ')[0];const inStock=allInv.some(iv=>iv.includes(kw)||kw.includes(iv.split(' ')[0]));if(!inStock)needed.set(ing,{name:ing,checked:false});});});
-  saveShop(Array.from(needed.values()));
+  const invNames=inStockNames();
+  // Gather missing ingredients from every planned meal
+  const missing=[];
+  currentPlan.forEach(s=>{
+    if(!s.mealObj||!s.mealObj.ingredients)return;
+    s.mealObj.ingredients.forEach(ing=>{
+      if(!haveIngredient(ing,invNames)) missing.push(ing);
+    });
+  });
+  // Add missing meal ingredients + any low-stock items, persistently
+  addToShopping(missing,'meal plan');
+  syncLowStockToShopping();
   renderShopList();
+  updateShopBadge();
   showScreen('shopping',document.querySelectorAll('.nb')[4]);
 }
 function renderShopList(){
@@ -765,8 +800,8 @@ function renderShopList(){
   const rem=list.filter(i=>!i.checked).length;
   el.innerHTML=`<div class="sec-lbl">${rem} item${rem!==1?'s':''} remaining</div>`+list.map((item,i)=>`<div class="shop-item ${item.checked?'chk':''}" onclick="toggleShop(${i})"><div class="shop-chk"></div><span class="shop-nm">${item.name}</span></div>`).join('');
 }
-function toggleShop(i){const l=getShop();l[i].checked=!l[i].checked;saveShop(l);renderShopList();}
-function clearChecked(){saveShop(getShop().filter(i=>!i.checked));renderShopList();}
+function toggleShop(i){const l=getShop();l[i].checked=!l[i].checked;saveShop(l);renderShopList();updateShopBadge();}
+function clearChecked(){saveShop(getShop().filter(i=>!i.checked));renderShopList();updateShopBadge();}
 
 function renderHealth(){
   document.getElementById('health-content').innerHTML=`
@@ -841,6 +876,7 @@ function initFirebase(){
       if(val){
         try{ localStorage.setItem('sk4-inv', JSON.stringify(val)); }catch(e){}
         if(document.getElementById('screen-inventory').classList.contains('active')) renderInv();
+        updateShopBadge();
       }
     });
     _db.ref('stewart/shopping').on('value', snap => {
@@ -928,6 +964,152 @@ function saveShop(list){
   try{ localStorage.setItem('sk4-shop', JSON.stringify(list)); }catch(e){}
   fbWrite('stewart/shopping', list);
 }
+
+
+// ══════════════════════════════════════════════════════
+// INVENTORY-DRIVEN MEAL & SHOPPING ENGINE
+// ══════════════════════════════════════════════════════
+
+// Words to strip from ingredient strings to find the core noun
+const ING_STOPWORDS = ['fresh','frozen','canned','can','cans','box','boxes','bag','bags','jar','jars','lb','lbs','oz','cup','cups','tbsp','tsp','pkg','pkgs','package','pieces','piece','cloves','clove','diced','chopped','sliced','minced','crushed','ground','small','medium','large','leftover','cooked','optional','divided','thawed','drained','to','of','the','for','and','or','a','an','with','about','approx','retain','juice','each','head','heads','bunch','stick','sticks','container','bottle','bottles','pkt','pkts','count','dash','pinch','taste'];
+
+// Normalize an ingredient string to its core searchable tokens
+function ingTokens(str){
+  return str.toLowerCase()
+    .replace(/[0-9]+([./][0-9]+)?/g,' ')   // remove numbers/fractions
+    .replace(/[^a-z\s]/g,' ')               // remove punctuation
+    .split(/\s+/)
+    .filter(w => w.length>2 && !ING_STOPWORDS.includes(w));
+}
+
+// Does the inventory (qty>0) cover this ingredient?
+function haveIngredient(ingStr, invNames){
+  const tokens = ingTokens(ingStr);
+  if(!tokens.length) return true; // pure seasoning/water etc -- assume on hand
+  // Match if any inventory item shares a meaningful noun with the ingredient
+  return invNames.some(inv => {
+    const invToks = ingTokens(inv);
+    return tokens.some(t => invToks.some(it => it===t || (t.length>4 && it.includes(t)) || (it.length>4 && t.includes(it))));
+  });
+}
+
+// Get list of inventory item names that are in stock (qty>0)
+function inStockNames(){
+  const inv = getInv();
+  return [...inv.freezer, ...inv.pantry, ...inv.fridge]
+    .filter(i => i.qty > 0)
+    .map(i => i.name);
+}
+
+// Score a meal's readiness: returns {pct, have, total, missing:[...]}
+function mealReadiness(meal){
+  if(!meal.ingredients || !meal.ingredients.length) return {pct:100, have:0, total:0, missing:[]};
+  const invNames = inStockNames();
+  let have = 0;
+  const missing = [];
+  meal.ingredients.forEach(ing => {
+    if(haveIngredient(ing, invNames)) have++;
+    else missing.push(ing);
+  });
+  const total = meal.ingredients.length;
+  return { pct: Math.round((have/total)*100), have, total, missing };
+}
+
+// Readiness tier from pct
+function readinessTier(pct){
+  if(pct >= 80) return 'ready';
+  if(pct >= 50) return 'close';
+  return 'shop';
+}
+
+// Add items to the persistent shopping list (deduped, won't re-add existing)
+function addToShopping(items, reason){
+  const list = getShop();
+  const existing = new Set(list.map(i => i.name.toLowerCase()));
+  let added = 0;
+  items.forEach(name => {
+    if(!existing.has(name.toLowerCase())){
+      list.push({ name, checked:false, reason: reason||'' });
+      existing.add(name.toLowerCase());
+      added++;
+    }
+  });
+  if(added > 0){ saveShop(list); updateShopBadge(); }
+  return added;
+}
+
+// Scan inventory for low/out items and add them to the shopping list
+function syncLowStockToShopping(){
+  const inv = getInv();
+  const all = [...inv.freezer, ...inv.pantry, ...inv.fridge];
+  const lowItems = all.filter(i => i.qty <= i.low).map(i => i.name);
+  if(lowItems.length) addToShopping(lowItems, 'low stock');
+}
+
+// Update the notification badge on the shopping nav
+function updateShopBadge(){
+  const list = getShop();
+  const remaining = list.filter(i => !i.checked).length;
+  let badge = document.getElementById('shop-badge');
+  const navBtns = document.querySelectorAll('.nb');
+  // shopping is nav index 4
+  const shopNav = navBtns[4];
+  if(!shopNav) return;
+  if(!badge){
+    badge = document.createElement('span');
+    badge.id = 'shop-badge';
+    badge.style.cssText = 'position:absolute;top:2px;right:8px;background:#b5451b;color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;';
+    shopNav.style.position = 'relative';
+    shopNav.appendChild(badge);
+  }
+  if(remaining > 0){ badge.textContent = remaining; badge.style.display='flex'; }
+  else { badge.style.display='none'; }
+}
+
+// Build the "what can I make" suggestions for the planner
+
+function showSuggestions(){
+  const w=document.getElementById('meal-suggestions-wrap');
+  if(w) w.style.display = w.style.display==='none' ? 'block' : 'none';
+}
+function openMeal(name){
+  // Switch to meals library and open the recipe if it exists
+  showScreen('meals',document.querySelectorAll('.nb')[0]);
+  const search=document.getElementById('meal-search');
+  if(search){ search.value=name; filterMeals(); }
+}
+
+function renderMealSuggestions(){
+  const el = document.getElementById('meal-suggestions');
+  if(!el) return;
+  // Score all real dinner meals
+  const dinnerCats = ['Comfort','Italian','Mexican','Chinese','Grill','Soups'];
+  const scored = MEALS
+    .filter(m => dinnerCats.includes(m.cat) && m.ingredients)
+    .map(m => ({ meal:m, r:mealReadiness(m) }))
+    .sort((a,b) => b.r.pct - a.r.pct);
+
+  const ready = scored.filter(s => s.r.pct >= 80).slice(0,8);
+  const close = scored.filter(s => s.r.pct >= 50 && s.r.pct < 80).slice(0,6);
+
+  let html = '';
+  if(ready.length){
+    html += '<div class="sug-grp"><div class="sug-grp-t">&#9989; Ready to make tonight</div>';
+    html += ready.map(s => `<div class="sug-item sug-ready" onclick="openMeal('${s.meal.name.replace(/'/g,"\\'")}')"><span class="sug-nm">${s.meal.name}</span><span class="sug-pct">have it</span></div>`).join('');
+    html += '</div>';
+  }
+  if(close.length){
+    html += '<div class="sug-grp"><div class="sug-grp-t">&#128717; A few ingredients away</div>';
+    html += close.map(s => {
+      const miss = s.r.missing.slice(0,3).join(', ');
+      return `<div class="sug-item sug-close" onclick="openMeal('${s.meal.name.replace(/'/g,"\\'")}')"><span class="sug-nm">${s.meal.name}</span><span class="sug-miss">need: ${miss}</span></div>`;
+    }).join('');
+    html += '</div>';
+  }
+  if(!html) html = '<div class="empty">Update your inventory to see meal suggestions.</div>';
+  el.innerHTML = html;
+}
+
 
 function savePlan(plan){
   if(!plan) return;
@@ -1190,6 +1372,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   renderHealth();
   renderHelp();
   initFirebase();
+  setTimeout(()=>{ syncLowStockToShopping(); updateShopBadge(); }, 1500);
 });
 
 </script>
