@@ -628,6 +628,7 @@ body.theme-wild .mission-check.done{background:var(--wild2);border-color:var(--w
     <!-- TAB: RATIONS (meals) -->
     <div class="tab active" id="tab-rations">
       <div id="status-summary" style="margin-bottom:16px;"></div>
+      <div id="tonight-activity"></div>
 
       <div class="sec-head">
         <div class="sec-head-diamond"></div>
@@ -793,6 +794,14 @@ body.theme-wild .mission-check.done{background:var(--wild2);border-color:var(--w
           <div id="self-assessment-saved" style="font-size:10px;color:#4aaa6a;text-align:center;margin-top:6px;display:none;">&#10003; Saved to your agent file</div>
         </div>
       </div>
+      <div class="sec-head" style="margin-top:18px;">
+        <div class="sec-head-diamond"></div>
+        <div class="sec-head-text">Teach Me Vote</div>
+        <div class="sec-head-line"></div>
+      </div>
+      <div id="teachme-vote-content">
+        <div class="empty">Loading vote...</div>
+      </div>
     </div>
 
     <!-- TAB: PAY -->
@@ -804,6 +813,14 @@ body.theme-wild .mission-check.done{background:var(--wild2);border-color:var(--w
       </div>
       <div id="pay-content">
         <div class="empty">Loading pay data...</div>
+      </div>
+      <div class="sec-head" style="margin-top:18px;">
+        <div class="sec-head-diamond"></div>
+        <div class="sec-head-text">Super Family Night</div>
+        <div class="sec-head-line"></div>
+      </div>
+      <div id="super-fn-content">
+        <div class="empty">Loading...</div>
       </div>
     </div>
 
@@ -950,6 +967,8 @@ function selectAgent(id, codename, name, rank, theme, icon){
   setTimeout(() => renderReadingLog(), 1100);
   renderStatusSummary();
   renderSelfAssessment();
+  renderTonightActivity();
+  renderSuperFamilyNight();
   setTimeout(() => checkCelebrations(), 2000);
 }
 
@@ -976,10 +995,10 @@ function showTab(name, btn){
 
   if(name === 'lunch') renderLunch();
   if(name === 'missions') renderMissions();
-  if(name === 'pay') renderPayScreen();
+  if(name === 'pay'){ renderPayScreen(); renderSuperFamilyNight(); }
   if(name === 'xbox'){ renderGameTime(); renderReadingLog(); }
   if(name === 'transmissions') renderTransmissions();
-  if(name === 'training') renderSelfAssessment();
+  if(name === 'training'){ renderSelfAssessment(); renderTeachMeVote(); }
 }
 
 // ══════════════════════════════════════════════════════
@@ -1986,6 +2005,8 @@ function toggleMission(missionId, refPath){
       renderMissions();
       renderStatusSummary();
   renderSelfAssessment();
+  renderTonightActivity();
+  renderSuperFamilyNight();
     });
   });
 }
@@ -3158,6 +3179,336 @@ function saveSelfAssessment(){
       setTimeout(() => { savedEl.style.display = 'none'; }, 3000);
     }
   });
+}
+
+
+// ══════════════════════════════════════════════════════
+// TONIGHT'S ACTIVITY (read-only for boys)
+// ══════════════════════════════════════════════════════
+
+function renderTonightActivity(){
+  const el = document.getElementById('tonight-activity');
+  if(!el || !_db) return;
+
+  const today = new Date().toISOString().slice(0,10);
+  _db.ref(`stewart/familynight/activities/${today}`).once('value', snap => {
+    const activity = snap.val();
+    if(!activity){
+      el.innerHTML = '';
+      return;
+    }
+    el.innerHTML = `
+      <div style="background:linear-gradient(135deg,rgba(12,200,200,.12),rgba(74,48,180,.12));border:1px solid rgba(12,200,200,.25);border-radius:10px;padding:14px;margin-bottom:14px;">
+        <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:2px;color:var(--gold);margin-bottom:6px;">&#9733; TONIGHT'S MISSION</div>
+        <div style="font-size:24px;margin-bottom:4px;">${activity.icon}</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:14px;font-weight:700;color:var(--white);">${activity.label}</div>
+      </div>`;
+  });
+}
+
+
+// ══════════════════════════════════════════════════════
+// TEACH ME VOTE SYSTEM
+// Mon: Suggest | Tue-Thu: Vote (missions must be complete)
+// ══════════════════════════════════════════════════════
+
+const TEACH_ME_OPTIONS = [
+  { id:'bike', label:'Bike Maintenance', icon:'🚲', desc:'Fix flats, adjust brakes, tune gears' },
+  { id:'tools', label:'Tool Basics', icon:'🔧', desc:'Measure, cut, drill, build something' },
+  { id:'car', label:'Car Basics', icon:'🚗', desc:'Oil, tires, jump starts, under the hood' },
+  { id:'knots', label:'Knots & Rope Work', icon:'🪢', desc:'Trail Life knots, lashing, rescue lines' },
+  { id:'fire', label:'Fire Building', icon:'🔥', desc:'Tinder to fire — safely and fast' },
+  { id:'firstaid', label:'First Aid', icon:'🩹', desc:'Cuts, burns, sprains, emergencies' },
+  { id:'cooking', label:'Campfire Cooking', icon:'🍳', desc:'Cast iron, camp stove, open flame' },
+  { id:'navigation', label:'Map & Navigation', icon:'🗺️', desc:'Read a map, use a compass, find your way' },
+  { id:'woodwork', label:'Basic Woodworking', icon:'🪚', desc:'Measure twice, cut once — build something real' },
+  { id:'fishing', label:'Fishing Basics', icon:'🎣', desc:'Knots, bait, casting, cleaning a fish' },
+  { id:'electrical', label:'Basic Electrical', icon:'💡', desc:'Circuits, outlets, safe wiring basics' },
+  { id:'plumbing', label:'Basic Plumbing', icon:'🔩', desc:'Shut-offs, fixing leaks, unclogging drains' },
+];
+
+function getVoteWeekKey(){
+  const now = new Date();
+  const day = now.getDay(); // 0=Sun
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
+  return monday.toISOString().slice(0,10);
+}
+
+function renderTeachMeVote(){
+  if(!currentAgent) return;
+  const el = document.getElementById('teachme-vote-content');
+  if(!el) return;
+  if(!_db){ el.innerHTML='<div class="empty">Connect to WiFi to participate.</div>'; return; }
+
+  const now = new Date();
+  const dow = now.getDay(); // 0=Sun,1=Mon...5=Fri,6=Sat
+  const weekKey = getVoteWeekKey();
+  const today = now.toISOString().slice(0,10);
+
+  // Phase: 1=suggest(Mon), 2=vote(Tue-Thu), 3=closed(Fri-Sun)
+  const phase = dow === 1 ? 'suggest' : (dow >= 2 && dow <= 4) ? 'vote' : 'closed';
+
+  Promise.all([
+    _db.ref(`stewart/teachvote/${weekKey}`).once('value'),
+    _db.ref(`stewart/missions/${currentAgent.id}/${today}`).once('value')
+  ]).then(([voteSnap, missionSnap]) => {
+    const voteData = voteSnap.val() || {};
+    const missionDone = missionSnap.val() || {};
+    const suggestions = voteData.suggestions || {};
+    const votes = voteData.votes || {};
+    const winner = voteData.winner || null;
+
+    // Check if today's missions are complete
+    const missions = buildMissions(currentAgent.id);
+    const totalMissions = missions.length;
+    const completedMissions = missions.filter(m => missionDone[m.id]).length;
+    const missionsComplete = completedMissions >= totalMissions;
+
+    const myVote = votes[currentAgent.id];
+    const mySuggestion = suggestions[currentAgent.id];
+
+    if(phase === 'suggest'){
+      renderSuggestPhase(el, weekKey, mySuggestion);
+    } else if(phase === 'vote'){
+      renderVotePhase(el, weekKey, suggestions, votes, myVote, missionsComplete, completedMissions, totalMissions);
+    } else {
+      renderVoteResults(el, suggestions, votes, winner, voteData.completedDate);
+    }
+  });
+}
+
+function renderSuggestPhase(el, weekKey, mySuggestion){
+  const optionsHtml = TEACH_ME_OPTIONS.map(o =>
+    `<option value="${o.id}" ${mySuggestion===o.id?'selected':''}>${o.icon} ${o.label} — ${o.desc}</option>`
+  ).join('');
+
+  el.innerHTML = `
+    <div style="background:linear-gradient(135deg,var(--dark2),#0a1a14);border:1px solid rgba(12,200,200,.2);border-radius:10px;padding:14px;margin-bottom:12px;">
+      <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:2px;color:var(--teal2);margin-bottom:4px;">PHASE 1 — MONDAY</div>
+      <div style="font-size:13px;color:var(--white);font-weight:700;margin-bottom:4px;">Submit Your Suggestion</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.5);">What do you want to learn this week? Everyone submits one. Voting opens tomorrow.</div>
+    </div>
+
+    ${mySuggestion ? `
+    <div style="background:rgba(45,106,71,.15);border:1px solid rgba(45,106,71,.3);border-radius:8px;padding:10px 12px;margin-bottom:10px;">
+      <div style="font-size:10px;color:#4aaa6a;margin-bottom:3px;">&#10003; You suggested:</div>
+      <div style="font-size:13px;color:var(--white);">${TEACH_ME_OPTIONS.find(o=>o.id===mySuggestion)?.icon||''} ${TEACH_ME_OPTIONS.find(o=>o.id===mySuggestion)?.label||mySuggestion}</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:3px;">You can change this until midnight tonight.</div>
+    </div>` : ''}
+
+    <div class="hw-card">
+      <div class="hw-card-head"><div class="hw-card-icon">🎯</div><div class="hw-card-title">What do you want to learn?</div></div>
+      <div class="hw-card-body">
+        <select id="suggest-select" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid rgba(12,200,200,.3);background:var(--dark2);color:var(--white);font-family:'Exo 2',sans-serif;font-size:13px;margin-bottom:10px;">
+          <option value="">Pick something...</option>
+          ${optionsHtml}
+        </select>
+        <button onclick="submitSuggestion('${weekKey}')" style="width:100%;padding:10px;border-radius:8px;border:none;background:var(--teal);color:var(--black);font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;cursor:pointer;">
+          ${mySuggestion ? 'UPDATE MY SUGGESTION' : 'SUBMIT SUGGESTION'}
+        </button>
+      </div>
+    </div>`;
+}
+
+function renderVotePhase(el, weekKey, suggestions, votes, myVote, missionsComplete, completedMissions, totalMissions){
+  // Collect all suggestions (boys + parents)
+  const allSuggestions = Object.entries(suggestions);
+  const voteCounts = {};
+  Object.values(votes).forEach(v => { voteCounts[v] = (voteCounts[v]||0)+1; });
+
+  const votePhaseHtml = allSuggestions.length === 0 ?
+    `<div class="empty">No suggestions yet — check back later.</div>` :
+    allSuggestions.map(([agentId, optId]) => {
+      const opt = TEACH_ME_OPTIONS.find(o=>o.id===optId);
+      if(!opt) return '';
+      const voteCount = voteCounts[optId] || 0;
+      const isMyVote = myVote === optId;
+      const suggesterName = agentId === 'dad' ? 'Dad' : agentId === 'mom' ? 'Mom' : AGENT_NAMES[agentId] || agentId;
+      return `<div style="border:2px solid ${isMyVote?'var(--teal)':'rgba(255,255,255,.1)'};border-radius:10px;padding:12px 14px;margin-bottom:8px;background:${isMyVote?'rgba(12,200,200,.08)':'transparent'};">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="font-size:26px;">${opt.icon}</div>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:700;color:var(--white);">${opt.label}</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.4);">${opt.desc}</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:2px;">Suggested by ${suggesterName}</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-family:'Orbitron',sans-serif;font-size:18px;font-weight:700;color:${voteCount>0?'var(--teal2)':'rgba(255,255,255,.2)'};">${voteCount}</div>
+            <div style="font-size:8px;color:rgba(255,255,255,.3);">votes</div>
+          </div>
+        </div>
+        ${missionsComplete ?
+          `<button onclick="castVote('${weekKey}','${optId}')" style="width:100%;margin-top:10px;padding:8px;border-radius:7px;border:none;background:${isMyVote?'var(--teal)':'rgba(255,255,255,.08)'};color:${isMyVote?'var(--black)':'rgba(255,255,255,.6)'};font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;">
+            ${isMyVote ? '✓ YOUR VOTE' : 'VOTE FOR THIS'}
+          </button>` :
+          `<div style="margin-top:8px;padding:8px;border-radius:7px;background:rgba(139,48,16,.15);border:1px solid rgba(139,48,16,.3);text-align:center;">
+            <div style="font-size:10px;color:#cc5533;">&#128274; Complete today's missions to unlock your vote</div>
+            <div style="font-size:9px;color:rgba(255,255,255,.3);margin-top:2px;">${completedMissions}/${totalMissions} missions done</div>
+          </div>`
+        }
+      </div>`;
+    }).join('');
+
+  el.innerHTML = `
+    <div style="background:linear-gradient(135deg,var(--dark2),#0a1a14);border:1px solid rgba(12,200,200,.2);border-radius:10px;padding:14px;margin-bottom:12px;">
+      <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:2px;color:var(--gold);margin-bottom:4px;">PHASE 2 — VOTING OPEN</div>
+      <div style="font-size:13px;color:var(--white);font-weight:700;margin-bottom:4px;">What do we learn this week?</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.5);">Voting closes Thursday. ${missionsComplete?'Your vote is unlocked.':'Finish your missions to vote.'}</div>
+    </div>
+    ${votePhaseHtml}`;
+}
+
+function renderVoteResults(el, suggestions, votes, winner, completedDate){
+  const voteCounts = {};
+  Object.values(votes).forEach(v => { voteCounts[v] = (voteCounts[v]||0)+1; });
+  const winnerOpt = TEACH_ME_OPTIONS.find(o=>o.id===winner) || TEACH_ME_OPTIONS.find(o=>o.id===Object.keys(voteCounts).sort((a,b)=>voteCounts[b]-voteCounts[a])[0]);
+
+  el.innerHTML = `
+    <div style="background:linear-gradient(135deg,rgba(232,184,74,.15),rgba(12,200,200,.1));border:1px solid var(--gold);border-radius:10px;padding:16px;margin-bottom:12px;text-align:center;">
+      <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:2px;color:var(--gold);margin-bottom:6px;">THIS WEEK'S TEACH ME</div>
+      <div style="font-size:36px;margin-bottom:6px;">${winnerOpt?.icon||'🎯'}</div>
+      <div style="font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:var(--white);">${winnerOpt?.label||winner}</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:4px;">${winnerOpt?.desc||''}</div>
+    </div>
+    <div style="font-size:11px;color:rgba(255,255,255,.4);text-align:center;">Voting closed. Check back Monday to suggest next week's topic.</div>`;
+}
+
+function submitSuggestion(weekKey){
+  if(!currentAgent||!_db) return;
+  const select = document.getElementById('suggest-select');
+  const val = select.value;
+  if(!val) return;
+  _db.ref(`stewart/teachvote/${weekKey}/suggestions/${currentAgent.id}`).set(val)
+    .then(() => renderTeachMeVote());
+}
+
+function castVote(weekKey, optionId){
+  if(!currentAgent||!_db) return;
+  _db.ref(`stewart/teachvote/${weekKey}/votes/${currentAgent.id}`).set(optionId)
+    .then(() => renderTeachMeVote());
+}
+
+
+// ══════════════════════════════════════════════════════
+// SUPER FAMILY NIGHT — 80% monthly family average
+// ══════════════════════════════════════════════════════
+
+function getSuperFNMonthKey(){
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+}
+
+function getWeekdaysInMonth(){
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const today = now.toISOString().slice(0,10);
+  const days = [];
+  const d = new Date(year, month, 1);
+  while(d.getMonth() === month){
+    const dow = d.getDay();
+    const dateStr = d.toISOString().slice(0,10);
+    if(dow >= 1 && dow <= 5 && dateStr <= today) days.push(dateStr);
+    d.setDate(d.getDate()+1);
+  }
+  return days;
+}
+
+function renderSuperFamilyNight(){
+  const el = document.getElementById('super-fn-content');
+  if(!el||!_db) return;
+
+  const monthKey = getSuperFNMonthKey();
+  _db.ref(`stewart/superfamilynight/${monthKey}`).once('value', snap => {
+    const sfnData = snap.val() || {};
+
+    // Also check live average
+    const agentIds = ['samuel','johnjr','stephen','daniel'];
+    const now = new Date();
+    const today = now.toISOString().slice(0,10);
+    const year = now.getFullYear(), month = now.getMonth();
+    const weekdays = [];
+    const d = new Date(year, month, 1);
+    while(d.getMonth()===month){
+      const dow = d.getDay(), ds = d.toISOString().slice(0,10);
+      if(dow>=1&&dow<=5&&ds<=today) weekdays.push(ds);
+      d.setDate(d.getDate()+1);
+    }
+
+    Promise.all(agentIds.map(id => _db.ref(`stewart/scores/${id}`).once('value')))
+    .then(scoreSnaps => {
+      let totalScore=0, totalDays=0;
+      const agentAverages = {};
+      scoreSnaps.forEach((snap,i) => {
+        const scores = snap.val()||{};
+        let at=0, ad=0;
+        weekdays.forEach(ds => {
+          if(scores[ds]!==null&&scores[ds]!==undefined){ at+=scores[ds]; ad++; totalScore+=scores[ds]; totalDays++; }
+        });
+        agentAverages[agentIds[i]] = ad>0 ? Math.round(at/ad) : 0;
+      });
+
+      const familyAvg = totalDays>0 ? Math.round(totalScore/totalDays) : 0;
+      const isUnlocked = sfnData.unlocked || familyAvg >= 80;
+      const myAvg = agentAverages[currentAgent?.id] || 0;
+
+      // FULL CELEBRATION if unlocked
+      if(isUnlocked && sfnData.food){
+        triggerSuperFNBanner(sfnData);
+      }
+
+      el.innerHTML = `
+        <div style="background:linear-gradient(135deg,var(--dark2),#1a0a2e);border:2px solid ${isUnlocked?'var(--gold)':'rgba(255,255,255,.15)'};border-radius:12px;padding:16px;text-align:center;">
+          <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:2px;color:${isUnlocked?'var(--gold)':'var(--teal2)'};margin-bottom:6px;">SUPER FAMILY NIGHT</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:10px;">${new Date().toLocaleString('en-US',{month:'long'})} Family Average</div>
+          <div style="font-family:'Orbitron',sans-serif;font-size:40px;font-weight:700;color:${familyAvg>=80?'#4aaa6a':familyAvg>=60?'var(--gold)':'#cc5533'};">${familyAvg}%</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:2px;">${weekdays.length} weekdays tracked</div>
+          <div style="background:rgba(255,255,255,.06);border-radius:8px;height:10px;overflow:hidden;margin:12px 0;">
+            <div style="height:100%;width:${Math.min(100,familyAvg)}%;background:${familyAvg>=80?'linear-gradient(90deg,#4aaa6a,var(--gold))':familyAvg>=60?'var(--gold)':'#cc5533'};border-radius:8px;transition:width .8s;"></div>
+          </div>
+          <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:10px;">Goal: 80% &nbsp;&#9670;&nbsp; ${isUnlocked?'🎉 UNLOCKED!':'Need '+Math.max(0,80-familyAvg)+'% more'}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
+            ${agentIds.map(id => {
+              const a = AGENTS.find(ag=>ag.id===id);
+              const avg = agentAverages[id];
+              const isMe = id === currentAgent?.id;
+              return `<div style="background:${isMe?'rgba(12,200,200,.1)':'rgba(255,255,255,.05)'};border:${isMe?'1px solid rgba(12,200,200,.3)':'none'};border-radius:8px;padding:8px;text-align:center;">
+                <div style="font-size:10px;color:rgba(255,255,255,.5);">${a?a.name:id}${isMe?' (you)':''}</div>
+                <div style="font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:${avg>=80?'#4aaa6a':avg>=60?'var(--gold)':'#cc5533'};">${avg}%</div>
+              </div>`;
+            }).join('')}
+          </div>
+          ${isUnlocked && sfnData.food ? `
+          <div style="background:linear-gradient(135deg,var(--teal),var(--indigo));border-radius:10px;padding:12px;margin-top:4px;">
+            <div style="font-size:20px;margin-bottom:4px;">🎉🍕🎉</div>
+            <div style="font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--gold);">SUPER FAMILY NIGHT IS ON!</div>
+            ${sfnData.food?`<div style="font-size:11px;color:rgba(255,255,255,.8);margin-top:4px;">Takeout: ${sfnData.food}</div>`:''}
+            ${sfnData.activity?`<div style="font-size:11px;color:rgba(255,255,255,.8);">Activity: ${sfnData.activity}</div>`:''}
+          </div>` :
+          isUnlocked ? `<div style="font-size:11px;color:var(--gold);">Unlocked! Dad &amp; Mom are planning the details...</div>` :
+          `<div style="font-size:11px;color:rgba(255,255,255,.4);line-height:1.6;">Every agent's daily score counts toward the family average. Pull together — if one team slips, the other can help pick up the pace.</div>`}
+        </div>`;
+    });
+  });
+}
+
+function triggerSuperFNBanner(sfnData){
+  if(document.getElementById('super-fn-banner')) return; // already showing
+  const banner = document.createElement('div');
+  banner.id = 'super-fn-banner';
+  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,rgba(12,200,200,.97),rgba(74,48,180,.97));z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;animation:sfnFadeIn .5s ease;';
+  banner.innerHTML = `
+    <style>@keyframes sfnFadeIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+    @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}</style>
+    <div style="font-size:60px;animation:bounce 1s infinite;margin-bottom:16px;">🎉</div>
+    <div style="font-family:'Orbitron',sans-serif;font-size:14px;letter-spacing:3px;color:var(--gold);margin-bottom:8px;">SUPER FAMILY NIGHT</div>
+    <div style="font-family:'Orbitron',sans-serif;font-size:28px;font-weight:700;color:white;margin-bottom:16px;">UNLOCKED!</div>
+    <div style="font-size:14px;color:rgba(255,255,255,.9);line-height:1.8;margin-bottom:6px;">You crushed it this month as a team.</div>
+    ${sfnData.food?`<div style="font-size:16px;font-weight:700;color:var(--gold);margin-bottom:4px;">🍕 ${sfnData.food}</div>`:''}
+    ${sfnData.activity?`<div style="font-size:16px;font-weight:700;color:white;margin-bottom:20px;">🌙 ${sfnData.activity}</div>`:'<div style="margin-bottom:20px;"></div>'}
+    <button onclick="document.getElementById('super-fn-banner').remove()" style="padding:12px 32px;border:2px solid white;border-radius:30px;background:transparent;color:white;font-family:'Orbitron',sans-serif;font-size:12px;letter-spacing:2px;cursor:pointer;">LET'S GO!</button>`;
+  document.body.appendChild(banner);
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
