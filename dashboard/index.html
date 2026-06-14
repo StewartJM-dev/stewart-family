@@ -352,6 +352,8 @@ body{
 }
 
 /* UTILITIES */
+.filter-btn{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;cursor:pointer;}
+.filter-btn.active{background:var(--green2);color:white;border-color:var(--green2);}
 .btn-primary{
   width:100%;padding:11px;border:none;border-radius:9px;
   background:var(--green);color:var(--white);
@@ -609,6 +611,72 @@ body{
       <div id="growth-boy-notes"></div>
     </div>
 
+
+    <!-- TAB: PROJECTS -->
+    <div class="tab" id="tab-projects">
+
+      <!-- FAMILY NIGHT ACTIVITIES -->
+      <div class="sec-hd">Family Night Activities</div>
+      <div class="card" style="margin-bottom:10px;">
+        <div class="card-bd" style="padding-bottom:4px;">
+          <p style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:10px;">Tap an activity to run it tonight. Mix it up — no two weeks the same.</p>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+            <button onclick="filterActivities('all',this)" class="filter-btn active">All</button>
+            <button onclick="filterActivities('yard',this)" class="filter-btn">Yard</button>
+            <button onclick="filterActivities('barn',this)" class="filter-btn">Barn</button>
+            <button onclick="filterActivities('inside',this)" class="filter-btn">Inside</button>
+          </div>
+          <div id="activity-bank"></div>
+        </div>
+      </div>
+
+      <!-- TEACH ME SESSIONS -->
+      <div class="sec-hd">Teach Me Sessions</div>
+      <div id="teach-me-list" style="margin-bottom:12px;"></div>
+
+      <!-- HOUSE PROJECTS -->
+      <div class="sec-hd">House Projects</div>
+      <div id="house-projects-list" style="margin-bottom:12px;"></div>
+      <button onclick="addCustomProject('house')" style="width:100%;padding:9px;border:1px dashed var(--border);border-radius:8px;background:transparent;color:var(--muted);font-size:12px;cursor:pointer;margin-bottom:14px;">+ Add House Project</button>
+
+      <!-- EXTERIOR PROJECTS -->
+      <div class="sec-hd">Exterior &amp; Yard Projects</div>
+      <div id="exterior-projects-list" style="margin-bottom:12px;"></div>
+      <button onclick="addCustomProject('exterior')" style="width:100%;padding:9px;border:1px dashed var(--border);border-radius:8px;background:transparent;color:var(--muted);font-size:12px;cursor:pointer;margin-bottom:14px;">+ Add Exterior Project</button>
+
+      <!-- TEACH ME VOTE -->
+      <div class="sec-hd">Teach Me Vote</div>
+      <div class="card" style="margin-bottom:10px;">
+        <div class="card-bd" id="vote-management">
+          <div class="empty-state">Loading vote data...</div>
+        </div>
+      </div>
+
+      <!-- SUPER FAMILY NIGHT -->
+      <div class="sec-hd">Super Family Night</div>
+      <div id="super-fn-dashboard" style="margin-bottom:12px;"></div>
+
+      <!-- STONE COLLECTION TRACKER -->
+      <div class="sec-hd">Stone Collection Log</div>
+      <div class="card" style="margin-bottom:10px;">
+        <div class="card-bd">
+          <p style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:10px;">Boys log stone collected from the property. Builds inventory for path and bed projects.</p>
+          <div id="stone-log"></div>
+          <div style="display:flex;gap:8px;margin-top:10px;">
+            <select id="stone-size-select" style="flex:1;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:12px;">
+              <option value="Small (fist)">Small (fist-size)</option>
+              <option value="Medium (two-fist)">Medium (two-fist)</option>
+              <option value="Large (both hands)">Large (both hands)</option>
+              <option value="Flat/path stone">Flat / path stone</option>
+            </select>
+            <input type="number" id="stone-count" placeholder="How many?" min="1" style="width:90px;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:12px;">
+            <button onclick="logStones()" style="padding:8px 14px;border:none;border-radius:6px;background:var(--green2);color:white;font-size:12px;cursor:pointer;">Log</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
     <!-- TAB: SETTINGS -->
     <div class="tab" id="tab-settings">
       <div class="sec-hd">Reading Goals</div>
@@ -681,6 +749,10 @@ body{
     <button class="bnb" onclick="showTab('growth',this);renderGrowthTab();">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
       Growth
+    </button>
+    <button class="bnb" onclick="showTab('projects',this);renderProjectsTab();renderVoteManagement();renderSuperFNDashboard();">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Projects
     </button>
     <button class="bnb" onclick="showTab('settings',this);loadReadingGoals();">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -1949,6 +2021,733 @@ function saveBoyGrowthNotes(agentId){
   const action = document.getElementById(`action-${agentId}`).value.trim();
   _db.ref(`stewart/growth/boynotes/${agentId}`).set({strengths, needs, action}).then(() => {
     renderGrowthBoyNotes();
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// FAMILY NIGHT & PROJECTS SYSTEM
+// Parent Dashboard — full management
+// Agent HQ — read-only project/activity view
+// ══════════════════════════════════════════════════════
+
+// ─── ACTIVITY BANK ────────────────────────────────────
+const FAMILY_NIGHT_ACTIVITIES = [
+  // Outdoor / Fire
+  { id:'campfire', label:'Campfire Night', icon:'🔥', venue:'yard', desc:'Fire pit, s\'mores, stories. Everyone unplugs.' },
+  { id:'stargazing', label:'Stargazing', icon:'⭐', venue:'yard', desc:'Lay in the yard after dark. Find constellations. Talk about creation.' },
+  { id:'grill-night', label:'Grill Night', icon:'🥩', venue:'yard', desc:'Dad grills, boys help prep. Eat outside together.' },
+  { id:'campfire-stories', label:'Storytelling Night', icon:'📖', venue:'yard', desc:'Take turns telling or reading stories around the fire. Dad reads from a book.' },
+  { id:'night-games', label:'Night Games', icon:'🌙', venue:'yard', desc:'Flashlight tag, hide and seek in the dark, capture the flag.' },
+  { id:'firepit-devotional', label:'Fire Pit Devotional', icon:'✝️', venue:'yard', desc:'Open Bible, fire, no distractions. Dad leads a discussion from Scripture.' },
+
+  // Barn / Workshop
+  { id:'barn-games', label:'Barn Game Night', icon:'🎯', venue:'barn', desc:'Set up games in the pole barn — cornhole, darts, cards, whatever fits.' },
+  { id:'teach-tools', label:'Tool School', icon:'🔧', venue:'barn', desc:'Teach one skill: measuring, cutting, driving screws, reading a level.' },
+  { id:'build-something', label:'Build Something Small', icon:'🪚', venue:'barn', desc:'Simple project — a shelf bracket, a birdhouse, a wooden sign. Boys build with Dad.' },
+  { id:'bike-maintenance', label:'Bike Maintenance Day', icon:'🚲', venue:'barn', desc:'All four bikes, one session. Every bike inspected and running before done.' },
+  { id:'car-basics', label:'Car Basics Session', icon:'🚗', venue:'barn', desc:'Oil check, tire pressure, jump starts, basic under-the-hood orientation.' },
+  { id:'barn-cookout', label:'Barn Cookout', icon:'🍖', venue:'barn', desc:'Cook in or near the barn. Griddle, camp stove, or whatever\'s on hand.' },
+
+  // Inside
+  { id:'board-games', label:'Board Game Night', icon:'🎲', venue:'inside', desc:'Everyone picks one game. No phones. Winner picks next week\'s activity.' },
+  { id:'movie-popcorn', label:'Movie & Popcorn', icon:'🍿', venue:'inside', desc:'Family picks together. Real popcorn, not microwave. Blankets.' },
+  { id:'cook-together', label:'Cook Something Together', icon:'👨‍🍳', venue:'inside', desc:'Pick a real recipe — not simple stuff. Homemade pizza, soup from scratch, etc.' },
+  { id:'reading-night', label:'Reading Night', icon:'📚', venue:'inside', desc:'Everyone reads their own book in the same room. No screens. Dad reads too.' },
+  { id:'map-night', label:'Map & Navigation Night', icon:'🗺️', venue:'inside', desc:'Teach map reading, compass, how to find your way. Trail Life prep.' },
+
+  // Outdoor Projects
+  { id:'stone-collection', label:'Stone Collection Run', icon:'🪨', venue:'yard', desc:'Walk the property. Collect and sort stone by size for path and bed projects.' },
+  { id:'planting-day', label:'Planting Day', icon:'🌿', venue:'yard', desc:'Put in ferns, hostas, or ground cover along the path or shed base.' },
+  { id:'path-work', label:'Path Work Session', icon:'🛤️', venue:'yard', desc:'Level and set stones, fill gaps, extend the path toward the shed.' },
+  { id:'yard-cleanup', label:'Full Yard Cleanup', icon:'🌱', venue:'yard', desc:'Everyone has a zone. Mow, edge, weed, pick up. Property looks sharp when done.' },
+];
+
+// ─── TEACH ME SESSIONS ────────────────────────────────
+const TEACH_ME_TEMPLATES = [
+  {
+    id: 'bike-maintenance',
+    title: 'Bicycle Maintenance',
+    venue: 'barn',
+    icon: '🚲',
+    desc: 'Every boy maintains his own bike from start to finish.',
+    checklist: [
+      'Safety check — frame, handlebars, seat all tight',
+      'Tires — check pressure, inspect for wear, fix flats if needed',
+      'Brakes — adjust pads, test stopping power',
+      'Chain — clean, lubricate, check tension',
+      'Gears — shift through all gears, adjust derailleur if needed',
+      'Final ride test — every bike ridden before session is done',
+    ]
+  },
+  {
+    id: 'basic-tools',
+    title: 'Tool Basics',
+    venue: 'barn',
+    icon: '🔧',
+    desc: 'How to use common hand and power tools safely.',
+    checklist: [
+      'Tool safety rules — every tool, every time',
+      'Tape measure and marking',
+      'Hammer and nails — proper grip and swing',
+      'Screwdriver types and uses',
+      'Drill — bits, technique, pilot holes',
+      'Level — why it matters, how to use it',
+    ]
+  },
+  {
+    id: 'car-basics',
+    title: 'Car Basics',
+    venue: 'barn',
+    icon: '🚗',
+    desc: 'What every man needs to know about a vehicle.',
+    checklist: [
+      'Check oil — dipstick, color, level',
+      'Check coolant, brake fluid, power steering',
+      'Tire pressure — check and fill all four',
+      'Change a tire — jack, lug nuts, spare',
+      'Jump start a dead battery',
+      'What warning lights mean',
+    ]
+  },
+  {
+    id: 'knots',
+    title: 'Knots & Rope Work',
+    venue: 'yard',
+    icon: '🪢',
+    desc: 'Essential Trail Life and outdoor knots.',
+    checklist: [
+      'Square knot',
+      'Bowline',
+      'Cleat hitch',
+      'Taut-line hitch',
+      'Sheet bend',
+      'Figure eight',
+    ]
+  },
+  {
+    id: 'fire-building',
+    title: 'Fire Building',
+    venue: 'yard',
+    icon: '🔥',
+    desc: 'From tinder to a sustained fire, safely.',
+    checklist: [
+      'Fire safety rules and site selection',
+      'Tinder, kindling, fuel — what each does',
+      'Teepee, log cabin, and lean-to structures',
+      'Strike a fire — matches, lighter, ferro rod',
+      'Keeping it fed without smothering it',
+      'Putting it out completely and safely',
+    ]
+  },
+  {
+    id: 'first-aid',
+    title: 'Basic First Aid',
+    venue: 'inside',
+    icon: '🩹',
+    desc: 'Cuts, burns, sprains, and emergency basics.',
+    checklist: [
+      'Clean and dress a wound',
+      'Recognize and treat a burn',
+      'Splint a sprain',
+      'Signs of concussion',
+      'How to call for help — 911 basics',
+      'What\'s in a first aid kit and why',
+    ]
+  },
+];
+
+// ─── HOUSE PROJECTS ───────────────────────────────────
+const HOUSE_PROJECTS_TEMPLATE = [
+  {
+    id: 'bathroom',
+    title: 'Bathroom Renovation',
+    icon: '🚿',
+    category: 'house',
+    priority: 1,
+    desc: 'New flooring, paint, and ceiling. Full refresh before winter.',
+    phases: [
+      { id: 'demo', title: 'Demo & Prep', desc: 'Remove old flooring, patch walls, prep surfaces. Protect fixtures.', boys: ['samuel','johnjr'] },
+      { id: 'flooring', title: 'New Flooring', desc: 'Lay new floor material. Measure, cut, set, seal edges.', boys: ['samuel','johnjr','stephen'] },
+      { id: 'ceiling', title: 'Ceiling Work', desc: 'Repair or replace ceiling. Prime and paint.', boys: ['samuel','johnjr'] },
+      { id: 'paint', title: 'Paint', desc: 'Walls and trim. Cut in, roll, two coats.', boys: ['samuel','johnjr','stephen','daniel'] },
+      { id: 'finish', title: 'Final Touches', desc: 'Reinstall fixtures, hardware, touch-ups. Clean and done.', boys: ['samuel','johnjr'] },
+    ]
+  },
+];
+
+// ─── EXTERIOR PROJECTS ────────────────────────────────
+const EXTERIOR_PROJECTS_TEMPLATE = [
+  {
+    id: 'stone-path',
+    title: 'Stone Path Improvement',
+    icon: '🛤️',
+    category: 'exterior',
+    priority: 1,
+    desc: 'Extend, level, and set the existing stone path. Gravel between stones. Looks sharp.',
+    phases: [
+      { id: 'collect', title: 'Stone Collection', desc: 'Walk the property. Collect flat stones, sort by size. Stage near the path.', boys: ['samuel','johnjr','stephen','daniel'] },
+      { id: 'prep', title: 'Path Prep', desc: 'Mark path line, remove grass, add sand base layer.', boys: ['samuel','johnjr','stephen'] },
+      { id: 'set', title: 'Set the Stones', desc: 'Place and level stones. Even spacing. Tap into sand base.', boys: ['samuel','johnjr','stephen'] },
+      { id: 'gravel', title: 'Fill with Gravel', desc: 'Fill gaps between stones with pea gravel or crushed stone. Sweep in.', boys: ['samuel','johnjr','stephen','daniel'] },
+    ]
+  },
+  {
+    id: 'shed-beds',
+    title: 'Shed Bed & Border Planting',
+    icon: '🌿',
+    category: 'exterior',
+    priority: 2,
+    desc: 'Stone-bordered beds along the shed base. Ferns, hostas, ground cover.',
+    phases: [
+      { id: 'border-stones', title: 'Set Border Stones', desc: 'Use collected stone to edge the beds around shed base.', boys: ['samuel','johnjr','stephen','daniel'] },
+      { id: 'soil-prep', title: 'Soil Prep', desc: 'Clear weeds, add topsoil or compost to the beds.', boys: ['samuel','johnjr','stephen'] },
+      { id: 'planting', title: 'Plant the Beds', desc: 'Put in ferns, hostas, or ground cover. Water in well.', boys: ['samuel','johnjr','stephen','daniel'] },
+      { id: 'mulch', title: 'Mulch & Finish', desc: 'Mulch the beds. Clean up. Water again.', boys: ['samuel','johnjr','stephen','daniel'] },
+    ]
+  },
+  {
+    id: 'path-lights',
+    title: 'Path Lighting',
+    icon: '💡',
+    category: 'exterior',
+    priority: 3,
+    desc: 'Solar or low-voltage lights along the stone path. Stake, space, done.',
+    phases: [
+      { id: 'plan', title: 'Plan & Space', desc: 'Walk the path, mark where lights go. Consistent spacing.', boys: ['samuel','johnjr'] },
+      { id: 'install', title: 'Install Lights', desc: 'Stake lights, connect if needed, test at dusk.', boys: ['samuel','johnjr','stephen','daniel'] },
+    ]
+  },
+  {
+    id: 'fire-area',
+    title: 'Fire Pit Area Improvement',
+    icon: '🔥',
+    category: 'exterior',
+    priority: 2,
+    desc: 'Level the fire pit area, stone ring surround, seating defined.',
+    phases: [
+      { id: 'level', title: 'Level the Area', desc: 'Clear and level ground around fire pit. Tamp down.', boys: ['samuel','johnjr','stephen'] },
+      { id: 'ring', title: 'Stone Ring', desc: 'Set stone ring around the pit using collected stone.', boys: ['samuel','johnjr','stephen','daniel'] },
+      { id: 'seating', title: 'Define Seating', desc: 'Move or build benches/logs. Everyone has a place.', boys: ['samuel','johnjr'] },
+    ]
+  },
+];
+
+// Stone collection tracker constants
+const STONE_SIZES = ['Small (fist)', 'Medium (two-fist)', 'Large (both hands)', 'Flat/path stone'];
+
+
+// ══════════════════════════════════════════════════════
+// PROJECTS TAB — Family Night, Teach Me, Projects, Stone
+// ══════════════════════════════════════════════════════
+
+const AGENT_NAMES_SHORT = {samuel:'Samuel', johnjr:'John Jr.', stephen:'Stephen', daniel:'Daniel'};
+
+function renderProjectsTab(){
+  renderActivityBank('all');
+  renderTeachMeSessions();
+  renderHouseProjects();
+  renderExteriorProjects();
+  renderStoneLog();
+}
+
+// ─── ACTIVITY BANK ────────────────────────────────────
+
+function filterActivities(venue, btn){
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderActivityBank(venue);
+}
+
+function renderActivityBank(venue){
+  const el = document.getElementById('activity-bank');
+  const list = venue === 'all' ? FAMILY_NIGHT_ACTIVITIES : FAMILY_NIGHT_ACTIVITIES.filter(a => a.venue === venue);
+
+  el.innerHTML = list.map(a => {
+    const venueLabel = a.venue === 'yard' ? '🌙 Yard' : a.venue === 'barn' ? '🏚️ Barn' : '🏠 Inside';
+    return `<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+      <div style="font-size:24px;flex-shrink:0;">${a.icon}</div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:700;color:var(--ink);">${a.label}</div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:2px;">${venueLabel}</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.4;">${a.desc}</div>
+      </div>
+      <button onclick="runActivityTonight('${a.id}')" style="padding:6px 10px;border:none;border-radius:6px;background:var(--green2);color:white;font-size:10px;cursor:pointer;flex-shrink:0;white-space:nowrap;">Tonight</button>
+    </div>`;
+  }).join('');
+}
+
+function runActivityTonight(activityId){
+  if(!_db) return;
+  const activity = FAMILY_NIGHT_ACTIVITIES.find(a => a.id === activityId);
+  if(!activity) return;
+  const today = new Date().toISOString().slice(0,10);
+  _db.ref(`stewart/familynight/activities/${today}`).set({
+    id: activityId,
+    label: activity.label,
+    icon: activity.icon,
+    venue: activity.venue,
+    timestamp: Date.now()
+  }).then(() => {
+    alert(`✅ ${activity.icon} ${activity.label} set for tonight! The boys will see it in their app.`);
+  });
+}
+
+// ─── TEACH ME SESSIONS ────────────────────────────────
+
+function renderTeachMeSessions(){
+  if(!_db) return;
+  _db.ref('stewart/teachme').once('value', snap => {
+    const data = snap.val() || {};
+    const el = document.getElementById('teach-me-list');
+
+    el.innerHTML = TEACH_ME_TEMPLATES.map(t => {
+      const saved = data[t.id] || {};
+      const isComplete = saved.completedDate;
+      const checklistDone = saved.checklist || {};
+      const totalItems = t.checklist.length;
+      const doneItems = t.checklist.filter((_,i) => checklistDone[i]).length;
+
+      return `<div class="card" style="margin-bottom:10px;${isComplete?'opacity:.7':''}">
+        <div style="padding:9px 13px;background:${isComplete?'var(--muted)':'var(--green2)'};border-radius:6px 6px 0 0;display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:white;">${t.icon} ${t.title}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.8);">${isComplete?'✓ Done '+saved.completedDate:doneItems+'/'+totalItems}</div>
+        </div>
+        <div class="card-bd">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.5;">${t.desc}</div>
+          <div style="margin-bottom:8px;">
+            ${t.checklist.map((item,i) =>
+              `<div style="display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="toggleTeachItem('${t.id}',${i})">
+                <div style="width:16px;height:16px;border-radius:3px;border:2px solid ${checklistDone[i]?'var(--green2)':'var(--border)'};background:${checklistDone[i]?'var(--green2)':'transparent'};flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;">
+                  ${checklistDone[i]?'<span style="color:white;font-size:9px;">✓</span>':''}
+                </div>
+                <span style="font-size:12px;color:${checklistDone[i]?'var(--muted)':'var(--ink)'};${checklistDone[i]?'text-decoration:line-through;':''}">${item}</span>
+              </div>`
+            ).join('')}
+          </div>
+          <div style="margin-bottom:8px;">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:4px;">Boys Present</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              ${AGENTS.map(a =>
+                `<button onclick="toggleTeachAgent('${t.id}','${a.id}')" style="padding:4px 10px;border-radius:20px;font-size:10px;cursor:pointer;border:1px solid ${(saved.boys||[]).includes(a.id)?a.color:'var(--border)'};background:${(saved.boys||[]).includes(a.id)?a.color:'transparent'};color:${(saved.boys||[]).includes(a.id)?'white':'var(--muted)'};">
+                  ${a.name}
+                </button>`
+              ).join('')}
+            </div>
+          </div>
+          ${!isComplete ?
+            `<button onclick="completeTeachSession('${t.id}')" style="width:100%;padding:8px;border:none;border-radius:6px;background:var(--green2);color:white;font-size:12px;font-weight:700;cursor:pointer;">Mark Session Complete</button>` :
+            `<div style="font-size:11px;color:var(--muted);text-align:center;">Completed ${saved.completedDate} — ${(saved.boys||[]).map(b=>AGENT_NAMES_SHORT[b]).join(', ')}</div>`
+          }
+        </div>
+      </div>`;
+    }).join('');
+  });
+}
+
+function toggleTeachItem(sessionId, itemIndex){
+  if(!_db) return;
+  _db.ref(`stewart/teachme/${sessionId}/checklist/${itemIndex}`).once('value', snap => {
+    _db.ref(`stewart/teachme/${sessionId}/checklist/${itemIndex}`).set(!snap.val())
+      .then(() => renderTeachMeSessions());
+  });
+}
+
+function toggleTeachAgent(sessionId, agentId){
+  if(!_db) return;
+  _db.ref(`stewart/teachme/${sessionId}/boys`).once('value', snap => {
+    const boys = snap.val() || [];
+    const idx = boys.indexOf(agentId);
+    if(idx === -1) boys.push(agentId);
+    else boys.splice(idx, 1);
+    _db.ref(`stewart/teachme/${sessionId}/boys`).set(boys)
+      .then(() => renderTeachMeSessions());
+  });
+}
+
+function completeTeachSession(sessionId){
+  if(!_db) return;
+  const today = new Date().toISOString().slice(0,10);
+  _db.ref(`stewart/teachme/${sessionId}/completedDate`).set(today)
+    .then(() => renderTeachMeSessions());
+}
+
+// ─── PROJECT PHASES ───────────────────────────────────
+
+function renderProjectList(projects, savedData, elementId){
+  const el = document.getElementById(elementId);
+  el.innerHTML = projects.map(p => {
+    const saved = savedData[p.id] || {};
+    const phases = saved.phases || {};
+    const totalPhases = p.phases.length;
+    const donePhases = p.phases.filter(ph => phases[ph.id] && phases[ph.id].done).length;
+    const isComplete = donePhases === totalPhases;
+    const pct = Math.round((donePhases/totalPhases)*100);
+
+    return `<div class="card" style="margin-bottom:10px;">
+      <div style="padding:9px 13px;background:${isComplete?'var(--muted)':'var(--brown)'};border-radius:6px 6px 0 0;display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:white;">${p.icon} ${p.title}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.8);">${isComplete?'✓ Complete':pct+'%'}</div>
+      </div>
+      <div class="card-bd">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.5;">${p.desc}</div>
+        <div style="background:rgba(0,0,0,.06);border-radius:4px;height:4px;overflow:hidden;margin-bottom:10px;">
+          <div style="height:100%;width:${pct}%;background:var(--green2);border-radius:4px;transition:width .5s;"></div>
+        </div>
+        ${p.phases.map(ph => {
+          const phSaved = phases[ph.id] || {};
+          return `<div style="border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;background:${phSaved.done?'rgba(74,112,96,.06)':'transparent'};">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+              <div style="font-size:12px;font-weight:700;color:${phSaved.done?'var(--green2)':'var(--ink)'};">${phSaved.done?'✓ ':''} ${ph.title}</div>
+              ${!phSaved.done ?
+                `<button onclick="completePhase('${p.id}','${ph.id}','${elementId}')" style="padding:4px 10px;border:none;border-radius:5px;background:var(--green2);color:white;font-size:10px;cursor:pointer;">Done</button>` :
+                `<span style="font-size:10px;color:var(--muted);">${phSaved.date||''}</span>`
+              }
+            </div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:5px;line-height:1.4;">${ph.desc}</div>
+            <div style="font-size:10px;color:var(--muted);">Boys: ${ph.boys.map(b=>AGENT_NAMES_SHORT[b]).join(', ')}</div>
+            ${phSaved.done && phSaved.note ?
+              `<div style="font-size:11px;color:var(--muted);font-style:italic;margin-top:4px;">"${phSaved.note}"</div>` : ''
+            }
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderHouseProjects(){
+  if(!_db) return;
+  _db.ref('stewart/projects/house').once('value', snap => {
+    const data = snap.val() || {};
+    renderProjectList(HOUSE_PROJECTS_TEMPLATE, data, 'house-projects-list');
+  });
+}
+
+function renderExteriorProjects(){
+  if(!_db) return;
+  _db.ref('stewart/projects/exterior').once('value', snap => {
+    const data = snap.val() || {};
+    renderProjectList(EXTERIOR_PROJECTS_TEMPLATE, data, 'exterior-projects-list');
+  });
+}
+
+function completePhase(projectId, phaseId, listElId){
+  if(!_db) return;
+  const today = new Date().toISOString().slice(0,10);
+  const category = listElId === 'house-projects-list' ? 'house' : 'exterior';
+  _db.ref(`stewart/projects/${category}/${projectId}/phases/${phaseId}`).set({
+    done: true,
+    date: today
+  }).then(() => {
+    if(category === 'house') renderHouseProjects();
+    else renderExteriorProjects();
+  });
+}
+
+function addCustomProject(category){
+  const title = prompt('Project name?');
+  if(!title || !title.trim()) return;
+  const desc = prompt('Brief description?') || '';
+  const id = title.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  const proj = {
+    id, title: title.trim(), icon: '🔨', category,
+    priority: 99, desc: desc.trim(), phases: [
+      {id:'phase1', title:'Phase 1', desc:'First phase of work.', boys:['samuel','johnjr','stephen','daniel']}
+    ]
+  };
+  if(category === 'house') HOUSE_PROJECTS_TEMPLATE.push(proj);
+  else EXTERIOR_PROJECTS_TEMPLATE.push(proj);
+  if(category === 'house') renderHouseProjects();
+  else renderExteriorProjects();
+}
+
+// ─── STONE COLLECTION ─────────────────────────────────
+
+function renderStoneLog(){
+  if(!_db) return;
+  _db.ref('stewart/stones').once('value', snap => {
+    const data = snap.val() || {};
+    const el = document.getElementById('stone-log');
+
+    // Tally by size
+    const totals = {};
+    Object.values(data).forEach(entry => {
+      totals[entry.size] = (totals[entry.size]||0) + entry.count;
+    });
+
+    const totalAll = Object.values(totals).reduce((a,b)=>a+b,0);
+
+    if(!totalAll){
+      el.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:10px 0;">No stones logged yet. Go find some!</div>';
+      return;
+    }
+
+    el.innerHTML = `
+      <div style="background:rgba(92,61,30,.06);border-radius:8px;padding:10px 12px;margin-bottom:8px;">
+        <div style="font-size:22px;font-weight:700;font-family:\'Cinzel\',serif;color:var(--brown);text-align:center;">${totalAll}</div>
+        <div style="font-size:10px;color:var(--muted);text-align:center;margin-bottom:8px;">total stones collected</div>
+        ${Object.entries(totals).map(([size,count]) =>
+          `<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-bottom:1px solid var(--border);">
+            <span style="color:var(--muted);">${size}</span>
+            <span style="font-weight:700;color:var(--brown);">${count}</span>
+          </div>`
+        ).join('')}
+      </div>
+      <div style="font-size:10px;color:var(--muted);">Recent logs:</div>
+      ${Object.entries(data).sort((a,b)=>b[1].timestamp-a[1].timestamp).slice(0,5).map(([_,e]) =>
+        `<div style="font-size:11px;color:var(--muted);padding:2px 0;">${e.date} — ${e.count} ${e.size} stones</div>`
+      ).join('')}`;
+  });
+}
+
+function logStones(){
+  if(!_db) return;
+  const size = document.getElementById('stone-size-select').value;
+  const count = parseInt(document.getElementById('stone-count').value);
+  if(!count || count < 1) return;
+  const today = new Date().toISOString().slice(0,10);
+  _db.ref(`stewart/stones/${today}-${Date.now()}`).set({size, count, date: today, timestamp: Date.now()})
+    .then(() => {
+      document.getElementById('stone-count').value = '';
+      renderStoneLog();
+    });
+}
+
+
+// ══════════════════════════════════════════════════════
+// PARENT DASHBOARD — Teach Me Vote & Super Family Night
+// ══════════════════════════════════════════════════════
+
+function getVoteWeekKey(){
+  const now = new Date();
+  const day = now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
+  return monday.toISOString().slice(0,10);
+}
+
+function getSuperFNMonthKey(){
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+}
+
+// Parent versions of TEACH_ME_OPTIONS (shared constant)
+const TEACH_ME_OPTIONS_PD = [
+  { id:'bike', label:'Bike Maintenance', icon:'🚲' },
+  { id:'tools', label:'Tool Basics', icon:'🔧' },
+  { id:'car', label:'Car Basics', icon:'🚗' },
+  { id:'knots', label:'Knots & Rope Work', icon:'🪢' },
+  { id:'fire', label:'Fire Building', icon:'🔥' },
+  { id:'firstaid', label:'First Aid', icon:'🩹' },
+  { id:'cooking', label:'Campfire Cooking', icon:'🍳' },
+  { id:'navigation', label:'Map & Navigation', icon:'🗺️' },
+  { id:'woodwork', label:'Basic Woodworking', icon:'🪚' },
+  { id:'fishing', label:'Fishing Basics', icon:'🎣' },
+  { id:'electrical', label:'Basic Electrical', icon:'💡' },
+  { id:'plumbing', label:'Basic Plumbing', icon:'🔩' },
+];
+
+function renderVoteManagement(){
+  if(!_db) return;
+  const weekKey = getVoteWeekKey();
+  _db.ref(`stewart/teachvote/${weekKey}`).once('value', snap => {
+    const data = snap.val() || {};
+    const suggestions = data.suggestions || {};
+    const votes = data.votes || {};
+    const winner = data.winner;
+
+    // Tally votes
+    const voteCounts = {};
+    Object.values(votes).forEach(v => { voteCounts[v]=(voteCounts[v]||0)+1; });
+    const sortedOptions = [...new Set([...Object.values(suggestions)])].sort((a,b)=>(voteCounts[b]||0)-(voteCounts[a]||0));
+
+    const el = document.getElementById('vote-management');
+    if(!el) return;
+
+    const agentNames = {samuel:'Samuel',johnjr:'John Jr.',stephen:'Stephen',daniel:'Daniel',dad:'Dad',mom:'Mom'};
+    const totalVotes = Object.keys(votes).length;
+
+    el.innerHTML = `
+      <div style="margin-bottom:12px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Week of ${weekKey}</div>
+
+        <!-- Suggestions -->
+        <div style="font-size:11px;font-weight:700;color:var(--ink);margin-bottom:4px;">Suggestions</div>
+        ${Object.entries(suggestions).length ?
+          Object.entries(suggestions).map(([who, optId]) => {
+            const opt = TEACH_ME_OPTIONS_PD.find(o=>o.id===optId);
+            return `<div style="font-size:12px;color:var(--muted);padding:3px 0;">${agentNames[who]||who}: ${opt?opt.icon+' '+opt.label:optId}</div>`;
+          }).join('') :
+          '<div style="font-size:12px;color:var(--muted);">No suggestions yet (boys suggest on Monday)</div>'
+        }
+      </div>
+
+      <!-- Parent Vote -->
+      <div style="margin-bottom:12px;">
+        <div style="font-size:11px;font-weight:700;color:var(--ink);margin-bottom:6px;">Your Votes (Dad &amp; Mom)</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <div style="flex:1;">
+            <div style="font-size:10px;color:var(--muted);margin-bottom:3px;">Dad's vote: ${votes.dad ? (TEACH_ME_OPTIONS_PD.find(o=>o.id===votes.dad)?.icon+' '+TEACH_ME_OPTIONS_PD.find(o=>o.id===votes.dad)?.label) : 'not cast'}</div>
+            <select id="dad-vote-select" style="width:100%;padding:7px;border:1px solid var(--border);border-radius:6px;font-size:12px;">
+              <option value="">Pick...</option>
+              ${TEACH_ME_OPTIONS_PD.map(o=>`<option value="${o.id}" ${votes.dad===o.id?'selected':''}>${o.icon} ${o.label}</option>`).join('')}
+            </select>
+            <button onclick="castParentVote('dad')" style="width:100%;margin-top:4px;padding:6px;border:none;border-radius:6px;background:var(--green2);color:white;font-size:11px;cursor:pointer;">Vote as Dad</button>
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:10px;color:var(--muted);margin-bottom:3px;">Mom's vote: ${votes.mom ? (TEACH_ME_OPTIONS_PD.find(o=>o.id===votes.mom)?.icon+' '+TEACH_ME_OPTIONS_PD.find(o=>o.id===votes.mom)?.label) : 'not cast'}</div>
+            <select id="mom-vote-select" style="width:100%;padding:7px;border:1px solid var(--border);border-radius:6px;font-size:12px;">
+              <option value="">Pick...</option>
+              ${TEACH_ME_OPTIONS_PD.map(o=>`<option value="${o.id}" ${votes.mom===o.id?'selected':''}>${o.icon} ${o.label}</option>`).join('')}
+            </select>
+            <button onclick="castParentVote('mom')" style="width:100%;margin-top:4px;padding:6px;border:none;border-radius:6px;background:var(--green2);color:white;font-size:11px;cursor:pointer;">Vote as Mom</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Tally -->
+      ${sortedOptions.length ? `
+      <div style="margin-bottom:12px;">
+        <div style="font-size:11px;font-weight:700;color:var(--ink);margin-bottom:6px;">Current Tally (${totalVotes} vote${totalVotes!==1?'s':''})</div>
+        ${sortedOptions.map(optId => {
+          const opt = TEACH_ME_OPTIONS_PD.find(o=>o.id===optId);
+          const count = voteCounts[optId]||0;
+          const pct = totalVotes > 0 ? Math.round((count/totalVotes)*100) : 0;
+          return `<div style="margin-bottom:6px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px;">
+              <span>${opt?opt.icon+' '+opt.label:optId}</span>
+              <span style="color:var(--muted);">${count} vote${count!==1?'s':''}</span>
+            </div>
+            <div style="background:rgba(0,0,0,.08);border-radius:4px;height:6px;overflow:hidden;">
+              <div style="height:100%;width:${pct}%;background:var(--green2);border-radius:4px;transition:width .5s;"></div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>` : ''}
+
+      <!-- Set Winner -->
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--ink);margin-bottom:4px;">
+          ${winner ? `✓ Winner set: ${TEACH_ME_OPTIONS_PD.find(o=>o.id===winner)?.icon||''} ${TEACH_ME_OPTIONS_PD.find(o=>o.id===winner)?.label||winner}` : 'Set the winner (after Thursday)'}
+        </div>
+        <select id="winner-select" style="width:100%;padding:7px;border:1px solid var(--border);border-radius:6px;font-size:12px;margin-bottom:6px;">
+          <option value="">Select winner...</option>
+          ${TEACH_ME_OPTIONS_PD.map(o=>`<option value="${o.id}" ${winner===o.id?'selected':''}>${o.icon} ${o.label}</option>`).join('')}
+        </select>
+        <button onclick="setTeachMeWinner()" style="width:100%;padding:8px;border:none;border-radius:6px;background:var(--brown);color:white;font-size:12px;font-weight:700;cursor:pointer;">Set This Week's Winner</button>
+      </div>`;
+  });
+}
+
+function castParentVote(who){
+  if(!_db) return;
+  const select = document.getElementById(`${who}-vote-select`);
+  if(!select||!select.value) return;
+  const weekKey = getVoteWeekKey();
+  _db.ref(`stewart/teachvote/${weekKey}/votes/${who}`).set(select.value)
+    .then(() => renderVoteManagement());
+}
+
+function setTeachMeWinner(){
+  if(!_db) return;
+  const select = document.getElementById('winner-select');
+  if(!select||!select.value) return;
+  const weekKey = getVoteWeekKey();
+  _db.ref(`stewart/teachvote/${weekKey}/winner`).set(select.value)
+    .then(() => renderVoteManagement());
+}
+
+// ─── SUPER FAMILY NIGHT (Parent Dashboard) ────────────
+
+function renderSuperFNDashboard(){
+  if(!_db) return;
+  const monthKey = getSuperFNMonthKey();
+  const agentIds = ['samuel','johnjr','stephen','daniel'];
+
+  // Get weekdays in current month up to today
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const today = now.toISOString().slice(0,10);
+  const weekdays = [];
+  const d = new Date(year, month, 1);
+  while(d.getMonth()===month){
+    const dow = d.getDay();
+    const ds = d.toISOString().slice(0,10);
+    if(dow>=1&&dow<=5&&ds<=today) weekdays.push(ds);
+    d.setDate(d.getDate()+1);
+  }
+
+  Promise.all([
+    Promise.all(agentIds.map(id => _db.ref(`stewart/scores/${id}`).once('value'))),
+    _db.ref(`stewart/superfamilynight/${monthKey}`).once('value')
+  ]).then(([scoreSnaps, sfnSnap]) => {
+    const sfnData = sfnSnap.val() || {};
+    const el = document.getElementById('super-fn-dashboard');
+    if(!el) return;
+
+    let totalScore=0, totalDays=0;
+    const agentAverages = {};
+    scoreSnaps.forEach((snap,i) => {
+      const scores = snap.val()||{};
+      let at=0, ad=0;
+      weekdays.forEach(ds => {
+        if(scores[ds]!==null&&scores[ds]!==undefined){ at+=scores[ds]; ad++; totalScore+=scores[ds]; totalDays++; }
+      });
+      agentAverages[agentIds[i]] = ad>0 ? Math.round(at/ad) : 0;
+    });
+
+    const familyAvg = totalDays>0 ? Math.round(totalScore/totalDays) : 0;
+    const isUnlocked = sfnData.unlocked || familyAvg>=80;
+
+    const AGENT_COLORS_PD = {samuel:'#1a3a6e',johnjr:'#6e1a1a',stephen:'#1a4a2e',daniel:'#6e5a10'};
+
+    el.innerHTML = `
+      <div style="background:${isUnlocked?'linear-gradient(135deg,rgba(45,106,71,.1),rgba(232,184,74,.1))':'rgba(0,0,0,.03)'};border:2px solid ${isUnlocked?'var(--gold2)':'var(--border)'};border-radius:10px;padding:14px;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div style="font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:${isUnlocked?'var(--gold2)':'var(--ink)'};">
+            ${isUnlocked?'🎉 SUPER FAMILY NIGHT UNLOCKED!':'Super Family Night Progress'}
+          </div>
+          <div style="font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:${familyAvg>=80?'#2d6a47':familyAvg>=60?'#c8922a':'var(--muted)'};">${familyAvg}%</div>
+        </div>
+        <div style="background:rgba(0,0,0,.08);border-radius:4px;height:8px;overflow:hidden;margin-bottom:8px;">
+          <div style="height:100%;width:${Math.min(100,familyAvg)}%;background:${familyAvg>=80?'var(--green2)':familyAvg>=60?'var(--gold2)':'var(--rust)'};border-radius:4px;transition:width .8s;"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:${isUnlocked?'12px':'0'};">
+          ${agentIds.map(id => {
+            const a = AGENTS.find(ag=>ag.id===id);
+            const avg = agentAverages[id];
+            return `<div style="padding:6px 10px;border-radius:6px;background:rgba(0,0,0,.04);display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:11px;color:var(--muted);">${a?a.name:id}</span>
+              <span style="font-size:12px;font-weight:700;color:${avg>=80?'#2d6a47':avg>=60?'#c8922a':'var(--rust)'};">${avg}%</span>
+            </div>`;
+          }).join('')}
+        </div>
+        ${isUnlocked ? `
+        <div style="border-top:1px solid var(--border);padding-top:10px;">
+          <div style="font-size:11px;font-weight:700;color:var(--ink);margin-bottom:6px;">Plan the Night</div>
+          <input type="text" id="sfn-food" placeholder="Takeout — e.g. Dominos pizza" value="${sfnData.food||''}" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;margin-bottom:6px;">
+          <input type="text" id="sfn-activity" placeholder="Activity — e.g. Night tag, Capture the Flag" value="${sfnData.activity||''}" style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;margin-bottom:6px;">
+          <button onclick="saveSuperFNPlan()" class="btn-primary">Save & Announce to Boys</button>
+        </div>` : `
+        <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:4px;">Goal: 80% family average &mdash; ${weekdays.length} days tracked &mdash; need ${Math.max(0,80-familyAvg)}% more</div>`}
+      </div>`;
+  });
+}
+
+function saveSuperFNPlan(){
+  if(!_db) return;
+  const monthKey = getSuperFNMonthKey();
+  const food = document.getElementById('sfn-food').value.trim();
+  const activity = document.getElementById('sfn-activity').value.trim();
+  _db.ref(`stewart/superfamilynight/${monthKey}`).update({
+    unlocked: true, food, activity, announcedAt: Date.now()
+  }).then(() => {
+    renderSuperFNDashboard();
+    // Also push announcement to family board
+    const msg = `🎉 SUPER FAMILY NIGHT IS ON! ${food?'Takeout: '+food+'. ':''} ${activity?'Activity: '+activity+'.':''} You earned it!`;
+    const msgRef = _db.ref('stewart/messages/family').push();
+    msgRef.set({ text: msg, from: 'HQ', fromName: 'HQ', timestamp: Date.now(), icon: '🎉' });
   });
 }
 
