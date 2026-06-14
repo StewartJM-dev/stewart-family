@@ -416,7 +416,7 @@ const MEALS=[
 {id:95,name:"Mom's Cheesecake",cat:"Desserts",method:"Oven",cookTime:120,health:"red",serves:12,sides:"",cal:380,pro:7,carb:32,fat:24,healthNote:"Special occasion only. Rich, dense, real cream cheese.",note:"Special occasion -- John's mom's recipe",cbKey:"Mom's Cheesecake",ingredients:["graham cracker crumbs","butter","16 oz cream cheese","sugar","eggs","vanilla","16 oz sour cream"]},
 {id:96,name:"Surprise Muffins",cat:"Desserts",method:"Oven",cookTime:25,health:"amber",serves:12,sides:"Whole milk",cal:180,pro:3,carb:28,fat:7,healthNote:"Homemade muffins with jam inside. Real food.",note:"Also a boys breakfast option",cbKey:"Surprise Muffins",ingredients:["egg","milk","oil","flour","sugar","baking powder","salt","jam or jelly for filling"]},
 {id:97,name:"Crazy Bread",cat:"Breads",method:"Oven",cookTime:8,health:"amber",serves:8,sides:"Soup or pasta",cal:180,pro:4,carb:28,fat:6,healthNote:"Homemade breadsticks with garlic butter. Real yeast bread.",note:"Great alongside any soup or Italian meal",cbKey:"Crazy Bread",ingredients:["1 Cup warm water","instant yeast","sugar","flour","salt","butter","garlic salt","Parmesan"]},
-{id:99,name:"Grandma's Potato Salad",cat:"Comfort",method:"Stovetop",cookTime:20,health:"amber",serves:8,sides:"Great with grilled meats or sandwiches",cal:280,pro:3,carb:32,fat:16,healthNote:"Classic summer side -- real mayonnaise, real potatoes. Worth it.",note:"Chill before serving -- make it first",cbKey:"Grandma's Potato Salad",ingredients:["3-5 lbs potatoes","1/3 Cup cider vinegar","1.25 Cups Hellman's mayonnaise","1.25 tsp salt","small to medium onion diced","fresh black pepper"]},{id:100,name:"Cracker Barrel Baked Chicken & Broccoli",cat:"Comfort",method:"Oven",cookTime:55,health:"amber",serves:4,sides:"Mashed potatoes or rice",cal:480,pro:42,carb:18,fat:28,healthNote:"Chicken, broccoli, cheddar, Ritz topping. Hearty comfort bake.",note:"Based on Cracker Barrel -- family favorite",proteins:["chicken"],cbKey:"Cracker Barrel Baked Chicken & Broccoli",ingredients:["4 chicken breasts","cheddar cheese soup","whole milk","paprika","shredded cheddar","frozen broccoli","Ritz crackers","butter"]},
+{id:99,name:"Grandma's Potato Salad",cat:"Side",method:"Stovetop",cookTime:20,health:"amber",serves:8,sides:"Great with grilled meats or sandwiches",cal:280,pro:3,carb:32,fat:16,healthNote:"Classic summer side -- real mayonnaise, real potatoes. Worth it.",note:"Chill before serving -- make it first",cbKey:"Grandma's Potato Salad",ingredients:["3-5 lbs potatoes","1/3 Cup cider vinegar","1.25 Cups Hellman's mayonnaise","1.25 tsp salt","small to medium onion diced","fresh black pepper"]},{id:100,name:"Cracker Barrel Baked Chicken & Broccoli",cat:"Comfort",method:"Oven",cookTime:55,health:"amber",serves:4,sides:"Mashed potatoes or rice",cal:480,pro:42,carb:18,fat:28,healthNote:"Chicken, broccoli, cheddar, Ritz topping. Hearty comfort bake.",note:"Based on Cracker Barrel -- family favorite",proteins:["chicken"],cbKey:"Cracker Barrel Baked Chicken & Broccoli",ingredients:["4 chicken breasts","cheddar cheese soup","whole milk","paprika","shredded cheddar","frozen broccoli","Ritz crackers","butter"]},
 {id:98,name:"Olive Garden Breadsticks",cat:"Breads",method:"Oven",cookTime:14,health:"amber",serves:7,sides:"Soup or pasta",cal:200,pro:5,carb:32,fat:7,healthNote:"Homemade copycat Olive Garden breadsticks. Real yeast bread.",cbKey:"Olive Garden Breadsticks",ingredients:["warm water","active dry yeast","flour","butter melted","sugar","salt","butter garlic powder salt for topping"]}
 ];
 
@@ -524,7 +524,7 @@ function canAdd(meal,plan,idx){
   return true;
 }
 
-function generatePlan(){
+function _coreGeneratePlan(){
   const plan=[];const used=new Set();
   WEEK_SLOTS.forEach((slot,idx)=>{
     if(slot.type==='Boys Cook'){const t=TUESDAY[Math.floor(Math.random()*TUESDAY.length)];plan.push({...slot,mealName:t.name,sides:t.sides,health:t.health,mealObj:null,dessert:null,bread:null,chain:null,alert:null,defrost:null});return;}
@@ -533,8 +533,8 @@ function generatePlan(){
       plan.push({...slot,mealName:"John's Choice -- Wing It",sides:"Cheesesteak, grilled steak, hot sausage, pasta, or Dawn's chicken Alfredo",health:"green",mealObj:null,dessert:null,bread:null,chain:null,alert:{label:"Start when ready -- date night is flexible"},defrost:null,boysMeal:boysFridayMeal.name,boysMealSides:boysFridayMeal.sides});
       return;
     }
-    let pool=MEALS.filter(m=>{if(used.has(m.id))return false;if(['Leftover','Simple','Holiday','Breakfast','Breakfast for Dinner','Desserts','Breads'].includes(m.cat))return false;if(!slot.cats.some(c=>m.cat===c))return false;return canAdd(m,plan,idx);});
-    if(!pool.length)pool=MEALS.filter(m=>{if(used.has(m.id))return false;if(['Leftover','Simple','Holiday','Breakfast','Breakfast for Dinner','Desserts','Breads'].includes(m.cat))return false;return slot.cats.some(c=>m.cat===c);});
+    let pool=MEALS.filter(m=>{if(used.has(m.id))return false;if(['Leftover','Simple','Holiday','Breakfast','Breakfast for Dinner','Desserts','Breads','Side'].includes(m.cat))return false;if(!slot.cats.some(c=>m.cat===c))return false;return canAdd(m,plan,idx);});
+    if(!pool.length)pool=MEALS.filter(m=>{if(used.has(m.id))return false;if(['Leftover','Simple','Holiday','Breakfast','Breakfast for Dinner','Desserts','Breads','Side'].includes(m.cat))return false;return slot.cats.some(c=>m.cat===c);});
     if(!pool.length){plan.push({...slot,mealName:"Open -- choose from library",sides:"",health:"green",mealObj:null,dessert:null,bread:null,chain:null,alert:null,defrost:null});return;}
     const chosen=pool[Math.floor(Math.random()*pool.length)];
     used.add(chosen.id);
@@ -1130,9 +1130,8 @@ function savePlan(plan){
 }
 
 // ── PATCH generatePlan TO ALSO SAVE TO FIREBASE ─────────────────
-const _origGeneratePlan = generatePlan;
 function generatePlan(){
-  _origGeneratePlan();
+  _coreGeneratePlan();
   if(currentPlan) savePlan(currentPlan);
 }
 
