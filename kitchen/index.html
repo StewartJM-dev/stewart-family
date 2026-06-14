@@ -190,6 +190,7 @@ body{font-family:'Lato',sans-serif;background:var(--cream);color:var(--ink);font
   <div class="screen" id="screen-inventory">
     <div class="sc-title">Pantry &amp; Freezer</div>
     <div class="sc-sub">Update after every surplus run and weekly shop</div>
+    <button class="shop-gen" onclick="resetInventoryToSheet()" style="margin-bottom:10px;">&#8635; Load Dawn's Inventory Sheet</button>
     <div id="inventory-list"></div>
   </div>
   <div class="screen" id="screen-shopping">
@@ -209,6 +210,50 @@ body{font-family:'Lato',sans-serif;background:var(--cream);color:var(--ink);font
     <div class="sc-sub">Stewart Kitchen guide for Dawn</div>
     <div id="help-content"></div>
   </div>
+
+  <!-- PARENT DASHBOARD SCREEN -->
+  <div class="screen" id="screen-dashboard">
+    <div class="sc-title">HQ Dashboard</div>
+    <div class="sc-sub">Today's mission status &amp; weekly pay</div>
+
+    <!-- TRANSMISSION SENDER -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px;">
+      <div style="background:var(--indigo,#1e2d5a);padding:9px 13px;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:14px;">&#128225;</span>
+        <span style="font-family:'Playfair Display',serif;font-size:12px;font-weight:700;color:#f0fafa;letter-spacing:.5px;">Send Transmission to Agents</span>
+      </div>
+      <div style="padding:12px 13px;">
+        <textarea id="transmission-text" placeholder="Type your message to the boys..." style="width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:7px;font-family:'Lato',sans-serif;font-size:13px;background:var(--cream);color:var(--ink);resize:none;height:70px;margin-bottom:8px;" maxlength="280"></textarea>
+        <div style="display:flex;gap:8px;">
+          <select id="transmission-from" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-family:'Lato',sans-serif;font-size:12px;background:var(--card);color:var(--ink);">
+            <option value="HQ">From: HQ</option>
+            <option value="Dad">From: Dad</option>
+            <option value="Mom">From: Mom</option>
+          </select>
+          <button onclick="sendTransmission()" style="padding:8px 16px;border:none;border-radius:7px;background:#1e2d5a;color:white;font-family:'Playfair Display',serif;font-size:12px;font-weight:700;cursor:pointer;">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TODAY'S DATE + DISH TEAM -->
+    <div id="dashboard-day-info" style="margin-bottom:12px;"></div>
+
+    <!-- AGENTS STATUS GRID -->
+    <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Today's Mission Status</div>
+    <div id="dashboard-agents" style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px;"></div>
+
+    <!-- WEEKLY PAY SUMMARY -->
+    <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Weekly Pay Summary</div>
+    <div id="dashboard-pay" style="margin-bottom:14px;"></div>
+
+    <!-- FAMILY NIGHT STATUS -->
+    <div id="dashboard-familynight" style="margin-bottom:14px;"></div>
+
+    <!-- RECENT TRANSMISSIONS -->
+    <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Recent Transmissions</div>
+    <div id="dashboard-transmissions"></div>
+  </div>
+
 </main>
 <nav class="bnav">
   <button class="nb active" onclick="showScreen('meals',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Meals</button>
@@ -217,6 +262,9 @@ body{font-family:'Lato',sans-serif;background:var(--cream);color:var(--ink);font
   <button class="nb" onclick="showScreen('inventory',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 3H8v4h8V3z"/></svg>Pantry</button>
   <button class="nb" onclick="showScreen('shopping',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>Shop</button>
   <button class="nb" onclick="showScreen('health',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Health</button>
+  <button class="nb" onclick="showScreen('dashboard',this);renderDashboard();">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>HQ
+  </button>
   <button class="nb" onclick="showScreen('help',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Help</button>
 </nav>
 <script>
@@ -249,6 +297,7 @@ const CB={
 "Chicken and Broccoli":{y:"4-5 servings",t:"275F then high",p:"30 min + marinate",c:"20 min",s:[{h:"Chicken",i:["3/4-1 lb chicken breast (3/4-inch cubes)"]},{h:"Velvet Marinade",i:["1 egg white","1 Tbsp cornstarch","1/4 tsp salt"]},{h:"Sauce",i:["2 Tbsp oyster sauce","1 Tbsp light soy","1 Tbsp dark soy","1 Tbsp water"]},{h:"Vegetables",i:["1 lb broccoli","2 garlic cloves crushed","1 tsp cornstarch plus 1 Tbsp water","1/2 Cup water, 1/4 tsp salt, 1/2 tsp sugar","2 Cups plus 4 Tbsp oil"]}],d:["Whisk egg white, cornstarch, salt. Add chicken, coat. Refrigerate 30 min.","Mix sauce ingredients. Mix thickener. Cut broccoli into pieces.","Heat 2 Cups oil to 275F. Add chicken, cook 30 sec, separate gently. Remove when white. Drain.","Drain oil. Heat 2 Tbsp oil on high. Add garlic, stir-fry 10 sec. Add broccoli, salt, sugar. Stir-fry 30 sec. Add water, cover, steam 4-5 min until bright green. Remove, drain.","Heat 2 Tbsp oil. Add broccoli and chicken, toss to cook through. Pour sauce in center, add thickener, stir to thicken. Toss together. Serve over rice."]},
 "Chinese Pork Fried Rice":{y:"4-5 servings",t:"High heat",p:"10 min",c:"10-15 min",n:"Day-old rice is essential for best results",s:[{h:"Ingredients",i:["2 Cups cooked rice (day-old best)","2 Tbsp oil divided","1 small onion chopped","1 bag frozen peas with carrots","2 oz scallions sliced","2 tsp Garlic Powder","1/4 tsp soy sauce","1 tsp MSG","1/2 tsp salt","1/2 tsp ginger","1/2 tsp pepper","2 eggs scrambled","Char Siu cooked pork diced"]}],d:["Break up day-old rice. Heat wok on high. Add 1/2 Tbsp oil, add half rice, stir-fry 3 min until toasted. Transfer. Repeat with remaining rice.","Add 1/2 Tbsp oil, scramble eggs. Add to rice.","Heat final 1/2 Tbsp oil. Add onion, carrot, white scallions. Stir-fry 2 min.","Return rice and eggs. Add peas, pork, garlic, ginger, MSG, salt, pepper, soy sauce. Toss 2-3 min. Add green scallions, toss 30 sec."]},
 "Chinese Char Siu Sauce":{y:"Marinade for 2-3 lbs",t:"Med-low",p:"5 min",c:"5 min",s:[{h:"Ingredients",i:["2 Tbsp light soy sauce","1 Tbsp oyster sauce","1 Tbsp rice wine","3 Tbsp sugar","1 tsp garlic powder","1/4 Cup honey","1/4 tsp salt","1/4 tsp five-spice","2 Tbsp water","1/4 tsp MSG"]}],d:["Combine all in saucepan. Heat over medium-low stirring until sugar dissolves, 3-5 min. Do not boil.","Cool completely. Use as marinade 4+ hours or overnight.","Roast marinated meat at 375F, basting with remaining sauce."]},
+"Chinese Green Pepper Steak":{y:"4-5 servings",t:"Stovetop / Wok",p:"20 min + marinate",c:"15 min",n:"Family recipe. Velveted steak with green peppers and onion in a rich hoisin-oyster sauce. Serve over rice.",s:[{h:"Ingredients",i:["1 lb steak, pounded thin","Velvet: 1 egg white, 1 Tbsp cornstarch","Sauce: 3 Tbsp Hoisin sauce","2 Tbsp Fish sauce","2 Tbsp oyster sauce","2 Tbsp low sodium soy sauce","2 cups chicken broth","2 Tbsp MSG","1/2 Tbsp garlic powder","3 green peppers, sliced","1 large onion, sliced","Thickener: 3 Tbsp cornstarch + 1/4 cup water"]}],d:["Velvet steak: Whisk egg white and 1 Tbsp cornstarch. Add steak, coat well. Refrigerate 30 minutes.","Heat 2 cups oil to 275°F in wok. Add steak, cook 2-3 minutes, separating pieces gently. Remove and drain oil from wok.","Add all sauce ingredients to wok and heat until bubbling. Add peppers and onion and cook until tender.","Add steak back to wok.","Add cornstarch thickener while stirring.","Heat until sauce has thickened. Serve over rice."]},
 "Garlic Parmesan Wing Sauce":{y:"Sauce for 3-4 lbs wings",t:"350F for garlic",p:"10 min + chill",c:"20-25 min",s:[{h:"Ingredients",i:["6 whole cloves garlic peeled","2 Tbsp olive oil","1/2 Cup mayonnaise or plain yogurt","1 Tbsp corn syrup","2 Tbsp grated Parmesan cheese","1 Tbsp fresh lemon juice","1 Tbsp apple cider vinegar","1/4 tsp each dried thyme, marjoram, oregano, basil","1/2 tsp red pepper flakes","1/2 tsp salt","1/4 tsp black pepper"]}],d:["Preheat oven to 350F. Place peeled garlic cloves in a small oven-safe dish. Drizzle with olive oil.","Cover tightly with aluminum foil. Roast 20-25 minutes until garlic is very soft and golden.","While garlic roasts, whisk together mayonnaise, corn syrup, Parmesan, lemon juice, vinegar, and all herbs.","When garlic is done, let cool 5 minutes. Crush roasted garlic into the sauce using a garlic press or fork.","Stir well to incorporate garlic throughout.","Cover and refrigerate at least 2-3 hours or overnight. Flavors improve significantly.","Toss with hot wings when ready to serve."]}
 };
 
@@ -278,7 +327,7 @@ const MEALS=[
 {id:23,name:"Nachos -- John and Dawn",cat:"Mexican",method:"Oven",cookTime:15,health:"amber",serves:2,sides:"Sour cream, salsa",cal:480,pro:24,carb:44,fat:24,healthNote:"Friday date night use of leftover taco meat.",note:"Friday date night only -- leftover taco meat",leftovers:"tacos",proteins:["beef"],ingredients:["tortilla chips","leftover taco meat","shredded cheese","jalapenos","sour cream","salsa"]},
 {id:24,name:"General Tso's Chicken",cat:"Chinese",method:"Stovetop",cookTime:45,health:"amber",serves:5,sides:"Pork fried rice, steamed broccoli",cal:580,pro:36,carb:52,fat:22,healthNote:"Homemade is far better than takeout. You control the sugar.",note:"From the cookbook",proteins:["chicken"],cbKey:"General Tso's Chicken",ingredients:["3 lbs chicken breast","soy sauce","egg","cornstarch","garlic","sugar","vinegar","wine","chicken broth","green onions","dried red chilies"]},
 {id:25,name:"Chicken and Broccoli",cat:"Chinese",method:"Stovetop",cookTime:30,health:"green",serves:5,sides:"Pork fried rice",cal:440,pro:40,carb:34,fat:14,healthNote:"Velveted chicken and broccoli -- one of the healthier Chinese dishes.",proteins:["chicken"],cbKey:"Chicken and Broccoli",ingredients:["3/4-1 lb chicken breast","egg white","cornstarch","oyster sauce","soy sauce","broccoli","garlic","oil"]},
-{id:26,name:"Pepper Steak",cat:"Chinese",method:"Stovetop",cookTime:30,health:"green",serves:5,sides:"Pork fried rice",cal:460,pro:38,carb:30,fat:18,healthNote:"Beef, peppers, onions in savory sauce -- clean protein.",proteins:["beef"],ingredients:["flank or sirloin steak sliced thin","green peppers","onions","soy sauce","oyster sauce","garlic","ginger","cornstarch"]},
+{id:26,name:"Pepper Steak",cat:"Chinese",method:"Stovetop",cookTime:30,health:"green",serves:5,sides:"Pork fried rice",cal:460,pro:38,carb:30,fat:18,healthNote:"Beef, peppers, onions in savory sauce -- clean protein.",cbKey:"Chinese Green Pepper Steak",proteins:["beef"],ingredients:["flank or sirloin steak sliced thin","green peppers","onions","soy sauce","oyster sauce","garlic","ginger","cornstarch"]},
 {id:27,name:"Sweet and Sour Chicken",cat:"Chinese",method:"Stovetop",cookTime:40,health:"amber",serves:5,sides:"Pork fried rice",cal:520,pro:34,carb:56,fat:16,healthNote:"Homemade lets you control the sugar in the sauce.",proteins:["chicken"],cbKey:"Chinese Sweet and Sour Chicken",ingredients:["2 lbs boneless chicken breast","flour","cornstarch","baking powder","pineapple chunks","vinegar","brown sugar","green pepper","onion"]},
 {id:28,name:"Char Siu Chinese Ribs",cat:"Chinese",method:"Oven",cookTime:120,health:"amber",serves:5,sides:"Pork fried rice, steamed veg",cal:560,pro:38,carb:28,fat:32,healthNote:"Char Siu marinade has sugar -- occasional and worth it.",note:"From the cookbook. Pork also diced into fried rice.",leftovers:"charsiu",proteins:["pork"],cbKey:"Chinese Char Siu Sauce",ingredients:["pork ribs or shoulder","hoisin sauce","soy sauce","honey","Chinese 5-spice","garlic","rice wine"]},
 {id:29,name:"Chinese Pork Fried Rice",cat:"Chinese",method:"Stovetop",cookTime:15,health:"amber",serves:5,sides:"Served alongside all Chinese combination meals",cal:380,pro:18,carb:44,fat:14,healthNote:"Day-old rice is key. Real ingredients throughout.",note:"From the cookbook. Served alongside all Chinese meals.",cbKey:"Chinese Pork Fried Rice",ingredients:["2 Cups day-old cooked rice","eggs","Char Siu pork diced","onion","frozen peas and carrots","scallions","soy sauce","garlic powder","MSG","oil"]},
@@ -350,6 +399,7 @@ const MEALS=[
 {id:95,name:"Mom's Cheesecake",cat:"Desserts",method:"Oven",cookTime:120,health:"red",serves:12,sides:"",cal:380,pro:7,carb:32,fat:24,healthNote:"Special occasion only. Rich, dense, real cream cheese.",note:"Special occasion -- John's mom's recipe",cbKey:"Mom's Cheesecake",ingredients:["graham cracker crumbs","butter","16 oz cream cheese","sugar","eggs","vanilla","16 oz sour cream"]},
 {id:96,name:"Surprise Muffins",cat:"Desserts",method:"Oven",cookTime:25,health:"amber",serves:12,sides:"Whole milk",cal:180,pro:3,carb:28,fat:7,healthNote:"Homemade muffins with jam inside. Real food.",note:"Also a boys breakfast option",cbKey:"Surprise Muffins",ingredients:["egg","milk","oil","flour","sugar","baking powder","salt","jam or jelly for filling"]},
 {id:97,name:"Crazy Bread",cat:"Breads",method:"Oven",cookTime:8,health:"amber",serves:8,sides:"Soup or pasta",cal:180,pro:4,carb:28,fat:6,healthNote:"Homemade breadsticks with garlic butter. Real yeast bread.",note:"Great alongside any soup or Italian meal",cbKey:"Crazy Bread",ingredients:["1 Cup warm water","instant yeast","sugar","flour","salt","butter","garlic salt","Parmesan"]},
+{id:99,name:"Grandma's Potato Salad",cat:"Comfort",method:"Stovetop",cookTime:20,health:"amber",serves:8,sides:"Great with grilled meats or sandwiches",cal:280,pro:3,carb:32,fat:16,healthNote:"Classic summer side -- real mayonnaise, real potatoes. Worth it.",note:"Chill before serving -- make it first",cbKey:"Grandma's Potato Salad",ingredients:["3-5 lbs potatoes","1/3 Cup cider vinegar","1.25 Cups Hellman's mayonnaise","1.25 tsp salt","small to medium onion diced","fresh black pepper"]},
 {id:98,name:"Olive Garden Breadsticks",cat:"Breads",method:"Oven",cookTime:14,health:"amber",serves:7,sides:"Soup or pasta",cal:200,pro:5,carb:32,fat:7,healthNote:"Homemade copycat Olive Garden breadsticks. Real yeast bread.",cbKey:"Olive Garden Breadsticks",ingredients:["warm water","active dry yeast","flour","butter melted","sugar","salt","butter garlic powder salt for topping"]}
 ];
 
@@ -425,16 +475,25 @@ const TUESDAY=[
 {name:"Hamburger Helper",sides:"Canned corn",health:"red"},
 {name:"Deli Sandwiches",sides:"Chips or fruit",health:"amber"},
 {name:"Seven Can Soup",sides:"Garlic bread",health:"amber"},
-{name:"Grilled Cheese Sandwiches",sides:"Chips",health:"amber"}
+{name:"Grilled Cheese Sandwiches",sides:"Chips",health:"amber"},
+{name:"Cheese Quesadillas",sides:"Salsa, sour cream, or fruit",health:"amber"},
+{name:"Frozen Pizza",sides:"Side salad or fruit",health:"red"},
+{name:"Ramen Noodles",sides:"Hard-boiled egg or fruit",health:"red"},
+{name:"PB&J Sandwiches",sides:"Apple slices, chips, or carrots",health:"amber"},
+{name:"Scrambled Eggs & Toast",sides:"Fruit or hash browns",health:"green"},
+{name:"Cereal & Toast",sides:"Fruit",health:"amber"},
+{name:"Leftover Night -- Repurpose",sides:"Whatever's in the fridge",health:"green"},
+{name:"Quesadillas with Leftover Meat",sides:"Salsa or beans",health:"green"},
+{name:"Bagel Bites or Mini Pizzas",sides:"Fruit or veggie sticks",health:"amber"}
 ];
 const DESSERTS=["Box cake","John's Snickerdoodles","Chocolate Cookies","Chocolate Chip Cookies","No Bake Cookies","Grandma's Rice Pudding","Apple Crumble","Apple Cobbler","Strawberry Shortcake (in season)",null,null,null];
 const WEEK_SLOTS=[
 {day:"Sunday",type:"Family",label:"",cats:["Comfort","Holiday","Grill"]},
-{day:"Monday",type:"Family",label:"",cats:["Comfort","Soups"]},
+{day:"Monday",type:"Family",label:"Dinner Sides: Boys Help",cats:["Comfort","Soups"]},
 {day:"Tuesday",type:"Boys Cook",label:"Trail Life Night",cats:["Simple"]},
-{day:"Wednesday",type:"Italian Night",label:"",cats:["Italian"]},
-{day:"Thursday",type:"Family",label:"",cats:["Mexican","Chinese","Comfort","Grill"]},
-{day:"Friday",type:"Date Night",label:"John & Dawn",cats:["Grill","Comfort","Italian"]},
+{day:"Wednesday",type:"Italian Night",label:"Dinner Sides: Boys Help",cats:["Italian"]},
+{day:"Thursday",type:"Family",label:"Dinner Sides: Boys Help",cats:["Mexican","Chinese","Comfort","Grill"]},
+{day:"Friday",type:"Date Night",label:"John & Dawn -- Boys Cook Their Own",cats:["Grill","Comfort","Italian"]},
 {day:"Saturday",type:"Grill or Slow Cook",label:"",cats:["Grill","Soups","Comfort"]}
 ];
 let currentPlan=null;
@@ -452,7 +511,11 @@ function generatePlan(){
   const plan=[];const used=new Set();
   WEEK_SLOTS.forEach((slot,idx)=>{
     if(slot.type==='Boys Cook'){const t=TUESDAY[Math.floor(Math.random()*TUESDAY.length)];plan.push({...slot,mealName:t.name,sides:t.sides,health:t.health,mealObj:null,dessert:null,bread:null,chain:null,alert:null,defrost:null});return;}
-    if(slot.type==='Date Night'){plan.push({...slot,mealName:"John's Choice -- Wing It",sides:"Cheesesteak, grilled steak, hot sausage, pasta, or Dawn's chicken Alfredo",health:"green",mealObj:null,dessert:null,bread:null,chain:null,alert:{label:"Start when ready -- date night is flexible"},defrost:null});return;}
+    if(slot.type==='Date Night'){
+      const boysFridayMeal=TUESDAY[Math.floor(Math.random()*TUESDAY.length)];
+      plan.push({...slot,mealName:"John's Choice -- Wing It",sides:"Cheesesteak, grilled steak, hot sausage, pasta, or Dawn's chicken Alfredo",health:"green",mealObj:null,dessert:null,bread:null,chain:null,alert:{label:"Start when ready -- date night is flexible"},defrost:null,boysMeal:boysFridayMeal.name,boysMealSides:boysFridayMeal.sides});
+      return;
+    }
     let pool=MEALS.filter(m=>{if(used.has(m.id))return false;if(['Leftover','Simple','Holiday','Breakfast','Breakfast for Dinner','Desserts','Breads'].includes(m.cat))return false;if(!slot.cats.some(c=>m.cat===c))return false;return canAdd(m,plan,idx);});
     if(!pool.length)pool=MEALS.filter(m=>{if(used.has(m.id))return false;if(['Leftover','Simple','Holiday','Breakfast','Breakfast for Dinner','Desserts','Breads'].includes(m.cat))return false;return slot.cats.some(c=>m.cat===c);});
     if(!pool.length){plan.push({...slot,mealName:"Open -- choose from library",sides:"",health:"green",mealObj:null,dessert:null,bread:null,chain:null,alert:null,defrost:null});return;}
@@ -477,7 +540,7 @@ function renderPlan(plan){
   if(!plan||!plan.length){g.innerHTML='<div class="empty">Tap Generate This Week\'s Plan to get started</div>';return;}
   const hcls=h=>h==='green'?'bg':h==='amber'?'ba':'br';
   const hlbl=h=>h==='green'?'Eat Freely':h==='amber'?'Eat Regularly':'Limit Frequency';
-  g.innerHTML=plan.map(s=>`<div class="day-card"><div class="day-hd"><span class="day-nm">${s.day}</span><span class="day-tp">${s.type}${s.label?' &middot; '+s.label:''}</span></div><div class="day-bd"><div class="day-meal">${s.mealName}</div>${s.sides?`<div class="day-sides">${s.sides}</div>`:''}<span class="badge ${hcls(s.health)}">${hlbl(s.health)}</span>${s.bread?`<div class="day-bread">&#127838; ${s.bread}</div>`:''}${s.alert?`<div class="day-alert">&#9200; ${s.alert.label}</div>`:''}${s.defrost?`<div class="day-defrost">&#10052; ${s.defrost}</div>`:''}${s.chain?`<div class="day-left">&#9851; Unlocks: ${s.chain.name}</div>`:''}${s.dessert?`<div class="day-dess">&#127856; ${s.dessert}</div>`:''}</div></div>`).join('');
+  g.innerHTML=plan.map(s=>`<div class="day-card"><div class="day-hd"><span class="day-nm">${s.day}</span><span class="day-tp">${s.type}${s.label?' &middot; '+s.label:''}</span></div><div class="day-bd"><div class="day-meal">${s.mealName}</div>${s.sides?`<div class="day-sides">${s.sides}</div>`:''}<span class="badge ${hcls(s.health)}">${hlbl(s.health)}</span>${s.boysMeal?`<div class="day-sides" style="margin-top:6px;padding-top:6px;border-top:1px dashed var(--border);"><strong>Boys' dinner:</strong> ${s.boysMeal}${s.boysMealSides?` &mdash; ${s.boysMealSides}`:''}</div>`:''}${s.bread?`<div class="day-bread">&#127838; ${s.bread}</div>`:''}${s.alert?`<div class="day-alert">&#9200; ${s.alert.label}</div>`:''}${s.defrost?`<div class="day-defrost">&#10052; ${s.defrost}</div>`:''}${s.chain?`<div class="day-left">&#9851; Unlocks: ${s.chain.name}</div>`:''}${s.dessert?`<div class="day-dess">&#127856; ${s.dessert}</div>`:''}</div></div>`).join('');
 }
 
 function renderNutrition(plan){
@@ -671,9 +734,9 @@ function renderChains(){
 }
 
 const DEFAULT_INV={
-freezer:[{id:'f1',name:'Ground Beef',qty:3,unit:'lbs',low:2},{id:'f2',name:'Whole Chicken or Pieces',qty:1,unit:'pkg',low:1},{id:'f3',name:'Pork Chops',qty:6,unit:'pieces',low:4},{id:'f4',name:'Italian Sausage',qty:1,unit:'lb',low:1},{id:'f5',name:'Steak',qty:2,unit:'pieces',low:1},{id:'f6',name:'Hot Dogs',qty:1,unit:'pkg',low:1},{id:'f7',name:'Chicken Breasts',qty:4,unit:'pieces',low:2},{id:'f8',name:'Pork Loin',qty:0,unit:'roast',low:1},{id:'f9',name:'Pork Shoulder',qty:0,unit:'roast',low:1},{id:'f10',name:'Ham whole or steak',qty:0,unit:'item',low:1}],
-pantry:[{id:'p1',name:'Pasta spaghetti/ziti/macaroni',qty:4,unit:'boxes',low:2},{id:'p2',name:'Jarred Pasta Sauce',qty:4,unit:'jars',low:2},{id:'p3',name:'Canned Corn',qty:6,unit:'cans',low:3},{id:'p4',name:'Canned Mixed Veg',qty:4,unit:'cans',low:2},{id:'p5',name:'Beef Broth',qty:2,unit:'boxes',low:1},{id:'p6',name:'Chicken Broth',qty:2,unit:'boxes',low:1},{id:'p7',name:'White Rice',qty:2,unit:'bags',low:1},{id:'p8',name:'Taco Shells hard',qty:1,unit:'box',low:1},{id:'p9',name:'Flour Tortillas',qty:1,unit:'pkg',low:1},{id:'p10',name:'Knorr Broccoli Cheese Rice',qty:2,unit:'pkts',low:1},{id:'p11',name:'Stove Top Stuffing',qty:2,unit:'boxes',low:1},{id:'p12',name:'Canned Diced Tomatoes',qty:4,unit:'cans',low:2},{id:'p13',name:'Cream of Mushroom Soup',qty:3,unit:'cans',low:2},{id:'p14',name:'Cream of Chicken Soup',qty:3,unit:'cans',low:2},{id:'p15',name:'Breadcrumbs',qty:1,unit:'canister',low:1},{id:'p16',name:'Split Peas',qty:1,unit:'bag',low:1},{id:'p17',name:'All Meat Chili',qty:2,unit:'cans',low:1},{id:'p18',name:'Assorted Beans',qty:6,unit:'cans',low:3}],
-fridge:[{id:'r1',name:'Eggs',qty:12,unit:'eggs',low:6},{id:'r2',name:'Whole Milk',qty:1,unit:'gallon',low:1},{id:'r3',name:'Butter',qty:4,unit:'sticks',low:2},{id:'r4',name:'Cheddar Cheese',qty:1,unit:'block',low:1},{id:'r5',name:'Mozzarella',qty:1,unit:'pkg',low:1},{id:'r6',name:'Potatoes',qty:5,unit:'lbs',low:3},{id:'r7',name:'Deli Ham',qty:1,unit:'pkg',low:1},{id:'r8',name:'Deli Turkey',qty:1,unit:'pkg',low:1},{id:'r9',name:'Bologna',qty:1,unit:'pkg',low:1},{id:'r10',name:"Hellman's Mayonnaise",qty:1,unit:'jar',low:1},{id:'r11',name:'Sour Cream',qty:1,unit:'tub',low:1},{id:'r12',name:'Green Peppers',qty:2,unit:'peppers',low:2},{id:'r13',name:'Onions',qty:3,unit:'onions',low:2},{id:'r14',name:'Ricotta Cheese',qty:0,unit:'container',low:1}]
+freezer:[{id:'f1',name:'Ground Beef',qty:4,unit:'pkgs',low:2},{id:'f2',name:'Whole Chicken or Pieces',qty:0,unit:'pkg',low:1},{id:'f3',name:'Pork Chops',qty:0,unit:'pkg',low:1},{id:'f4',name:'Italian Sausage',qty:0,unit:'lb',low:1},{id:'f5',name:'Steak',qty:0,unit:'pieces',low:1},{id:'f6',name:'Hot Dogs',qty:24,unit:'count',low:8},{id:'f7',name:'Chicken Breasts',qty:1,unit:'pkg',low:2},{id:'f8',name:'Pork Loin',qty:0,unit:'roast',low:1},{id:'f9',name:'Pork Shoulder',qty:0,unit:'roast',low:1},{id:'f10',name:'Ham whole or steak',qty:0,unit:'item',low:1},{id:'f11',name:'Bacon',qty:1,unit:'pkg',low:1},{id:'f12',name:'Turkey whole',qty:1,unit:'bird',low:0},{id:'f13',name:'Deer Roast',qty:1,unit:'roast',low:0},{id:'f14',name:'Ribs',qty:1,unit:'rack',low:0},{id:'f15',name:'Chicken Thighs/Leg',qty:1,unit:'pkg',low:1},{id:'f16',name:'Ground Turkey',qty:1,unit:'pkg',low:1},{id:'f17',name:'Pork Ribs',qty:1,unit:'rack',low:0},{id:'f18',name:'Fish/Seafood',qty:0,unit:'pkg',low:1},{id:'f19',name:'Chicken Legs',qty:2,unit:'pkg',low:1},{id:'f20',name:'Ground Chicken',qty:3,unit:'pkg',low:1},{id:'f21',name:'BBQ Thigh/Leg',qty:1,unit:'pkg',low:0},{id:'f22',name:'Turkey Tenderloin',qty:1,unit:'pkg',low:0},{id:'f23',name:'Ham Bone',qty:1,unit:'bone',low:0},{id:'f24',name:'Velvet Chicken',qty:2,unit:'pkg',low:0},{id:'f25',name:'Breakfast Patties',qty:1,unit:'pkg',low:1},{id:'f26',name:'Lamb Meat',qty:1,unit:'pkg',low:0},{id:'f27',name:'Velvet Steak',qty:1,unit:'pkg',low:0}],
+pantry:[{id:'p1',name:'Spaghetti',qty:9,unit:'boxes',low:2},{id:'p2',name:'Ziti/Penne/Rotini',qty:1,unit:'boxes',low:2},{id:'p3',name:'Elbow Macaroni',qty:1,unit:'box',low:1},{id:'p4',name:'Lasagna Noodles',qty:1,unit:'box',low:1},{id:'p5',name:'Egg Noodles',qty:0,unit:'bag',low:1},{id:'p6',name:'Jarred Pasta Sauce',qty:1,unit:'jars',low:2},{id:'p7',name:'Diced Tomatoes',qty:0,unit:'cans',low:2},{id:'p8',name:'Crushed Tomatoes',qty:0,unit:'cans',low:2},{id:'p9',name:'Tomato Sauce',qty:0,unit:'cans',low:2},{id:'p10',name:'Beef Broth',qty:0,unit:'boxes',low:2},{id:'p11',name:'Chicken Broth',qty:0,unit:'boxes',low:2},{id:'p12',name:'Cream of Mushroom Soup',qty:0,unit:'cans',low:2},{id:'p13',name:'Cream of Chicken Soup',qty:0,unit:'cans',low:2},{id:'p14',name:'All Meat Chili',qty:0,unit:'cans',low:1},{id:'p15',name:'Kidney Beans',qty:0,unit:'cans',low:2},{id:'p16',name:'Black Beans',qty:0,unit:'cans',low:2},{id:'p17',name:'Navy Beans',qty:0,unit:'cans',low:1},{id:'p18',name:'Small Red Beans',qty:0,unit:'cans',low:1},{id:'p19',name:'Corn',qty:0,unit:'cans',low:3},{id:'p20',name:'Mixed Veg',qty:0,unit:'cans',low:3},{id:'p21',name:'White Rice',qty:1,unit:'bag',low:1},{id:'p22',name:'Brown Rice',qty:1,unit:'bag',low:1},{id:'p23',name:'Split Peas',qty:0,unit:'bag',low:1},{id:'p24',name:'Flour',qty:0,unit:'bag',low:1},{id:'p25',name:'Sugar',qty:0,unit:'bag',low:1},{id:'p26',name:'Brown Sugar',qty:0,unit:'bag',low:1},{id:'p27',name:'Powdered Sugar',qty:0,unit:'bag',low:1},{id:'p28',name:'Cocoa Powder',qty:0,unit:'container',low:1},{id:'p29',name:'Oats quick',qty:0,unit:'container',low:1},{id:'p30',name:'Baking Soda',qty:0,unit:'box',low:1},{id:'p31',name:'Baking Powder',qty:0,unit:'can',low:1},{id:'p32',name:'Cream of Tartar',qty:0,unit:'jar',low:1},{id:'p33',name:'Breadcrumbs',qty:1,unit:'canister',low:1},{id:'p34',name:'Taco Shells hard',qty:0,unit:'box',low:1},{id:'p35',name:'Flour Tortillas',qty:0,unit:'pkg',low:1},{id:'p36',name:'Stove Top Stuffing',qty:7,unit:'boxes',low:2},{id:'p37',name:'Knorr Broccoli Cheese Rice',qty:0,unit:'pkts',low:2},{id:'p38',name:'Rice-a-Roni Beef',qty:1,unit:'box',low:1},{id:'p39',name:'Hamburger Helper',qty:5,unit:'boxes',low:2},{id:'p40',name:'Peanut Butter',qty:3,unit:'jars',low:1},{id:'p41',name:'Vanilla Extract',qty:0,unit:'bottle',low:1},{id:'p42',name:'Vegetable Oil',qty:2,unit:'bottles',low:1},{id:'p43',name:'Olive Oil',qty:0,unit:'bottle',low:1},{id:'p44',name:'Apple Cider Vinegar',qty:1,unit:'bottle (half)',low:1},{id:'p45',name:'Soy Sauce',qty:1,unit:'bottle (half)',low:1},{id:'p46',name:'Worcestershire Sauce',qty:0,unit:'bottle',low:1},{id:'p47',name:'BBQ Sauce',qty:0,unit:'bottle',low:1},{id:'p48',name:'Ketchup',qty:0,unit:'bottle',low:1},{id:'p49',name:'Graham Cracker Crumbs',qty:0,unit:'box',low:1},{id:'p50',name:'Chocolate Chips',qty:0,unit:'bag',low:1},{id:'p51',name:'Mac & Cheese boxed',qty:10,unit:'boxes',low:4},{id:'p52',name:'Au Gratin Potatoes',qty:7,unit:'boxes',low:2},{id:'p53',name:'Instant Potatoes',qty:4,unit:'boxes',low:1},{id:'p54',name:'Pancake Mix',qty:4,unit:'boxes',low:1},{id:'p55',name:'Muffin Mix',qty:10,unit:'boxes',low:2},{id:'p56',name:'Cake Mix',qty:5,unit:'boxes',low:1},{id:'p57',name:'Cereal',qty:3,unit:'boxes',low:2},{id:'p58',name:'Garlic Powder',qty:1,unit:'jar',low:1}],
+fridge:[{id:'r1',name:'Eggs',qty:36,unit:'eggs',low:12},{id:'r2',name:'Whole Milk',qty:1,unit:'gallons (1.5)',low:1},{id:'r3',name:'Butter',qty:4,unit:'sticks (4.5)',low:4},{id:'r4',name:'Sharp Cheddar Cheese',qty:0,unit:'block',low:1},{id:'r5',name:'Mozzarella Cheese',qty:0,unit:'pkg',low:1},{id:'r6',name:'Ricotta Cheese',qty:0,unit:'container',low:1},{id:'r7',name:'Parmesan Cheese',qty:0,unit:'container',low:1},{id:'r8',name:'Cream Cheese',qty:0,unit:'block',low:1},{id:'r9',name:'Sour Cream',qty:0,unit:'tub',low:1},{id:'r10',name:'Deli Ham',qty:3,unit:'pkg',low:1},{id:'r11',name:'Deli Turkey',qty:0,unit:'pkg',low:1},{id:'r12',name:'Bologna',qty:1,unit:'pkg',low:1},{id:'r13',name:'Chicken Lunch Meat',qty:6,unit:'pkg',low:2},{id:'r14',name:'Potatoes',qty:3,unit:'bags',low:1},{id:'r15',name:'Onions',qty:0,unit:'onions',low:2},{id:'r16',name:'Green Peppers',qty:0,unit:'peppers',low:2},{id:'r17',name:'Carrots',qty:0,unit:'bag',low:1},{id:'r18',name:'Celery',qty:0,unit:'bunch',low:1},{id:'r19',name:'Garlic heads',qty:0,unit:'heads',low:1},{id:'r20',name:'Lettuce',qty:0,unit:'head',low:1},{id:'r21',name:'Tomatoes',qty:0,unit:'tomatoes',low:2},{id:'r22',name:'Apples',qty:0,unit:'apples',low:3},{id:'r23',name:'Lemon/Lime',qty:0,unit:'count',low:1},{id:'r24',name:'Dill Mustard',qty:0,unit:'jar',low:1},{id:'r25',name:'Dijon Mustard',qty:0,unit:'jar',low:1},{id:'r26',name:'Colby Cheese',qty:0,unit:'block',low:1},{id:'r27',name:'American Cheese Slices',qty:0,unit:'pkg',low:1},{id:'r28',name:"Hellman's Mayonnaise",qty:0,unit:'jar',low:1},{id:'r29',name:'Hot Sauce/Salsa',qty:0,unit:'jar',low:1},{id:'r30',name:'Pineapple Chunks',qty:0,unit:'can',low:1}]
 };
 
 // Storage functions overridden by Firebase block below
@@ -846,6 +909,14 @@ function saveInv(inv){
   fbWrite('stewart/inventory', inv);
 }
 
+function resetInventoryToSheet(){
+  if(!confirm("Load the inventory from Dawn's sheet? This replaces the current counts with the baseline from the inventory sheet.")) return;
+  const fresh = JSON.parse(JSON.stringify(DEFAULT_INV));
+  saveInv(fresh);
+  renderInv();
+  alert("Inventory loaded. Adjust any counts with + and - as needed.");
+}
+
 function getShop(){
   try{
     const s = localStorage.getItem('sk4-shop');
@@ -865,6 +936,7 @@ function savePlan(plan){
     day: s.day, type: s.type, label: s.label||'',
     mealName: s.mealName||'', sides: s.sides||'',
     health: s.health||'green',
+    boysMeal: s.boysMeal||'', boysMealSides: s.boysMealSides||'',
     dessert: s.dessert||null,
     bread: s.bread||null,
     defrost: s.defrost||null,
@@ -880,6 +952,233 @@ const _origGeneratePlan = generatePlan;
 function generatePlan(){
   _origGeneratePlan();
   if(currentPlan) savePlan(currentPlan);
+}
+
+
+// ══════════════════════════════════════════════════════
+// PARENT DASHBOARD
+// ══════════════════════════════════════════════════════
+
+const DASH_AGENTS = [
+  {id:'samuel',  name:'Samuel',   codename:'Agent Alpha', color:'#1e3a6e', accent:'#4a7ab5'},
+  {id:'johnjr',  name:'John Jr.', codename:'Agent Bravo', color:'#6e1e1e', accent:'#b54a4a'},
+  {id:'stephen', name:'Stephen',  codename:'Agent Dino',  color:'#1e5c2a', accent:'#4a9a5a'},
+  {id:'daniel',  name:'Daniel',   codename:'Agent Wildcard', color:'#7a5c1e', accent:'#b88a2e'},
+];
+
+const DASH_DAILY_MISSIONS = {
+  samuel:  ['bed','bedroom','rabbit-own','floor-laundry'],
+  johnjr:  ['bed','bedroom','rabbit-own','floor-living'],
+  stephen: ['bed','bedroom','rabbit-own','kitchen-counter','floor-kitchen'],
+  daniel:  ['bed','bedroom','rabbit-own','floor-hallway','floor-rabbit','table-set'],
+};
+
+const DISH_MISSIONS_PARENT = ['dishwasher-load','dishwasher-unload','table-clear','table-wipe'];
+const SETUP_MISSIONS_PARENT = ['table-set','drinks','stovetop','microwave'];
+
+function getDashDishTeam(){
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const startOfYear = new Date(now.getFullYear(), 0, 1);
+  const weekNum = Math.floor((now - startOfYear) / (7*24*60*60*1000));
+  const weekParity = weekNum % 2;
+  const weekAPattern = {0:'sj',1:'sj',2:'sd',3:'sj',4:'sd',5:'sj',6:'sd'};
+  const weekBPattern = {0:'sd',1:'sd',2:'sj',3:'sd',4:'sj',5:'sd',6:'sj'};
+  return weekParity===0 ? weekAPattern[dayOfWeek] : weekBPattern[dayOfWeek];
+}
+
+function getDashExpectedMissions(agentId){
+  const dishTeam = getDashDishTeam();
+  const onDishes = (agentId==='samuel'||agentId==='johnjr') ? dishTeam==='sj' : dishTeam==='sd';
+  const base = [...(DASH_DAILY_MISSIONS[agentId]||[])];
+
+  if(onDishes){
+    if(agentId==='stephen') base.push('dishwasher-unload','table-clear','table-wipe');
+    else if(agentId==='daniel') base.push('dishwasher-load','table-clear','table-wipe');
+    else base.push('dishwasher-load','dishwasher-unload','table-clear','table-wipe');
+  } else {
+    if(agentId!=='daniel') base.push('stovetop','microwave');
+    if(agentId==='samuel'||agentId==='johnjr') base.push('drinks');
+    // Daniel always sets table
+    if(!base.includes('table-set')) base.push('table-set');
+  }
+
+  // Wednesday trash
+  if(new Date().getDay()===3 && (agentId==='samuel'||agentId==='johnjr')) base.push('trash');
+  if(new Date().getDay()===3 && agentId==='daniel') base.push('bathroom-trash');
+
+  return [...new Set(base)];
+}
+
+function getDashWeekDays(){
+  const now = new Date();
+  const day = now.getDay();
+  const diff = day===0 ? -6 : 1-day;
+  const monday = new Date(now);
+  monday.setDate(now.getDate()+diff);
+  const days = [];
+  for(let i=0;i<5;i++){
+    const d = new Date(monday);
+    d.setDate(monday.getDate()+i);
+    days.push(d.toISOString().slice(0,10));
+  }
+  return days;
+}
+
+function renderDashboard(){
+  if(!_db){ renderDashboardOffline(); return; }
+
+  const today = new Date().toISOString().slice(0,10);
+  const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const dayName = dayNames[new Date().getDay()];
+  const dishTeam = getDashDishTeam();
+  const dishLabel = dishTeam==='sj' ? 'Samuel & John Jr.' : 'Stephen & Daniel';
+  const setupLabel = dishTeam==='sj' ? 'Stephen & Daniel' : 'Samuel & John Jr.';
+  const isWeekend = new Date().getDay()===0||new Date().getDay()===6;
+
+  // Day info banner
+  const dayInfoEl = document.getElementById('dashboard-day-info');
+  dayInfoEl.innerHTML = `<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px 13px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+    <div style="font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--brown);flex:1;">${dayName}</div>
+    ${isWeekend
+      ? '<span style="background:#edf7f0;color:#2d6a47;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:12px;">Family Service Day</span>'
+      : `<span style="background:#e8f4fd;color:#1a5276;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:12px;">Dishes: ${dishLabel}</span>
+         <span style="background:#fdf6e3;color:#a07000;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:12px;">Setup: ${setupLabel}</span>`
+    }
+  </div>`;
+
+  // Load all agent mission data for today
+  Promise.all(DASH_AGENTS.map(a =>
+    _db.ref(`stewart/missions/${a.id}/${today}`).once('value')
+  )).then(snaps => {
+    const agentsEl = document.getElementById('dashboard-agents');
+    agentsEl.innerHTML = DASH_AGENTS.map((a, i) => {
+      const done = snaps[i].val() || {};
+      const expected = getDashExpectedMissions(a.id);
+      const completedCount = expected.filter(m => done[m]).length;
+      const total = expected.length;
+      const pct = total > 0 ? Math.round((completedCount/total)*100) : 0;
+      const allDone = completedCount === total && total > 0;
+      const earnedToday = allDone && !isWeekend;
+
+      return `<div style="background:var(--card);border:2px solid ${allDone?'#2d6a47':pct>50?'#e8b84a':'var(--border)'};border-radius:10px;overflow:hidden;">
+        <div style="background:${a.color};padding:8px 11px;display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-family:'Playfair Display',serif;font-size:12px;font-weight:700;color:white;">${a.name}</div>
+            <div style="font-size:9px;color:rgba(255,255,255,.6);letter-spacing:.5px;">${a.codename}</div>
+          </div>
+          <div style="font-size:18px;">${allDone?'✅':pct>50?'⚡':'⏳'}</div>
+        </div>
+        <div style="padding:10px 11px;">
+          <div style="background:#e8e0d0;border-radius:3px;height:5px;overflow:hidden;margin-bottom:6px;">
+            <div style="height:100%;width:${pct}%;background:${allDone?'#2d6a47':pct>50?'#c8922a':'#b5451b'};border-radius:3px;transition:width .5s;"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div style="font-size:11px;color:var(--muted);">${completedCount}/${total} missions</div>
+            <div style="font-size:10px;font-weight:700;color:${earnedToday?'#2d6a47':isWeekend?'var(--muted)':'#8b3010'};">${isWeekend?'Family day':earnedToday?'$1.00 earned':'$0.00'}</div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  });
+
+  // Weekly pay summary
+  const weekDays = getDashWeekDays();
+  Promise.all(DASH_AGENTS.map(a =>
+    Promise.all(weekDays.map(d =>
+      _db.ref(`stewart/missions/${a.id}/${d}`).once('value')
+    ))
+  )).then(allData => {
+    const payEl = document.getElementById('dashboard-pay');
+    payEl.innerHTML = `<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+      <div style="background:var(--brown);padding:8px 13px;">
+        <div style="font-family:'Playfair Display',serif;font-size:12px;font-weight:700;color:var(--cream);">Friday Payout — Week of ${weekDays[0]}</div>
+      </div>
+      <div style="padding:10px 13px;">
+        ${DASH_AGENTS.map((a, ai) => {
+          let earned = 0;
+          weekDays.forEach((d, di) => {
+            const done = allData[ai][di].val() || {};
+            const dayDate = new Date(d);
+            const dayOfWeek = dayDate.getDay();
+            if(dayOfWeek===0||dayOfWeek===6) return;
+            const expected = getDashExpectedMissions(a.id);
+            const allDone = expected.every(m => done[m]) && expected.length > 0;
+            if(allDone) earned++;
+          });
+          return `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:10px;height:10px;border-radius:50%;background:${a.color};flex-shrink:0;"></div>
+              <div style="font-size:13px;font-weight:700;">${a.name}</div>
+              <div style="font-size:10px;color:var(--muted);">${a.codename}</div>
+            </div>
+            <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:${earned>=4?'#2d6a47':earned>=2?'#c8922a':'#b5451b'};">$${earned}.00</div>
+          </div>`;
+        }).join('')}
+        <div style="font-size:10px;color:var(--muted);font-style:italic;margin-top:8px;text-align:right;">Maximum $5.00 per boy per week</div>
+      </div>
+    </div>`;
+  });
+
+  // Family night check
+  const weekStart = weekDays[0];
+  _db.ref(`stewart/familynight/${weekStart}`).once('value', snap => {
+    const fnEl = document.getElementById('dashboard-familynight');
+    if(snap.val()){
+      fnEl.innerHTML = `<div style="background:linear-gradient(135deg,#1a4a2e,#1e2d5a);border:2px solid #c8922a;border-radius:10px;padding:14px;text-align:center;">
+        <div style="font-size:24px;margin-bottom:6px;">&#127881;</div>
+        <div style="font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:#e8b84a;margin-bottom:4px;">Family Night Unlocked!</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.8);">All four boys completed their weekly missions. Time to choose an activity together.</div>
+      </div>`;
+    } else {
+      fnEl.innerHTML = '';
+    }
+  });
+
+  // Recent transmissions
+  _db.ref('stewart/transmissions').limitToLast(5).once('value', snap => {
+    const transEl = document.getElementById('dashboard-transmissions');
+    const val = snap.val();
+    if(!val){
+      transEl.innerHTML = '<div style="text-align:center;padding:16px;color:var(--muted);font-style:italic;font-size:13px;">No transmissions sent yet.</div>';
+      return;
+    }
+    const items = Object.values(val).sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
+    transEl.innerHTML = items.map(t => {
+      const time = t.timestamp ? new Date(t.timestamp).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : '';
+      return `<div style="background:var(--card);border:1px solid var(--border);border-left:3px solid #1e2d5a;border-radius:8px;padding:10px 13px;margin-bottom:7px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#2e3f7a;margin-bottom:4px;">From: ${t.from||'HQ'}</div>
+        <div style="font-size:13px;color:var(--ink);line-height:1.5;">${t.message||''}</div>
+        ${time?`<div style="font-size:10px;color:var(--muted);margin-top:4px;font-style:italic;">${time}</div>`:''}
+      </div>`;
+    }).join('');
+  });
+}
+
+function renderDashboardOffline(){
+  document.getElementById('dashboard-agents').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--muted);font-style:italic;">Connect to WiFi to view dashboard.</div>';
+}
+
+function sendTransmission(){
+  const msg = document.getElementById('transmission-text').value.trim();
+  const from = document.getElementById('transmission-from').value;
+  if(!msg){ alert('Type a message first.'); return; }
+  if(!_db){ alert('Not connected to Firebase.'); return; }
+
+  _db.ref('stewart/transmissions').push({
+    message: msg,
+    from: from,
+    timestamp: Date.now()
+  }).then(() => {
+    document.getElementById('transmission-text').value = '';
+    renderDashboard();
+    // Show confirmation
+    const btn = event.target;
+    const orig = btn.textContent;
+    btn.textContent = 'Sent!';
+    btn.style.background = '#2d6a47';
+    setTimeout(() => { btn.textContent = orig; btn.style.background = '#1e2d5a'; }, 2000);
+  });
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
