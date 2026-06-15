@@ -693,11 +693,10 @@ function sendToCalendar(){
   const btn=document.getElementById('cal-btn');
   btn.textContent='Building calendar file...';btn.disabled=true;
 
-  // Find next Sunday
+  // Anchor to the CURRENT week's Sunday (the most recent Sunday, not next week)
   const today=new Date();
-  const daysUntilSun=(7-today.getDay())%7||7;
   const sunday=new Date(today);
-  sunday.setDate(today.getDate()+daysUntilSun);
+  sunday.setDate(today.getDate()-today.getDay());
   sunday.setHours(0,0,0,0);
 
   function pad(n){return String(n).padStart(2,'0');}
