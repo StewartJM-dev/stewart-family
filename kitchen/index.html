@@ -158,6 +158,7 @@ body{font-family:'Lato',sans-serif;background:var(--cream);color:var(--ink);font
 .swap-opt:active{background:rgba(0,0,0,.03);}
 .swap-opt-ready{border-color:rgba(45,106,71,.3);background:rgba(45,106,71,.05);}
 .swap-opt-nm{font-size:13px;font-weight:600;color:var(--ink);}
+.swap-search{width:100%;padding:10px 13px;border:1px solid var(--border);border-radius:9px;font-size:14px;margin-bottom:12px;box-sizing:border-box;}
 .swap-opt-tag{font-size:10px;font-weight:700;}
 .swap-tag-have{color:#2d6a47;}
 .swap-tag-shop{color:#b5451b;}
@@ -1194,24 +1195,29 @@ function openSwap(planIndex){
   _swapIndex = planIndex;
   const slot = currentPlan[planIndex];
   document.getElementById('swap-title').textContent = slot.day + ' -- Swap Meal';
+  document.getElementById('swap-sub').textContent = 'Search or scroll. In-stock meals are marked. Picking one you need ingredients for adds them to the shopping list.';
+  const search = document.getElementById('swap-search');
+  if(search) search.value = '';
+  renderSwapList();
+  document.getElementById('swap-overlay').classList.add('open');
+  if(search) setTimeout(()=>search.focus(), 100);
+}
 
-  // Build candidate list: ALL meals are swappable (organized so you can pick anything)
-  // Only exclude pure non-dinner helpers; keep everything else including sides, soups, breakfast-for-dinner, heritage placeholders
+function renderSwapList(){
+  // ALL meals swappable except pure non-dinner helpers
   const excluded = ['Breads'];
+  const q = (document.getElementById('swap-search')?.value || '').toLowerCase().trim();
   let cands = MEALS.filter(m => !excluded.includes(m.cat));
-  // Score and sort: in-stock first, then alphabetical within readiness
-  const scored = cands.map(m => ({ m, r: mealReadiness(m) })).sort((a,b) => {
-    if(b.r.pct !== a.r.pct) return b.r.pct - a.r.pct;
-    return a.m.name.localeCompare(b.m.name);
-  });
+  if(q) cands = cands.filter(m => m.name.toLowerCase().includes(q) || m.cat.toLowerCase().includes(q));
+  // Alphabetical by name
+  const scored = cands.map(m => ({ m, r: mealReadiness(m) })).sort((a,b) => a.m.name.localeCompare(b.m.name));
 
-  document.getElementById('swap-sub').textContent = 'In-stock meals first. Picking one you need ingredients for adds them to the shopping list.';
   const el = document.getElementById('swap-list');
-  const noMealOpt = `<div class="swap-opt swap-opt-none" onclick="setNoMeal()">
+  const noMealOpt = q ? '' : `<div class="swap-opt swap-opt-none" onclick="setNoMeal()">
       <span class="swap-opt-nm">&#128683; No Meal &mdash; not cooking</span>
       <span class="swap-opt-tag" style="color:var(--muted);">off night</span>
     </div>`;
-  el.innerHTML = noMealOpt + scored.map(s => {
+  const rows = scored.map(s => {
     const tier = readinessTier(s.r.pct);
     const have = tier === 'ready';
     const tagClass = have ? 'swap-tag-have' : 'swap-tag-shop';
@@ -1222,8 +1228,7 @@ function openSwap(planIndex){
       <span class="swap-opt-tag ${tagClass}">${tagText}</span>
     </div>`;
   }).join('');
-
-  document.getElementById('swap-overlay').classList.add('open');
+  el.innerHTML = noMealOpt + (rows || '<div class="empty" style="padding:14px;">No meals match that search.</div>');
 }
 
 function closeSwap(e){
@@ -1637,6 +1642,7 @@ document.addEventListener('DOMContentLoaded',()=>{
         <button class="swap-x" onclick="closeSwap()">&times;</button>
       </div>
       <div class="swap-sub" id="swap-sub">Pick a different meal for this day</div>
+      <input type="text" id="swap-search" class="swap-search" placeholder="Search meals..." oninput="renderSwapList()">
       <div id="swap-list"></div>
     </div>
   </div>
