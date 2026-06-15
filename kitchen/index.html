@@ -144,6 +144,22 @@ body{font-family:'Lato',sans-serif;background:var(--cream);color:var(--ink);font
 .sug-nm{font-size:13px;font-weight:600;color:var(--ink);}
 .sug-pct{font-size:11px;color:#2d6a47;font-weight:700;}
 .sug-miss{font-size:10px;color:#c8922a;}
+
+.swap-btn{font-size:10px;background:var(--sage);color:#fff;border:none;border-radius:12px;padding:2px 9px;margin-left:8px;cursor:pointer;vertical-align:middle;}
+.swap-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9998;align-items:flex-end;justify-content:center;}
+.swap-overlay.open{display:flex;}
+.swap-sheet{background:var(--card,#fff);width:100%;max-width:520px;max-height:80vh;border-radius:18px 18px 0 0;padding:16px;overflow-y:auto;animation:swapUp .25s ease;}
+@keyframes swapUp{from{transform:translateY(40px);opacity:.5}to{transform:translateY(0);opacity:1}}
+.swap-hd{display:flex;justify-content:space-between;align-items:center;font-family:'Cinzel',serif;font-size:16px;font-weight:700;color:var(--ink);margin-bottom:3px;}
+.swap-x{background:none;border:none;font-size:26px;color:var(--muted);cursor:pointer;line-height:1;}
+.swap-sub{font-size:12px;color:var(--muted);margin-bottom:12px;}
+.swap-opt{display:flex;justify-content:space-between;align-items:center;padding:11px 13px;border:1px solid var(--border);border-radius:9px;margin-bottom:7px;cursor:pointer;}
+.swap-opt:active{background:rgba(0,0,0,.03);}
+.swap-opt-ready{border-color:rgba(45,106,71,.3);background:rgba(45,106,71,.05);}
+.swap-opt-nm{font-size:13px;font-weight:600;color:var(--ink);}
+.swap-opt-tag{font-size:10px;font-weight:700;}
+.swap-tag-have{color:#2d6a47;}
+.swap-tag-shop{color:#b5451b;}
 </style>
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -536,7 +552,15 @@ function _coreGeneratePlan(){
     let pool=MEALS.filter(m=>{if(used.has(m.id))return false;if(['Leftover','Simple','Holiday','Breakfast','Breakfast for Dinner','Desserts','Breads','Side'].includes(m.cat))return false;if(!slot.cats.some(c=>m.cat===c))return false;return canAdd(m,plan,idx);});
     if(!pool.length)pool=MEALS.filter(m=>{if(used.has(m.id))return false;if(['Leftover','Simple','Holiday','Breakfast','Breakfast for Dinner','Desserts','Breads','Side'].includes(m.cat))return false;return slot.cats.some(c=>m.cat===c);});
     if(!pool.length){plan.push({...slot,mealName:"Open -- choose from library",sides:"",health:"green",mealObj:null,dessert:null,bread:null,chain:null,alert:null,defrost:null});return;}
-    const chosen=pool[Math.floor(Math.random()*pool.length)];
+    // Stock-weighted pick: prefer meals we have ingredients for
+    const scoredPool=pool.map(m=>({m,pct:mealReadiness(m).pct})).sort((a,b)=>b.pct-a.pct);
+    const readyPool=scoredPool.filter(x=>x.pct>=80);
+    const closePool=scoredPool.filter(x=>x.pct>=50&&x.pct<80);
+    let pickFrom;
+    if(readyPool.length) pickFrom=readyPool;
+    else if(closePool.length) pickFrom=closePool;
+    else pickFrom=scoredPool;
+    const chosen=pickFrom[Math.floor(Math.random()*pickFrom.length)].m;
     used.add(chosen.id);
     const d=DESSERTS[Math.floor(Math.random()*DESSERTS.length)];
     const bread=SOUP_BREAD[chosen.name]||null;
@@ -557,7 +581,7 @@ function renderPlan(plan){
   if(!plan||!plan.length){g.innerHTML='<div class="empty">Tap Generate This Week\'s Plan to get started</div>';return;}
   const hcls=h=>h==='green'?'bg':h==='amber'?'ba':'br';
   const hlbl=h=>h==='green'?'Eat Freely':h==='amber'?'Eat Regularly':'Limit Frequency';
-  g.innerHTML=plan.map(s=>{
+  g.innerHTML=plan.map((s,pi)=>{
     let readyBadge='';
     if(s.mealObj&&s.mealObj.ingredients){
       const r=mealReadiness(s.mealObj);
@@ -566,7 +590,7 @@ function renderPlan(plan){
       const tl=tier==='ready'?'Have ingredients':tier==='close'?('Need: '+r.missing.slice(0,2).join(', ')):('Shop: '+r.missing.slice(0,2).join(', '));
       readyBadge=`<div class="day-ready" style="color:${tc};font-size:11px;margin-top:4px;">${tier==='ready'?'&#10003;':'&#128717;'} ${tl}</div>`;
     }
-    return `<div class="day-card"><div class="day-hd"><span class="day-nm">${s.day}</span><span class="day-tp">${s.type}${s.label?' &middot; '+s.label:''}</span></div><div class="day-bd"><div class="day-meal">${s.mealName}</div>${readyBadge}${s.sides?`<div class="day-sides">${s.sides}</div>`:''}<span class="badge ${hcls(s.health)}">${hlbl(s.health)}</span>${s.boysMeal?`<div class="day-sides" style="margin-top:6px;padding-top:6px;border-top:1px dashed var(--border);"><strong>Boys' dinner:</strong> ${s.boysMeal}${s.boysMealSides?` &mdash; ${s.boysMealSides}`:''}</div>`:''}${s.bread?`<div class="day-bread">&#127838; ${s.bread}</div>`:''}${s.alert?`<div class="day-alert">&#9200; ${s.alert.label}</div>`:''}${s.defrost?`<div class="day-defrost">&#10052; ${s.defrost}</div>`:''}${s.chain?`<div class="day-left">&#9851; Unlocks: ${s.chain.name}</div>`:''}${s.dessert?`<div class="day-dess">&#127856; ${s.dessert}</div>`:''}</div></div>`;
+    return `<div class="day-card"><div class="day-hd"><span class="day-nm">${s.day}</span><span class="day-tp">${s.type}${s.label?' &middot; '+s.label:''}</span></div><div class="day-bd"><div class="day-meal">${s.mealName}<button class="swap-btn" onclick="openSwap(${pi})">&#8646; Swap</button></div>${readyBadge}${s.sides?`<div class="day-sides">${s.sides}</div>`:''}<span class="badge ${hcls(s.health)}">${hlbl(s.health)}</span>${s.boysMeal?`<div class="day-sides" style="margin-top:6px;padding-top:6px;border-top:1px dashed var(--border);"><strong>Boys' dinner:</strong> ${s.boysMeal}${s.boysMealSides?` &mdash; ${s.boysMealSides}`:''}</div>`:''}${s.bread?`<div class="day-bread">&#127838; ${s.bread}</div>`:''}${s.alert?`<div class="day-alert">&#9200; ${s.alert.label}</div>`:''}${s.defrost?`<div class="day-defrost">&#10052; ${s.defrost}</div>`:''}${s.chain?`<div class="day-left">&#9851; Unlocks: ${s.chain.name}</div>`:''}${s.dessert?`<div class="day-dess">&#127856; ${s.dessert}</div>`:''}</div></div>`;
   }).join('');
 }
 
@@ -1079,6 +1103,100 @@ function openMeal(name){
   if(search){ search.value=name; filterMeals(); }
 }
 
+
+// ── MEAL SWAP (per-day editing before finalizing) ──
+let _swapIndex = null;
+
+function openSwap(planIndex){
+  if(!currentPlan||!currentPlan[planIndex]) return;
+  _swapIndex = planIndex;
+  const slot = currentPlan[planIndex];
+  document.getElementById('swap-title').textContent = slot.day + ' -- Swap Meal';
+
+  // Build candidate list: meals matching this slot's categories
+  const excluded = ['Leftover','Simple','Holiday','Breakfast','Breakfast for Dinner','Desserts','Breads','Side'];
+  let cands = MEALS.filter(m => !excluded.includes(m.cat) && (slot.cats? slot.cats.some(c=>m.cat===c) : true));
+  // If slot had no cats (Boys Cook/Date Night), allow all dinner meals
+  if(!slot.cats || !slot.cats.length){
+    cands = MEALS.filter(m => !excluded.includes(m.cat));
+  }
+  // Score and sort: in-stock first
+  const scored = cands.map(m => ({ m, r: mealReadiness(m) })).sort((a,b) => b.r.pct - a.r.pct);
+
+  document.getElementById('swap-sub').textContent = 'In-stock meals first. Picking one you need ingredients for adds them to the shopping list.';
+  const el = document.getElementById('swap-list');
+  el.innerHTML = scored.map(s => {
+    const tier = readinessTier(s.r.pct);
+    const have = tier === 'ready';
+    const tagClass = have ? 'swap-tag-have' : 'swap-tag-shop';
+    const tagText = have ? '\u2713 have it' : ('\ud83d\uded2 need: ' + s.r.missing.slice(0,3).join(', '));
+    const safeName = s.m.name.replace(/'/g, "\\'");
+    return `<div class="swap-opt ${have?'swap-opt-ready':''}" onclick="doSwap('${safeName}')">
+      <span class="swap-opt-nm">${s.m.name}</span>
+      <span class="swap-opt-tag ${tagClass}">${tagText}</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('swap-overlay').classList.add('open');
+}
+
+function closeSwap(e){
+  if(e && e.target && e.target.id !== 'swap-overlay' && e.type==='click' && e.currentTarget!==e.target) {}
+  document.getElementById('swap-overlay').classList.remove('open');
+  _swapIndex = null;
+}
+
+function doSwap(mealName){
+  if(_swapIndex===null) return;
+  const meal = MEALS.find(m => m.name === mealName);
+  if(!meal) return;
+  const slot = currentPlan[_swapIndex];
+
+  // Rebuild this plan entry with the new meal
+  const d = slot.dessert; // keep existing dessert
+  const bread = SOUP_BREAD[meal.name] || null;
+  const chain = meal.leftovers ? CHAINS.find(c=>c.id===meal.leftovers) : null;
+  const alert = getCookAlert(meal);
+  const needsDefrost = meal.proteins && !['hotdog','cheese','bacon'].includes(meal.proteins[0]) && meal.cookTime < 480;
+
+  currentPlan[_swapIndex] = {
+    ...slot,
+    mealName: meal.name,
+    sides: meal.sides,
+    health: meal.health,
+    mealObj: meal,
+    bread, chain, alert,
+    defrost: needsDefrost ? "Defrost meat night before (set 8pm reminder)" : null,
+    boysMeal: undefined, boysMealSides: undefined
+  };
+
+  // If the swapped-in meal needs ingredients, send them to shopping with ASAP flag
+  const r = mealReadiness(meal);
+  if(r.missing.length){
+    addToShopping(r.missing, 'for ' + meal.name + ' (ASAP)');
+    updateShopBadge();
+  }
+
+  savePlan(currentPlan);
+  renderPlan(currentPlan);
+  renderNutrition(currentPlan);
+  closeSwap();
+
+  if(r.missing.length){
+    alertSwapNeeds(meal.name, r.missing);
+  }
+}
+
+function alertSwapNeeds(mealName, missing){
+  // Lightweight toast-style confirmation
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#b5451b;color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;z-index:9999;max-width:90%;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.3);';
+  t.innerHTML = `Added to shopping list for <strong>${mealName}</strong>:<br>${missing.slice(0,4).join(', ')} &mdash; pick up ASAP`;
+  document.body.appendChild(t);
+  setTimeout(()=>{ t.style.transition='opacity .4s'; t.style.opacity='0'; setTimeout(()=>t.remove(),400); }, 3500);
+}
+
+
 function renderMealSuggestions(){
   const el = document.getElementById('meal-suggestions');
   if(!el) return;
@@ -1375,5 +1493,17 @@ document.addEventListener('DOMContentLoaded',()=>{
 });
 
 </script>
+
+  <div id="swap-overlay" class="swap-overlay" onclick="closeSwap(event)">
+    <div class="swap-sheet" onclick="event.stopPropagation()">
+      <div class="swap-hd">
+        <span id="swap-title">Swap Meal</span>
+        <button class="swap-x" onclick="closeSwap()">&times;</button>
+      </div>
+      <div class="swap-sub" id="swap-sub">Pick a different meal for this day</div>
+      <div id="swap-list"></div>
+    </div>
+  </div>
+
 </body>
 </html>
