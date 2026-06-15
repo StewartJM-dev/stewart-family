@@ -145,7 +145,8 @@ body{font-family:'Lato',sans-serif;background:var(--cream);color:var(--ink);font
 .sug-pct{font-size:11px;color:#2d6a47;font-weight:700;}
 .sug-miss{font-size:10px;color:#c8922a;}
 
-.swap-btn{font-size:10px;background:var(--sage);color:#fff;border:none;border-radius:12px;padding:2px 9px;margin-left:8px;cursor:pointer;vertical-align:middle;}
+.swap-btn{display:inline-block;font-size:12px;font-weight:700;background:var(--sage);color:#fff;border:none;border-radius:8px;padding:7px 14px;margin:8px 0 4px;cursor:pointer;width:100%;text-align:center;letter-spacing:.3px;}
+.swap-btn:active{opacity:.8;}
 .swap-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9998;align-items:flex-end;justify-content:center;}
 .swap-overlay.open{display:flex;}
 .swap-sheet{background:var(--card,#fff);width:100%;max-width:520px;max-height:80vh;border-radius:18px 18px 0 0;padding:16px;overflow-y:auto;animation:swapUp .25s ease;}
@@ -590,7 +591,7 @@ function renderPlan(plan){
       const tl=tier==='ready'?'Have ingredients':tier==='close'?('Need: '+r.missing.slice(0,2).join(', ')):('Shop: '+r.missing.slice(0,2).join(', '));
       readyBadge=`<div class="day-ready" style="color:${tc};font-size:11px;margin-top:4px;">${tier==='ready'?'&#10003;':'&#128717;'} ${tl}</div>`;
     }
-    return `<div class="day-card"><div class="day-hd"><span class="day-nm">${s.day}</span><span class="day-tp">${s.type}${s.label?' &middot; '+s.label:''}</span></div><div class="day-bd"><div class="day-meal">${s.mealName}<button class="swap-btn" onclick="openSwap(${pi})">&#8646; Swap</button></div>${readyBadge}${s.sides?`<div class="day-sides">${s.sides}</div>`:''}<span class="badge ${hcls(s.health)}">${hlbl(s.health)}</span>${s.boysMeal?`<div class="day-sides" style="margin-top:6px;padding-top:6px;border-top:1px dashed var(--border);"><strong>Boys' dinner:</strong> ${s.boysMeal}${s.boysMealSides?` &mdash; ${s.boysMealSides}`:''}</div>`:''}${s.bread?`<div class="day-bread">&#127838; ${s.bread}</div>`:''}${s.alert?`<div class="day-alert">&#9200; ${s.alert.label}</div>`:''}${s.defrost?`<div class="day-defrost">&#10052; ${s.defrost}</div>`:''}${s.chain?`<div class="day-left">&#9851; Unlocks: ${s.chain.name}</div>`:''}${s.dessert?`<div class="day-dess">&#127856; ${s.dessert}</div>`:''}</div></div>`;
+    return `<div class="day-card"><div class="day-hd"><span class="day-nm">${s.day}</span><span class="day-tp">${s.type}${s.label?' &middot; '+s.label:''}</span></div><div class="day-bd"><div class="day-meal">${s.mealName}</div>${readyBadge}<button class="swap-btn" onclick="openSwap(${pi})">&#8646; Change this meal</button>${s.sides?`<div class="day-sides">${s.sides}</div>`:''}<span class="badge ${hcls(s.health)}">${hlbl(s.health)}</span>${s.boysMeal?`<div class="day-sides" style="margin-top:6px;padding-top:6px;border-top:1px dashed var(--border);"><strong>Boys' dinner:</strong> ${s.boysMeal}${s.boysMealSides?` &mdash; ${s.boysMealSides}`:''}</div>`:''}${s.bread?`<div class="day-bread">&#127838; ${s.bread}</div>`:''}${s.alert?`<div class="day-alert">&#9200; ${s.alert.label}</div>`:''}${s.defrost?`<div class="day-defrost">&#10052; ${s.defrost}</div>`:''}${s.chain?`<div class="day-left">&#9851; Unlocks: ${s.chain.name}</div>`:''}${s.dessert?`<div class="day-dess">&#127856; ${s.dessert}</div>`:''}</div></div>`;
   }).join('');
 }
 
@@ -912,13 +913,12 @@ function initFirebase(){
     });
     _db.ref('stewart/plan').on('value', snap => {
       const val = snap.val();
-      if(val && Array.isArray(val)){
-        currentPlan = val;
-        if(document.getElementById('screen-planner').classList.contains('active')){
-          renderPlan(val);
-          renderNutrition(val);
-          document.getElementById('cal-btn').style.display='block';
-        }
+      if(val && Array.isArray(val) && val.length){
+        currentPlan = rehydratePlan(val);
+        try{ localStorage.setItem('sk4-plan', JSON.stringify(val)); }catch(e){}
+        renderPlan(currentPlan);
+        renderNutrition(currentPlan);
+        const cb=document.getElementById('cal-btn'); if(cb) cb.style.display='block';
       }
     });
 
@@ -1245,6 +1245,36 @@ function savePlan(plan){
     alert: s.alert||null
   }));
   fbWrite('stewart/plan', clean);
+  try{ localStorage.setItem('sk4-plan', JSON.stringify(clean)); }catch(e){}
+}
+
+// Rebuild a saved/cleaned plan back into a full plan (restore mealObj from mealId)
+function rehydratePlan(saved){
+  if(!saved||!Array.isArray(saved)) return null;
+  return saved.map(s => {
+    const mealObj = s.mealId ? MEALS.find(m => m.id === s.mealId) || null : null;
+    const chain = s.chainName ? CHAINS.find(c => c.name === s.chainName) || null : null;
+    return {
+      day: s.day, type: s.type, label: s.label||'',
+      mealName: s.mealName||'', sides: s.sides||'',
+      health: s.health||'green',
+      boysMeal: s.boysMeal||'', boysMealSides: s.boysMealSides||'',
+      dessert: s.dessert||null, bread: s.bread||null, defrost: s.defrost||null,
+      chain, mealObj, alert: s.alert||null
+    };
+  });
+}
+
+// Load any saved plan on startup and render it
+function loadSavedPlan(){
+  let saved = null;
+  try{ saved = JSON.parse(localStorage.getItem('sk4-plan')||'null'); }catch(e){}
+  if(saved && Array.isArray(saved) && saved.length){
+    currentPlan = rehydratePlan(saved);
+    renderPlan(currentPlan);
+    renderNutrition(currentPlan);
+    const cb=document.getElementById('cal-btn'); if(cb) cb.style.display='block';
+  }
 }
 
 // ── PATCH generatePlan TO ALSO SAVE TO FIREBASE ─────────────────
@@ -1485,6 +1515,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   renderChains();
   renderInv();
   renderPlan(null);
+  loadSavedPlan();
   renderShopList();
   renderHealth();
   renderHelp();
