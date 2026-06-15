@@ -161,6 +161,8 @@ body{font-family:'Lato',sans-serif;background:var(--cream);color:var(--ink);font
 .swap-opt-tag{font-size:10px;font-weight:700;}
 .swap-tag-have{color:#2d6a47;}
 .swap-tag-shop{color:#b5451b;}
+.swap-opt-none{border-color:var(--border);background:rgba(0,0,0,.03);}
+.swap-opt-none .swap-opt-nm{color:var(--muted);}
 </style>
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -591,7 +593,7 @@ function renderPlan(plan){
       const tl=tier==='ready'?'Have ingredients':tier==='close'?('Need: '+r.missing.slice(0,2).join(', ')):('Shop: '+r.missing.slice(0,2).join(', '));
       readyBadge=`<div class="day-ready" style="color:${tc};font-size:11px;margin-top:4px;">${tier==='ready'?'&#10003;':'&#128717;'} ${tl}</div>`;
     }
-    return `<div class="day-card"><div class="day-hd"><span class="day-nm">${s.day}</span><span class="day-tp">${s.type}${s.label?' &middot; '+s.label:''}</span></div><div class="day-bd"><div class="day-meal">${s.mealName}</div>${readyBadge}<button class="swap-btn" onclick="openSwap(${pi})">&#8646; Change this meal</button>${s.sides?`<div class="day-sides">${s.sides}</div>`:''}<span class="badge ${hcls(s.health)}">${hlbl(s.health)}</span>${s.boysMeal?`<div class="day-sides" style="margin-top:6px;padding-top:6px;border-top:1px dashed var(--border);"><strong>Boys' dinner:</strong> ${s.boysMeal}${s.boysMealSides?` &mdash; ${s.boysMealSides}`:''}</div>`:''}${s.bread?`<div class="day-bread">&#127838; ${s.bread}</div>`:''}${s.alert?`<div class="day-alert">&#9200; ${s.alert.label}</div>`:''}${s.defrost?`<div class="day-defrost">&#10052; ${s.defrost}</div>`:''}${s.chain?`<div class="day-left">&#9851; Unlocks: ${s.chain.name}</div>`:''}${s.dessert?`<div class="day-dess">&#127856; ${s.dessert}</div>`:''}</div></div>`;
+    return `<div class="day-card"><div class="day-hd"><span class="day-nm">${s.day}</span><span class="day-tp">${s.type}${s.label?' &middot; '+s.label:''}</span></div><div class="day-bd"><div class="day-meal"${s.noMeal?' style="color:var(--muted);font-style:italic;"':''}>${s.mealName}</div>${readyBadge}<button class="swap-btn" onclick="openSwap(${pi})">&#8646; ${s.noMeal?'Pick a meal instead':'Change this meal'}</button>${s.sides?`<div class="day-sides">${s.sides}</div>`:''}${s.noMeal?'':`<span class="badge ${hcls(s.health)}">${hlbl(s.health)}</span>`}${s.boysMeal?`<div class="day-sides" style="margin-top:6px;padding-top:6px;border-top:1px dashed var(--border);"><strong>Boys' dinner:</strong> ${s.boysMeal}${s.boysMealSides?` &mdash; ${s.boysMealSides}`:''}</div>`:''}${s.bread?`<div class="day-bread">&#127838; ${s.bread}</div>`:''}${s.alert?`<div class="day-alert">&#9200; ${s.alert.label}</div>`:''}${s.defrost?`<div class="day-defrost">&#10052; ${s.defrost}</div>`:''}${s.chain?`<div class="day-left">&#9851; Unlocks: ${s.chain.name}</div>`:''}${s.dessert?`<div class="day-dess">&#127856; ${s.dessert}</div>`:''}</div></div>`;
   }).join('');
 }
 
@@ -659,6 +661,7 @@ function sendToCalendar(){
 
   for(let i=0;i<currentPlan.length;i++){
     const s=currentPlan[i];
+    if(s.noMeal) continue; // Not cooking this day -- no calendar event
     const mealDate=new Date(sunday);
     mealDate.setDate(sunday.getDate()+i);
 
@@ -1125,7 +1128,11 @@ function openSwap(planIndex){
 
   document.getElementById('swap-sub').textContent = 'In-stock meals first. Picking one you need ingredients for adds them to the shopping list.';
   const el = document.getElementById('swap-list');
-  el.innerHTML = scored.map(s => {
+  const noMealOpt = `<div class="swap-opt swap-opt-none" onclick="setNoMeal()">
+      <span class="swap-opt-nm">&#128683; No Meal &mdash; not cooking</span>
+      <span class="swap-opt-tag" style="color:var(--muted);">off night</span>
+    </div>`;
+  el.innerHTML = noMealOpt + scored.map(s => {
     const tier = readinessTier(s.r.pct);
     const have = tier === 'ready';
     const tagClass = have ? 'swap-tag-have' : 'swap-tag-shop';
@@ -1187,6 +1194,23 @@ function doSwap(mealName){
   }
 }
 
+function setNoMeal(){
+  if(_swapIndex===null) return;
+  const slot = currentPlan[_swapIndex];
+  currentPlan[_swapIndex] = {
+    day: slot.day, type: slot.type, label: slot.label||'',
+    mealName: 'No Meal -- not cooking',
+    sides: '', health: 'none', mealObj: null,
+    dessert: null, bread: null, defrost: null, chain: null, alert: null,
+    boysMeal: undefined, boysMealSides: undefined,
+    noMeal: true
+  };
+  savePlan(currentPlan);
+  renderPlan(currentPlan);
+  renderNutrition(currentPlan);
+  closeSwap();
+}
+
 function alertSwapNeeds(mealName, missing){
   // Lightweight toast-style confirmation
   const t = document.createElement('div');
@@ -1242,7 +1266,8 @@ function savePlan(plan){
     defrost: s.defrost||null,
     chainName: s.chain ? s.chain.name : null,
     mealId: s.mealObj ? s.mealObj.id : null,
-    alert: s.alert||null
+    alert: s.alert||null,
+    noMeal: s.noMeal||false
   }));
   fbWrite('stewart/plan', clean);
   try{ localStorage.setItem('sk4-plan', JSON.stringify(clean)); }catch(e){}
@@ -1260,7 +1285,8 @@ function rehydratePlan(saved){
       health: s.health||'green',
       boysMeal: s.boysMeal||'', boysMealSides: s.boysMealSides||'',
       dessert: s.dessert||null, bread: s.bread||null, defrost: s.defrost||null,
-      chain, mealObj, alert: s.alert||null
+      chain, mealObj, alert: s.alert||null,
+      noMeal: s.noMeal||false
     };
   });
 }
