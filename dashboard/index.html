@@ -551,6 +551,20 @@ body{
 
       <div id="dawn-special-section"></div>
 
+      <div class="sec-hd">Family Devotional</div>
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-bd" id="family-devotional-input">
+          <div class="empty-state">Loading...</div>
+        </div>
+      </div>
+
+      <div class="sec-hd">Dawn's Personal Devotional</div>
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-bd" id="dawn-devotional-input">
+          <div class="empty-state">Loading...</div>
+        </div>
+      </div>
+
       <div class="sec-hd">Weekly Rhythm</div>
       <div class="card" style="margin-bottom:10px;">
         <div class="card-bd" style="font-size:12px;color:var(--muted);line-height:2;">
@@ -742,7 +756,7 @@ body{
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
       Missions
     </button>
-    <button class="bnb" onclick="showTab('dawn',this);renderDawnTab();">
+    <button class="bnb" onclick="showTab('dawn',this);renderDawnTab();renderFamilyDevotionalInput();renderDawnDevotionalInput();">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>
       Dawn
     </button>
@@ -762,6 +776,36 @@ body{
 </div>
 
 <script>
+// ══════════════════════════════════════════════════════
+// DATE + LINK HELPERS
+// localDateStr() returns LOCAL YYYY-MM-DD (fixes UTC evening-rollover
+// bug that made mission checkmarks read under the wrong date key).
+// ══════════════════════════════════════════════════════
+function localDateStr(date){
+  const d = date ? new Date(date) : new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function escapeHtml(s){
+  return String(s||'')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function linkify(text){
+  const esc = escapeHtml(text);
+  const urlRe = /((?:https?:\/\/|www\.)[^\s<]+)/gi;
+  return esc.replace(urlRe, (url) => {
+    let href = url;
+    if(/^www\./i.test(href)) href = 'https://' + href;
+    let trail = '';
+    const tm = href.match(/[.,!?)]+$/);
+    if(tm){ trail = url.slice(url.length - tm[0].length); href = href.slice(0, href.length - tm[0].length); url = url.slice(0, url.length - tm[0].length); }
+    return `<a href="${href}" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline;font-weight:600;word-break:break-all;">${url}</a>${trail}`;
+  });
+}
+
 // ══════════════════════════════════════════════════════
 // FIREBASE
 // ══════════════════════════════════════════════════════
@@ -1124,7 +1168,7 @@ function getWeekDays(){
   const days = [];
   for(let i=0;i<5;i++){
     const d=new Date(mon); d.setDate(mon.getDate()+i);
-    days.push(d.toISOString().slice(0,10));
+    days.push(localDateStr(d));
   }
   return days;
 }
@@ -1134,7 +1178,7 @@ function getWeekDays(){
 // ══════════════════════════════════════════════════════
 function renderOverview(){
   if(!_db){ return; }
-  const today = new Date().toISOString().slice(0,10);
+  const today = localDateStr();
   const dayNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const dayName = dayNames[new Date().getDay()];
   const isWeekend = new Date().getDay()===0||new Date().getDay()===6;
@@ -1256,7 +1300,7 @@ function loadBoardMessages(){
       const time = t.timestamp ? new Date(t.timestamp).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : '';
       return `<div style="background:var(--card);border:1px solid var(--border);border-left:3px solid var(--indigo);border-radius:8px;padding:10px 13px;margin-bottom:7px;">
         <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--indigo2);margin-bottom:4px;">From: ${t.from||'HQ'}</div>
-        <div style="font-size:13px;color:var(--ink);line-height:1.5;">${t.message||''}</div>
+        <div style="font-size:13px;color:var(--ink);line-height:1.5;">${linkify(t.message||'')}</div>
         ${time?`<div style="font-size:10px;color:var(--muted);margin-top:4px;font-style:italic;">${time}</div>`:''}
       </div>`;
     }).join('');
@@ -1331,7 +1375,7 @@ function renderThreadMessages(msgs){
       <div style="font-size:18px;flex-shrink:0;">${icon}</div>
       <div class="msg-bubble ${isParent?'sent':'received'}" style="max-width:100%;">
         <div class="msg-bubble-from">${m.from||'Unknown'}</div>
-        ${m.text||''}
+        ${linkify(m.text||'')}
         <div class="msg-bubble-time">${time}</div>
       </div>
     </div>`;
@@ -1464,7 +1508,7 @@ function loadLunchPicksOverview(){
 // ══════════════════════════════════════════════════════
 function loadMissionsDetail(){
   if(!_db) return;
-  const today = new Date().toISOString().slice(0,10);
+  const today = localDateStr();
   const dayNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
   document.getElementById('missions-day-header').innerHTML =
@@ -1599,7 +1643,7 @@ function getDeepCleanAgent(){
 
 function renderDawnTab(){
   if(!_db) return;
-  const today = new Date().toISOString().slice(0,10);
+  const today = localDateStr();
   const dow = new Date().getDay(); // 0=Sun, 1=Mon ... 6=Sat
   const dayNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const dayName = dayNames[dow];
@@ -1768,7 +1812,7 @@ function renderReadingOverview(){
     const goals = goalsSnap.val() || {};
     const el = document.getElementById('reading-overview');
     if(!el) return;
-    const today = new Date().toISOString().slice(0,10);
+    const today = localDateStr();
 
     el.innerHTML = AGENTS.map((a,i) => {
       const log = readingSnaps[i].val() || {};
@@ -2280,7 +2324,7 @@ function runActivityTonight(activityId){
   if(!_db) return;
   const activity = FAMILY_NIGHT_ACTIVITIES.find(a => a.id === activityId);
   if(!activity) return;
-  const today = new Date().toISOString().slice(0,10);
+  const today = localDateStr();
   _db.ref(`stewart/familynight/activities/${today}`).set({
     id: activityId,
     label: activity.label,
@@ -2366,7 +2410,7 @@ function toggleTeachAgent(sessionId, agentId){
 
 function completeTeachSession(sessionId){
   if(!_db) return;
-  const today = new Date().toISOString().slice(0,10);
+  const today = localDateStr();
   _db.ref(`stewart/teachme/${sessionId}/completedDate`).set(today)
     .then(() => renderTeachMeSessions());
 }
@@ -2433,7 +2477,7 @@ function renderExteriorProjects(){
 
 function completePhase(projectId, phaseId, listElId){
   if(!_db) return;
-  const today = new Date().toISOString().slice(0,10);
+  const today = localDateStr();
   const category = listElId === 'house-projects-list' ? 'house' : 'exterior';
   _db.ref(`stewart/projects/${category}/${projectId}/phases/${phaseId}`).set({
     done: true,
@@ -2505,7 +2549,7 @@ function logStones(){
   const size = document.getElementById('stone-size-select').value;
   const count = parseInt(document.getElementById('stone-count').value);
   if(!count || count < 1) return;
-  const today = new Date().toISOString().slice(0,10);
+  const today = localDateStr();
   _db.ref(`stewart/stones/${today}-${Date.now()}`).set({size, count, date: today, timestamp: Date.now()})
     .then(() => {
       document.getElementById('stone-count').value = '';
@@ -2523,7 +2567,7 @@ function getVoteWeekKey(){
   const day = now.getDay();
   const monday = new Date(now);
   monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
-  return monday.toISOString().slice(0,10);
+  return localDateStr(monday);
 }
 
 function getSuperFNMonthKey(){
@@ -2668,12 +2712,12 @@ function renderSuperFNDashboard(){
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth();
-  const today = now.toISOString().slice(0,10);
+  const today = localDateStr(now);
   const weekdays = [];
   const d = new Date(year, month, 1);
   while(d.getMonth()===month){
     const dow = d.getDay();
-    const ds = d.toISOString().slice(0,10);
+    const ds = localDateStr(d);
     if(dow>=1&&dow<=5&&ds<=today) weekdays.push(ds);
     d.setDate(d.getDate()+1);
   }
@@ -2748,6 +2792,273 @@ function saveSuperFNPlan(){
     const msg = `🎉 SUPER FAMILY NIGHT IS ON! ${food?'Takeout: '+food+'. ':''} ${activity?'Activity: '+activity+'.':''} You earned it!`;
     const msgRef = _db.ref('stewart/messages/family').push();
     msgRef.set({ text: msg, from: 'HQ', fromName: 'HQ', timestamp: Date.now(), icon: '🎉' });
+  });
+}
+
+
+// ══════════════════════════════════════════════════════
+// DEVOTIONAL SYSTEM
+// Family Devotional: Dawn leads with all boys, weekly
+// Dawn's Daily: personal, private, dashboard only
+// ══════════════════════════════════════════════════════
+
+function getDevotionalWeekKey(){
+  const now = new Date();
+  const day = now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
+  return localDateStr(monday);
+}
+
+// ─── FAMILY DEVOTIONAL INPUT (Dashboard) ──────────────
+
+function renderFamilyDevotionalInput(){
+  if(!_db) return;
+  const weekKey = getDevotionalWeekKey();
+  const d = new Date(weekKey);
+  const weekLabel = d.toLocaleDateString('en-US',{month:'long', day:'numeric'});
+
+  _db.ref(`stewart/devotional/family/${weekKey}`).once('value', snap => {
+    const data = snap.val() || {};
+    const el = document.getElementById('family-devotional-input');
+    if(!el) return;
+
+    el.innerHTML = `
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5;">
+        Week of ${weekLabel}. This devotional will appear in each boy's Training tab when they open the app.
+      </div>
+
+      <div style="margin-bottom:10px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Title / Theme</div>
+        <input type="text" id="fdev-title" placeholder="e.g. Patience Under Fire — Hans learns to wait" value="${data.title||''}"
+          style="width:100%;padding:8px 11px;border:1px solid var(--border);border-radius:7px;font-size:13px;font-family:'Lato',sans-serif;">
+      </div>
+
+      <div style="margin-bottom:10px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Scripture</div>
+        <input type="text" id="fdev-scripture-ref" placeholder="Reference — e.g. James 1:2-4" value="${data.scriptureRef||''}"
+          style="width:100%;padding:8px 11px;border:1px solid var(--border);border-radius:7px;font-size:13px;font-family:'Lato',sans-serif;margin-bottom:6px;">
+        <textarea id="fdev-scripture-text" placeholder="Verse text (KJV)..." rows="3"
+          style="width:100%;padding:8px 11px;border:1px solid var(--border);border-radius:7px;font-size:13px;font-family:'Lato',sans-serif;resize:none;">${data.scriptureText||''}</textarea>
+      </div>
+
+      <div style="margin-bottom:10px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Narrative / Story</div>
+        <textarea id="fdev-narrative" placeholder="The OWCA story, Hans vignette, field agent scene — write it here..." rows="8"
+          style="width:100%;padding:8px 11px;border:1px solid var(--border);border-radius:7px;font-size:13px;font-family:'Lato',sans-serif;resize:vertical;">${data.narrative||''}</textarea>
+      </div>
+
+      <div style="margin-bottom:10px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Discussion Question</div>
+        <textarea id="fdev-question" placeholder="A question for the dinner table or the end of the reading..." rows="2"
+          style="width:100%;padding:8px 11px;border:1px solid var(--border);border-radius:7px;font-size:13px;font-family:'Lato',sans-serif;resize:none;">${data.question||''}</textarea>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Prayer Prompt</div>
+        <textarea id="fdev-prayer" placeholder="Close with — e.g. Ask God to help you be patient this week, especially when..." rows="2"
+          style="width:100%;padding:8px 11px;border:1px solid var(--border);border-radius:7px;font-size:13px;font-family:'Lato',sans-serif;resize:none;">${data.prayer||''}</textarea>
+      </div>
+
+      <button onclick="saveFamilyDevotional('${weekKey}')" class="btn-primary" style="width:100%;">
+        Save Family Devotional
+      </button>
+      <div id="fdev-saved" style="font-size:11px;color:var(--green2);text-align:center;margin-top:6px;display:none;">✓ Saved — boys will see this in their Training tab</div>
+
+      <!-- Previous weeks -->
+      <div id="fdev-history" style="margin-top:16px;"></div>`;
+
+    renderDevotionalHistory();
+  });
+}
+
+function saveFamilyDevotional(weekKey){
+  if(!_db) return;
+  const entry = {
+    title: document.getElementById('fdev-title').value.trim(),
+    scriptureRef: document.getElementById('fdev-scripture-ref').value.trim(),
+    scriptureText: document.getElementById('fdev-scripture-text').value.trim(),
+    narrative: document.getElementById('fdev-narrative').value.trim(),
+    question: document.getElementById('fdev-question').value.trim(),
+    prayer: document.getElementById('fdev-prayer').value.trim(),
+    savedAt: Date.now()
+  };
+  _db.ref(`stewart/devotional/family/${weekKey}`).set(entry).then(() => {
+    const el = document.getElementById('fdev-saved');
+    if(el){ el.style.display='block'; setTimeout(()=>el.style.display='none', 3000); }
+    renderDevotionalHistory();
+  });
+}
+
+function renderDevotionalHistory(){
+  if(!_db) return;
+  _db.ref('stewart/devotional/family').once('value', snap => {
+    const data = snap.val() || {};
+    const el = document.getElementById('fdev-history');
+    if(!el) return;
+    const weeks = Object.keys(data).sort().reverse().slice(1, 6); // skip current week
+    if(!weeks.length){ el.innerHTML=''; return; }
+
+    el.innerHTML = `<div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Previous Weeks</div>` +
+      weeks.map(wk => {
+        const entry = data[wk];
+        const d = new Date(wk);
+        const label = d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+        return `<div style="border:1px solid var(--border);border-radius:7px;padding:9px 12px;margin-bottom:6px;cursor:pointer;" onclick="loadDevotionalWeek('${wk}')">
+          <div style="font-size:12px;font-weight:700;color:var(--ink);">Week of ${label}${entry.title?' — '+entry.title:''}</div>
+          ${entry.scriptureRef?`<div style="font-size:11px;color:var(--muted);">${entry.scriptureRef}</div>`:''}
+        </div>`;
+      }).join('');
+  });
+}
+
+function loadDevotionalWeek(weekKey){
+  if(!_db) return;
+  _db.ref(`stewart/devotional/family/${weekKey}`).once('value', snap => {
+    const data = snap.val() || {};
+    document.getElementById('fdev-title').value = data.title||'';
+    document.getElementById('fdev-scripture-ref').value = data.scriptureRef||'';
+    document.getElementById('fdev-scripture-text').value = data.scriptureText||'';
+    document.getElementById('fdev-narrative').value = data.narrative||'';
+    document.getElementById('fdev-question').value = data.question||'';
+    document.getElementById('fdev-prayer').value = data.prayer||'';
+    window.scrollTo(0,0);
+  });
+}
+
+// ─── DAWN'S DAILY DEVOTIONAL INPUT (Dashboard) ────────
+
+function renderDawnDevotionalInput(){
+  if(!_db) return;
+  const today = localDateStr();
+  const weekKey = getDevotionalWeekKey();
+
+  _db.ref(`stewart/devotional/dawn/${weekKey}`).once('value', snap => {
+    const weekData = snap.val() || {};
+    const el = document.getElementById('dawn-devotional-input');
+    if(!el) return;
+
+    const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const dow = new Date().getDay();
+
+    // Build day tabs Mon-Sun
+    const days = [];
+    for(let i=0; i<7; i++){
+      const d = new Date(weekKey);
+      d.setDate(d.getDate()+i);
+      days.push(localDateStr(d));
+    }
+
+    el.innerHTML = `
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5;">
+        Private — only visible here in your dashboard.
+      </div>
+      <div style="display:flex;gap:4px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px;">
+        ${days.map((ds,i) => {
+          const hasEntry = weekData[ds] && weekData[ds].text;
+          const isToday = ds === today;
+          return `<button onclick="selectDawnDay('${ds}')" id="dawn-day-btn-${ds}"
+            style="flex-shrink:0;padding:6px 10px;border-radius:20px;border:1px solid ${isToday?'var(--green2)':hasEntry?'var(--border)':'var(--border)'};background:${isToday?'var(--green2)':hasEntry?'rgba(45,106,71,.1)':'transparent'};color:${isToday?'white':hasEntry?'var(--green2)':'var(--muted)'};font-size:11px;cursor:pointer;">
+            ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][i]}${hasEntry?' ✓':''}
+          </button>`;
+        }).join('')}
+      </div>
+      <div id="dawn-day-entry"></div>`;
+
+    // Load today's entry by default
+    selectDawnDay(today);
+  });
+}
+
+function selectDawnDay(dateStr){
+  if(!_db) return;
+  const weekKey = getDevotionalWeekKey();
+  _db.ref(`stewart/devotional/dawn/${weekKey}/${dateStr}`).once('value', snap => {
+    const data = snap.val() || {};
+    const el = document.getElementById('dawn-day-entry');
+    if(!el) return;
+
+    const d = new Date(dateStr);
+    const dayName = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d.getDay()];
+
+    el.innerHTML = `
+      <div style="font-size:11px;font-weight:700;color:var(--ink);margin-bottom:8px;">${dayName}, ${dateStr}</div>
+      <div style="margin-bottom:8px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Scripture</div>
+        <input type="text" id="dawn-dev-ref" placeholder="Reference" value="${data.ref||''}"
+          style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;margin-bottom:5px;">
+        <textarea id="dawn-dev-verse" placeholder="Verse text..." rows="2"
+          style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;resize:none;">${data.verse||''}</textarea>
+      </div>
+      <div style="margin-bottom:10px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Reflection / Notes</div>
+        <textarea id="dawn-dev-text" placeholder="What stood out today, what you're praying through, what God is showing you..." rows="5"
+          style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;resize:vertical;">${data.text||''}</textarea>
+      </div>
+      <button onclick="saveDawnDevotional('${dateStr}')" class="btn-primary" style="width:100%;">Save</button>
+      <div id="dawn-dev-saved" style="font-size:11px;color:var(--green2);text-align:center;margin-top:5px;display:none;">✓ Saved</div>`;
+  });
+}
+
+function saveDawnDevotional(dateStr){
+  if(!_db) return;
+  const weekKey = getDevotionalWeekKey();
+  const entry = {
+    ref: document.getElementById('dawn-dev-ref').value.trim(),
+    verse: document.getElementById('dawn-dev-verse').value.trim(),
+    text: document.getElementById('dawn-dev-text').value.trim(),
+    savedAt: Date.now()
+  };
+  _db.ref(`stewart/devotional/dawn/${weekKey}/${dateStr}`).set(entry).then(() => {
+    const el = document.getElementById('dawn-dev-saved');
+    if(el){ el.style.display='block'; setTimeout(()=>el.style.display='none',2500); }
+    renderDawnDevotionalInput(); // refresh day tabs to show checkmarks
+  });
+}
+
+// ─── FAMILY DEVOTIONAL DISPLAY (Boys' Training tab) ───
+
+function renderFamilyDevotionalDisplay(){
+  const el = document.getElementById('family-devotional-display');
+  if(!el||!_db) return;
+
+  const weekKey = getDevotionalWeekKey();
+  _db.ref(`stewart/devotional/family/${weekKey}`).once('value', snap => {
+    const data = snap.val();
+    if(!data||!data.title){
+      el.innerHTML = `<div class="empty" style="color:rgba(255,255,255,.3);">This week's devotional hasn't been posted yet.<br>Check back soon, Agent.</div>`;
+      return;
+    }
+
+    el.innerHTML = `
+      <div style="background:linear-gradient(135deg,var(--dark2),#0a140a);border:1px solid rgba(12,200,200,.2);border-radius:10px;padding:16px;margin-bottom:2px;">
+
+        ${data.title ? `
+        <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:2px;color:var(--teal2);margin-bottom:4px;">THIS WEEK'S DEVOTIONAL</div>
+        <div style="font-family:'Exo 2',sans-serif;font-size:16px;font-weight:700;color:var(--white);margin-bottom:14px;line-height:1.3;">${data.title}</div>` : ''}
+
+        ${data.scriptureRef ? `
+        <div style="background:rgba(232,184,74,.1);border-left:3px solid var(--gold);border-radius:0 6px 6px 0;padding:10px 12px;margin-bottom:14px;">
+          <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:2px;color:var(--gold);margin-bottom:5px;">${data.scriptureRef}</div>
+          ${data.scriptureText?`<div style="font-size:13px;color:rgba(255,255,255,.85);line-height:1.7;font-style:italic;">&ldquo;${data.scriptureText}&rdquo;</div>`:''}
+        </div>` : ''}
+
+        ${data.narrative ? `
+        <div style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.8;margin-bottom:14px;white-space:pre-wrap;">${data.narrative}</div>` : ''}
+
+        ${data.question ? `
+        <div style="background:rgba(12,200,200,.08);border:1px solid rgba(12,200,200,.2);border-radius:8px;padding:11px 13px;margin-bottom:12px;">
+          <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:2px;color:var(--teal2);margin-bottom:5px;">&#9654; DISCUSSION</div>
+          <div style="font-size:13px;color:var(--white);line-height:1.6;">${data.question}</div>
+        </div>` : ''}
+
+        ${data.prayer ? `
+        <div style="border-top:1px solid rgba(255,255,255,.1);padding-top:12px;">
+          <div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:2px;color:rgba(255,255,255,.4);margin-bottom:5px;">&#9679; PRAYER</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.6);line-height:1.7;font-style:italic;">${data.prayer}</div>
+        </div>` : ''}
+
+      </div>`;
   });
 }
 
