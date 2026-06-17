@@ -474,6 +474,15 @@ body{
           </div>
         </div>
 
+        <div class="sec-hd">Group Chat</div>
+        <div class="thread-list" style="margin-bottom:14px;">
+          <div class="thread-item" onclick="openGroupChat()">
+            <div class="thread-dot" style="background:var(--gold,#c8922a);"></div>
+            <div><div class="thread-name">&#128172; Agent Group Chat <span id="group-new-tag" style="display:none;background:var(--gold,#c8922a);color:#000;font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;margin-left:6px;">NEW</span></div><div class="thread-preview" id="preview-group">All agents can see this</div></div>
+            <div class="thread-arrow">&#8250;</div>
+          </div>
+        </div>
+
         <div class="sec-hd">Private Threads</div>
         <div class="thread-list">
           <div class="thread-item" onclick="openThread('samuel','Samuel','Agent Alpha','var(--alpha)')">
@@ -990,74 +999,503 @@ function recalculateScore(agentId, dateStr){
 // Build the expected mission list for ANY date (not just today)
 // Mirrors buildMissions but accepts an explicit date
 
-function buildMissionsForDate(agentId, dayDate){
-  const dayOfWeek = dayDate.getDay();
-  const startOfYear = new Date(dayDate.getFullYear(), 0, 1);
-  const weekNum = Math.floor((dayDate - startOfYear) / (7*24*60*60*1000));
-  const weekParity = weekNum % 2;
+// ===== UNIFIED MISSION ENGINE (mirrors Agent HQ exactly — single source of truth) =====
+function getDishTeam_u(_d){
+  const now = _d ? new Date(_d) : new Date();
+  const dayOfWeek = now.getDay(); // 0=Sun,1=Mon...6=Sat
+  // Week number (0 or 1) based on ISO week
+  const startOfYear = new Date(now.getFullYear(), 0, 1);
+  const weekNum = Math.floor((now - startOfYear) / (7 * 24 * 60 * 60 * 1000));
+  const weekParity = weekNum % 2; // 0 or 1
+
+  // Week A pattern: Sun=SJ, Mon=SJ, Tue=SD, Wed=SJ, Thu=SD, Fri=SJ, Sat=SD
   const weekAPattern = {0:'sj',1:'sj',2:'sd',3:'sj',4:'sd',5:'sj',6:'sd'};
+  // Week B: flipped
   const weekBPattern = {0:'sd',1:'sd',2:'sj',3:'sd',4:'sj',5:'sd',6:'sj'};
-  const dishTeam = weekParity===0 ? weekAPattern[dayOfWeek] : weekBPattern[dayOfWeek];
-  const onDishes = (agentId==='samuel'||agentId==='johnjr') ? dishTeam==='sj' : dishTeam==='sd';
-  const onSetup = !onDishes;
-  const wed = dayOfWeek===3;
-  const onLaundry = isLaundryDayFor(agentId, dayOfWeek);
-  const bathroomOrder = ['samuel','johnjr','stephen','daniel'];
-  const isBathroomWeek = (agentId === bathroomOrder[weekNum % 4]);
+
+  return weekParity === 0 ? weekAPattern[dayOfWeek] : weekBPattern[dayOfWeek];
+}
+function isWeekend_u(_d){
+  const d = (_d?new Date(_d):new Date()).getDay();
+  return d === 0 || d === 6;
+}
+function isWednesday_u(_d){
+  return (_d?new Date(_d):new Date()).getDay() === 3;
+}
+function getDayName_u(_d){
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  return days[(_d?new Date(_d):new Date()).getDay()];
+}
+function getBathroomAgent_u(_d){
+  const order = ['samuel','johnjr','stephen','daniel'];
+  const now = _d ? new Date(_d) : new Date();
+  const startOfYear = new Date(now.getFullYear(), 0, 1);
+  const weekNum = Math.floor((now - startOfYear) / (7*24*60*60*1000));
+  return order[weekNum % 4];
+}
+function isLaundryDay_u(agentId, _d){
+  return isLaundryDayFor_u(agentId, (_d?new Date(_d):new Date()).getDay());
+}
+function isLaundryDayFor_u(agentId, dayOfWeek){
+  // dayOfWeek: 1=Mon, 4=Thu
+  if((agentId==='samuel'||agentId==='johnjr') && dayOfWeek===1) return true;
+  if((agentId==='stephen'||agentId==='daniel') && dayOfWeek===4) return true;
+  return false;
+}
+function isDinnerSideDay_u(_d){
+  return DINNER_SIDE_DAYS.includes((_d?new Date(_d):new Date()).getDay());
+}
+function getMyDinnerSide_u(agentId, _d){
+  const pair = PAIRS[agentId];
+  if(!pair) return null;
+  const assignment = getDinnerSideAssignment_u(_d);
+  if(!assignment) return null;
+  return assignment[pair.pairId];
+}
+function getDinnerSideAssignment_u(dateOverride){
+  const date = dateOverride ? new Date(dateOverride) : new Date();
+  const dow = date.getDay();
+  if(!DINNER_SIDE_DAYS.includes(dow)) return null;
+
+  const epoch = new Date(2024, 0, 1); // Jan 1, 2024 (Monday)
+  const daysSinceEpoch = Math.floor((date - epoch) / (24*60*60*1000));
+  const fullWeeks = Math.floor(daysSinceEpoch / 7);
+  const remainderDays = daysSinceEpoch % 7;
+  // Each full week contributes 3 cooking days (Mon, Wed, Thu)
+  // Count cooking days in the remainder (days 0..remainderDays-1 of this week, Sun-based)
+  let cookingDayIndex = fullWeeks * 3;
+  for(let i=0;i<remainderDays;i++){
+    if(DINNER_SIDE_DAYS.includes(i)) cookingDayIndex++;
+  }
+
+  // Even index = Virtus does starch, Vulnere does veggie. Odd = swap.
+  const virtusGetsStarch = (cookingDayIndex % 2 === 0);
+  return {
+    virtus: virtusGetsStarch ? 'starch' : 'veggie',
+    vulnere: virtusGetsStarch ? 'veggie' : 'starch'
+  };
+}
+
+function buildMissionsUnified(agentId, _d){
+  const dishTeam = getDishTeam_u(_d);
+  const weekend = isWeekend_u(_d);
+  const wed = isWednesday_u(_d);
+  const day = getDayName_u(_d);
+  const isBathroomWeek = (agentId === getBathroomAgent_u(_d));
+
+  // Is this agent on dishes today?
+  const onDishes = (agentId === 'samuel' || agentId === 'johnjr')
+    ? dishTeam === 'sj'
+    : dishTeam === 'sd';
+
+  const onSetup = !onDishes; // opposite team does setup
 
   const missions = [];
-  missions.push({id:'bed', points:5});
-  missions.push({id:'bedroom', points:5});
-  missions.push({id:'rabbit-own', points:5});
 
+  // ── SHARED DAILY (all 7 days) ──────────────────────
+  missions.push({
+    id: 'bed',
+    text: 'Make your bed',
+    detail: 'Every morning before anything else.',
+    points: 5,
+    category: 'bedroom',
+    always: true
+  });
+  missions.push({
+    id: 'bedroom',
+    text: 'Tidy your bedroom space',
+    detail: 'Your area clean and clothes put away.',
+    points: 5,
+    category: 'bedroom',
+    always: true
+  });
+  missions.push({
+    id: 'rabbit-own',
+    text: 'Care for your rabbit',
+    detail: 'Feed and water your own rabbit before bed.',
+    points: 5,
+    category: 'animals',
+    always: true
+  });
+
+  // ── DISHES TEAM DAILY ──────────────────────────────
   if(onDishes){
-    if(agentId==='samuel'||agentId==='johnjr'){
-      missions.push({id:'dishwasher-load', points:10});
-      missions.push({id:'dishwasher-unload', points:10});
+    // Dish team is either Sam+John or Stephen+Daniel
+    // Sam+John: both alternate load and unload between themselves
+    // Stephen+Daniel: Stephen UNLOADS, Daniel LOADS — always, no exceptions
+
+    if(agentId === 'samuel' || agentId === 'johnjr'){
+      const partner = agentId === 'samuel' ? 'John Jr.' : 'Samuel';
+      missions.push({
+        id: 'dishwasher-load',
+        text: `Load the dishwasher — with ${partner}`,
+        detail: `You and ${partner} handle dishes today. Load all dirty dishes after meals.`,
+        points: 10,
+        category: 'kitchen',
+        always: true
+      });
+      missions.push({
+        id: 'dishwasher-unload',
+        text: `Unload dishwasher & put away — with ${partner}`,
+        detail: `Empty the clean dishes and put everything in its place. Work with ${partner}.`,
+        points: 10,
+        category: 'kitchen',
+        always: true
+      });
     }
-    if(agentId==='stephen') missions.push({id:'dishwasher-unload', points:10});
-    if(agentId==='daniel') missions.push({id:'dishwasher-load', points:10});
-    missions.push({id:'table-clear', points:5});
-    missions.push({id:'table-wipe', points:5});
+
+    if(agentId === 'stephen'){
+      // Stephen ONLY unloads — Daniel loads
+      missions.push({
+        id: 'dishwasher-unload',
+        text: 'Unload dishwasher & put away — with Daniel',
+        detail: 'Empty the clean dishes and put everything in its place. Daniel will load.',
+        points: 10,
+        category: 'kitchen',
+        always: true
+      });
+    }
+
+    if(agentId === 'daniel'){
+      // Daniel ONLY loads — Stephen unloads
+      missions.push({
+        id: 'dishwasher-load',
+        text: 'Load the dishwasher — with Stephen',
+        detail: 'Load all the dirty dishes after meals. Stephen will unload and put away.',
+        points: 10,
+        category: 'kitchen',
+        always: true
+      });
+    }
+
+    missions.push({
+      id: 'table-clear',
+      text: 'Clear the table after dinner',
+      detail: 'Bring all dishes, glasses, and food to the kitchen.',
+      points: 5,
+      category: 'kitchen',
+      always: true
+    });
+    missions.push({
+      id: 'table-wipe',
+      text: 'Wipe down the table after meals',
+      detail: 'Wipe the whole table after every meal — breakfast, lunch, and dinner.',
+      points: 5,
+      category: 'kitchen',
+      always: true
+    });
   }
+
+// ── SETUP TEAM DAILY ──────────────────────────────
   if(onSetup){
-    missions.push({id:'table-set', points:5});
-    if(agentId==='samuel'||agentId==='johnjr') missions.push({id:'drinks', points:5});
-    if(agentId!=='daniel' && !onLaundry){
-      missions.push({id:'stovetop', points:5});
-      missions.push({id:'microwave', points:5});
+    missions.push({
+      id: 'table-set',
+      text: 'Set the table before dinner',
+      detail: 'Plates, silverware, and napkins — set 10 minutes before we sit down.',
+      points: 5,
+      category: 'kitchen',
+      always: true
+    });
+    // Drinks — only older boys
+    if(agentId === 'samuel' || agentId === 'johnjr'){
+      const partner = agentId === 'samuel' ? 'John Jr.' : 'Samuel';
+      missions.push({
+        id: 'drinks',
+        text: `Pour drinks before dinner — with ${partner}`,
+        detail: `Pour everyone's drinks 10 minutes before dinner. You and ${partner} handle setup today.`,
+        points: 5,
+        category: 'kitchen',
+        always: true
+      });
+    }
+    // Appliance wipes — Sam, John, Stephen only, dropped on their laundry day
+    if(agentId !== 'daniel' && !isLaundryDay_u(agentId, _d)){
+      missions.push({
+        id: 'stovetop',
+        text: 'Wipe down the stovetop',
+        detail: 'Wipe down all burners and the stovetop surface after cooking.',
+        points: 5,
+        category: 'kitchen',
+        always: true
+      });
+      missions.push({
+        id: 'microwave',
+        text: 'Wipe down the microwave',
+        detail: 'Inside and outside. Check for splatter.',
+        points: 5,
+        category: 'kitchen',
+        always: true
+      });
     }
   }
 
-  if(agentId==='samuel') missions.push({id:'floor-laundry', points:5});
-  if(agentId==='johnjr') missions.push({id:'floor-living', points:5});
-  if(agentId==='stephen'){
-    missions.push({id:'kitchen-counter', points:10});
-    missions.push({id:'floor-kitchen', points:5});
-  }
-  if(agentId==='daniel'){
-    missions.push({id:'floor-hallway', points:5});
-    missions.push({id:'floor-rabbit', points:5});
-  }
-
-  if(onLaundry){
-    if(agentId==='samuel') missions.push({id:'laundry-sam', points:15});
-    if(agentId==='johnjr') missions.push({id:'laundry-john', points:15});
-    if(agentId==='stephen') missions.push({id:'laundry-stephen', points:15});
-    if(agentId==='daniel') missions.push({id:'laundry-daniel', points:10});
+  // ── AGENT-SPECIFIC DAILY ─────────────────────────
+  if(agentId === 'samuel'){
+    missions.push({
+      id: 'floor-laundry',
+      text: 'Sweep the laundry room floor',
+      detail: 'Sweep and tidy the laundry room.',
+      points: 5,
+      category: 'floors',
+      weekday: true
+    });
   }
 
-  if(wed && (agentId==='samuel'||agentId==='johnjr')) missions.push({id:'trash', points:10});
-  if(wed && agentId==='daniel') missions.push({id:'bathroom-trash', points:10});
+  if(agentId === 'johnjr'){
+    missions.push({
+      id: 'floor-living',
+      text: 'Sweep the living room floor',
+      detail: 'Sweep the full living room floor.',
+      points: 5,
+      category: 'floors',
+      weekday: true
+    });
+  }
 
-  if(agentId==='samuel'||agentId==='johnjr'||agentId==='stephen') missions.push({id:'fridge', points:10});
-  if(agentId==='stephen') missions.push({id:'hutch', points:10});
-  if(isBathroomWeek) missions.push({id:'bathroom-clean', points:15});
+  if(agentId === 'stephen'){
+    missions.push({
+      id: 'kitchen-counter',
+      text: 'Clean & wipe kitchen counters',
+      detail: 'Wipe down all counter surfaces. Clear anything that doesn\'t belong.',
+      points: 10,
+      category: 'kitchen',
+      weekday: true
+    });
+    missions.push({
+      id: 'floor-kitchen',
+      text: 'Sweep the kitchen floor',
+      detail: 'Sweep the full kitchen floor including under the table.',
+      points: 5,
+      category: 'floors',
+      weekday: true
+    });
+  }
 
-  missions.push({id:'rabbit-cage', points:15});
+  if(agentId === 'daniel'){
+    missions.push({
+      id: 'floor-hallway',
+      text: 'Sweep the hallway',
+      detail: 'Sweep the hallway floor.',
+      points: 5,
+      category: 'floors',
+      weekday: true
+    });
+    missions.push({
+      id: 'floor-rabbit',
+      text: 'Sweep the rabbit cage area',
+      detail: 'Sweep around and under the rabbit cages.',
+      points: 5,
+      category: 'animals',
+      weekday: true
+    });
+  }
 
-  return missions;
+  // ── WEEKLY MISSIONS ────────────────────────────────
+  // Only show on weekdays, one per week — app marks when done
+
+  if(agentId === 'samuel'){
+    if(isLaundryDay_u('samuel', _d)){
+      missions.push({
+        id: 'laundry-sam',
+        text: 'Laundry Day — with John Jr.',
+        detail: 'Wash, dry, and put away your laundry together. This is your main mission today.',
+        points: 15,
+        category: 'laundry',
+        always: true
+      });
+    }
+    missions.push({
+      id: 'fridge',
+      text: 'Wipe down the fridge',
+      detail: 'Inside and outside. Sam, John, and Stephen rotate this weekly.',
+      points: 10,
+      category: 'kitchen',
+      weekly: true,
+      rotate: 'sj-stephen'
+    });
+    if(isBathroomWeek){
+      missions.push({
+        id: 'bathroom-clean',
+        text: 'Clean the bathroom',
+        detail: 'Full clean — toilet, sink, mirror, wipe down surfaces. Your turn this week.',
+        points: 15,
+        category: 'bathroom',
+        weekly: true
+      });
+    }
+  }
+
+  if(agentId === 'johnjr'){
+    if(isLaundryDay_u('johnjr', _d)){
+      missions.push({
+        id: 'laundry-john',
+        text: 'Laundry Day — with Samuel',
+        detail: 'Wash, dry, and put away your laundry together. This is your main mission today.',
+        points: 15,
+        category: 'laundry',
+        always: true
+      });
+    }
+    missions.push({
+      id: 'fridge',
+      text: 'Wipe down the fridge',
+      detail: 'Inside and outside. Sam, John, and Stephen rotate this weekly.',
+      points: 10,
+      category: 'kitchen',
+      weekly: true,
+      rotate: 'sj-stephen'
+    });
+    if(isBathroomWeek){
+      missions.push({
+        id: 'bathroom-clean',
+        text: 'Clean the bathroom',
+        detail: 'Full clean — toilet, sink, mirror, wipe down surfaces. Your turn this week.',
+        points: 15,
+        category: 'bathroom',
+        weekly: true
+      });
+    }
+  }
+
+  if(agentId === 'stephen'){
+    if(isLaundryDay_u('stephen', _d)){
+      missions.push({
+        id: 'laundry-stephen',
+        text: 'Laundry Day — with Daniel',
+        detail: 'Wash, dry, and put away your laundry together. This is your main mission today.',
+        points: 15,
+        category: 'laundry',
+        always: true
+      });
+    }
+    missions.push({
+      id: 'hutch',
+      text: 'Organize the hutch',
+      detail: 'Keep the food hutch organized — boxes neat, nothing expired, everything in its place.',
+      points: 10,
+      category: 'kitchen',
+      weekly: true
+    });
+    missions.push({
+      id: 'fridge',
+      text: 'Wipe down the fridge',
+      detail: 'Inside and outside. Sam, John, and Stephen rotate this weekly.',
+      points: 10,
+      category: 'kitchen',
+      weekly: true,
+      rotate: 'sj-stephen'
+    });
+    if(isBathroomWeek){
+      missions.push({
+        id: 'bathroom-clean',
+        text: 'Clean the bathroom',
+        detail: 'Full clean — toilet, sink, mirror, wipe down surfaces. Your turn this week.',
+        points: 15,
+        category: 'bathroom',
+        weekly: true
+      });
+    }
+  }
+
+  if(agentId === 'daniel'){
+    if(isLaundryDay_u('daniel', _d)){
+      missions.push({
+        id: 'laundry-daniel',
+        text: 'Laundry Day — with Stephen',
+        detail: 'Wash, dry, and put away your laundry together. This is your main mission today.',
+        points: 10,
+        category: 'laundry',
+        always: true
+      });
+    }
+    missions.push({
+      id: 'bathroom-trash',
+      text: 'Empty bathroom trash',
+      detail: 'Wednesday morning — empty the bathroom trash can and bring it to the road with Sam and John.',
+      points: 10,
+      category: 'bathroom',
+      weekly: true,
+      wednesday: true
+    });
+    if(isBathroomWeek){
+      missions.push({
+        id: 'bathroom-clean',
+        text: 'Clean the bathroom',
+        detail: 'Full clean — toilet, sink, mirror, wipe down surfaces. Your turn this week.',
+        points: 15,
+        category: 'bathroom',
+        weekly: true
+      });
+    }
+  }
+
+  // ── WEDNESDAY TRASH ────────────────────────────────
+  if(wed && (agentId === 'samuel' || agentId === 'johnjr')){
+    const partner = agentId === 'samuel' ? 'John Jr.' : 'Samuel';
+    missions.push({
+      id: 'trash',
+      text: `Take trash to the road — with ${partner}`,
+      detail: `Wednesday mission — you and ${partner} go together. Long driveway, out before 9am. Daniel brings the bathroom trash to you.`,
+      points: 10,
+      category: 'trash',
+      always: true,
+      urgent: true
+    });
+  }
+
+  // ── WEEKLY RABBIT CAGE CLEAN ─────────────────────
+  missions.push({
+    id: 'rabbit-cage',
+    text: 'Clean rabbit cages',
+    detail: 'All four boys clean the cages together once this week.',
+    points: 15,
+    category: 'animals',
+    weekly: true
+  });
+
+  // ── DINNER SIDE DISH (Mon/Wed/Thu) ────────────────
+  if(isDinnerSideDay_u(_d)){
+    const side = getMyDinnerSide_u(agentId, _d);
+    const pair = PAIRS[agentId];
+    if(side && pair){
+      const partner = pair.partner === 'johnjr' ? 'John Jr.' : pair.partner.charAt(0).toUpperCase() + pair.partner.slice(1);
+      if(side === 'starch'){
+        missions.push({
+          id: 'dinner-side-starch',
+          text: `Make the starch side — with ${partner}`,
+          detail: `Potatoes, rice, pasta, or similar. Work with ${partner} to get it ready for dinner.`,
+          points: 10,
+          category: 'kitchen',
+          always: true
+        });
+      } else {
+        missions.push({
+          id: 'dinner-side-veggie',
+          text: `Make the vegetable — with ${partner}`,
+          detail: `Heat the vegetable on the stove or microwave with ${partner} for dinner tonight.`,
+          points: 5,
+          category: 'kitchen',
+          always: true
+        });
+      }
+    }
+  }
+
+  // Filter by day type
+  return missions.filter(m => {
+    if(m.always) return true;
+    if(m.weekday && !weekend) return true;
+    if(m.weekly && !weekend) return true;
+    if(m.wednesday && wed) return true;
+    return false;
+  });
 }
+
+// Dashboard entrypoint: delegate to the unified engine for any date
+function buildMissionsForDate(agentId, dayDate){
+  return buildMissionsUnified(agentId, dayDate);
+}
+
 
 // ══════════════════════════════════════════════════════
 // RENDER MISSIONS
@@ -1288,6 +1726,7 @@ function renderMessenger(){
   if(!_db) return;
   loadBoardMessages();
   loadThreadPreviews();
+  updateDashGroupBadge();
 }
 
 function loadBoardMessages(){
@@ -1344,11 +1783,49 @@ function openThread(agentId, name, codename, color){
   });
 }
 
+function openGroupChat(){
+  currentThread = {group:true, name:'Agent Group Chat'};
+  document.getElementById('thread-title').textContent = '\u{1F4AC} Agent Group Chat';
+  document.getElementById('thread-sub').textContent = 'All agents + Mom & Dad';
+  document.getElementById('messenger-list-view').style.display = 'none';
+  document.getElementById('messenger-thread-view').style.display = 'flex';
+  if(!_db) return;
+  _db.ref('stewart/groupchat').on('value', snap => {
+    if(currentThread && currentThread.group){
+      const msgs = snap.val()||{};
+      renderThreadMessages(msgs);
+      const latest = Object.values(msgs).reduce((mx,m)=>Math.max(mx, m.timestamp||0), 0);
+      try{ localStorage.setItem('pd-group-seen', String(latest)); }catch(e){}
+      const tag = document.getElementById('group-new-tag');
+      if(tag) tag.style.display = 'none';
+    }
+  });
+}
+
+function updateDashGroupBadge(){
+  if(!_db) return;
+  _db.ref('stewart/groupchat').limitToLast(1).once('value', snap => {
+    const val = snap.val();
+    const tag = document.getElementById('group-new-tag');
+    if(!tag||!val) return;
+    const latest = Object.values(val).reduce((mx,m)=>Math.max(mx, m.timestamp||0), 0);
+    let seen = 0;
+    try{ seen = parseInt(localStorage.getItem('pd-group-seen')||'0',10); }catch(e){}
+    const lastMsg = Object.values(val)[0];
+    // Only show NEW if last message came from a boy (not Dad/Mom/HQ)
+    const fromBoy = lastMsg && !['Dad','Mom','HQ'].includes(lastMsg.from);
+    tag.style.display = (latest > seen && fromBoy) ? 'inline-block' : 'none';
+    const prev = document.getElementById('preview-group');
+    if(prev && lastMsg) prev.textContent = (lastMsg.from||'')+': '+(lastMsg.text||'').slice(0,30);
+  });
+}
+
 function closeThread(){
   currentThread = null;
   document.getElementById('messenger-thread-view').style.display = 'none';
   document.getElementById('messenger-list-view').style.display = 'block';
-  if(_db) _db.ref('stewart/messages').off();
+  if(_db){ _db.ref('stewart/messages').off(); _db.ref('stewart/groupchat').off(); }
+  updateDashGroupBadge();
   renderMessenger();
 }
 
@@ -1388,9 +1865,15 @@ function sendThreadMessage(){
   const input = document.getElementById('thread-input');
   const text = input.value.trim();
   if(!text) return;
-  _db.ref(`stewart/messages/${currentThread.agentId}`).push({
-    text, from:'Dad', timestamp:Date.now()
-  }).then(()=>{ input.value=''; });
+  if(currentThread.group){
+    _db.ref('stewart/groupchat').push({
+      text, from:'Dad', agentId:'parent', timestamp:Date.now()
+    }).then(()=>{ input.value=''; });
+  } else {
+    _db.ref(`stewart/messages/${currentThread.agentId}`).push({
+      text, from:'Dad', timestamp:Date.now()
+    }).then(()=>{ input.value=''; });
+  }
 }
 
 // Enter key sends
