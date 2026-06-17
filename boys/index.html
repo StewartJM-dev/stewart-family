@@ -1030,6 +1030,7 @@ function selectAgent(id, codename, name, rank, theme, icon){
   renderPayScreen();
   loadPrivatePreview();
   setTimeout(() => updateGroupBadge(), 1600);
+  setTimeout(() => runHansEngine(), 2000);
   // Small delay then re-render missions once Firebase is settled
   setTimeout(() => renderMissions(), 1500);
   setTimeout(() => renderGameTime(), 1000);
@@ -2078,6 +2079,7 @@ function toggleMission(missionId, refPath){
   renderTonightActivity();
   renderSuperFamilyNight();
   renderFamilyDevotionalDisplay();
+  setTimeout(() => runHansEngine(), 500);
     });
   });
 }
@@ -2531,14 +2533,26 @@ function renderPrivateMessages(msgs){
   const AGENT_ICONS = {samuel:'&#129413;',johnjr:'&#129409;',stephen:'&#129430;',daniel:'&#128024;'};
   const HANS_ICON = '&#129441;'; // mad scientist emoji as Hans stand-in
   el.innerHTML = items.map(m => {
-    const isParent = m.from==='Dad'||m.from==='Mom'||m.from==='HQ';
-    const icon = isParent ? HANS_ICON : (AGENT_ICONS[m.agentId] || '&#128100;');
+    const isHeinz = m.isHeinz || m.agentId==='heinz';
+    const isHans = m.isHans || m.agentId==='hans';
+    const isParent = isHans || isHeinz || m.from==='Dad'||m.from==='Mom'||m.from==='HQ';
+    let icon;
+    if(isHeinz) icon = '\u{1F9D1}\u200D\u{1F52C}\u26A1';
+    else if(isHans) icon = '\u{1F9D1}\u200D\u{1F52C}';
+    else if(isParent) icon = HANS_ICON;
+    else icon = (AGENT_ICONS[m.agentId] || '&#128100;');
     const time = m.timestamp ? new Date(m.timestamp).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '';
+    let bubbleBg;
+    if(isHeinz) bubbleBg = 'background:rgba(120,40,140,.22);border:1px solid rgba(160,60,180,.5);border-bottom-left-radius:4px;';
+    else if(isHans) bubbleBg = 'background:rgba(200,146,42,.16);border:1px solid rgba(200,146,42,.35);border-bottom-left-radius:4px;';
+    else if(isParent) bubbleBg = 'background:rgba(12,200,200,.15);border-bottom-left-radius:4px;';
+    else bubbleBg = 'background:var(--teal);color:var(--black);border-bottom-right-radius:4px;';
+    const nameColor = isHeinz ? 'color:#c77dff;' : (isHans ? 'color:var(--gold);' : '');
     return `<div style="display:flex;flex-direction:column;align-items:${isParent?'flex-start':'flex-end'};">
       <div style="display:flex;align-items:flex-end;gap:6px;${isParent?'':'flex-direction:row-reverse;'}">
         <div style="font-size:18px;flex-shrink:0;">${icon}</div>
-        <div style="max-width:75%;padding:9px 12px;border-radius:12px;${isParent?'background:rgba(12,200,200,.15);border-bottom-left-radius:4px;':'background:var(--teal);color:var(--black);border-bottom-right-radius:4px;'}line-height:1.4;font-size:13px;">
-          <div style="font-size:9px;opacity:.6;margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px;">${m.from||'Unknown'}</div>
+        <div style="max-width:75%;padding:9px 12px;border-radius:12px;${bubbleBg}line-height:1.4;font-size:13px;">
+          <div style="font-size:9px;opacity:.7;margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px;${nameColor}">${m.from||'Unknown'}</div>
           ${linkify(m.text||'')}
           <div style="font-size:9px;opacity:.5;margin-top:4px;text-align:${isParent?'left':'right'};">${time}</div>
         </div>
@@ -2661,6 +2675,295 @@ function updateGroupBadge(){
     }
   });
 }
+
+// ══════════════════════════════════════════════════════
+// HANS DOOFENSHMIRTZ — automated encouragement engine
+// Posts tailored, funny status messages into each boy's private thread.
+// Triggers: on app open (when something changed), morning, evening, milestones.
+// ══════════════════════════════════════════════════════
+
+const HANS_FROM = 'Hans (HQ)';
+
+// Helper: pick a random line from an array
+function hansPick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+// Big rotating pools of Hans lines. {NAME} and {LEFT}/{DONE}/{TOTAL} get filled in.
+const HANS_LINES = {
+  morning: [
+    "Good morning, Agent {NAME}! Today is a new day, full of possibility and also chores. Back in Gimmelshtump, we had to wake up BEFORE we went to sleep. Don't ask. Go get 'em!",
+    "Rise and shine, {NAME}! The early agent gets the... uh... the thing. The worm? Who wants a worm. The POINTS. The early agent gets the points!",
+    "Morning, {NAME}! I believe in you. My father never believed in me — he believed in a garden gnome named Kevin — but I believe in YOU. Make your bed first!",
+    "Ah, {NAME}, you're awake! Excellent. Today's evil scheme: complete all your missions. It's not even evil. It's just good. I'm bad at this. GO!",
+    "Top of the morning, Agent {NAME}! You have {LEFT} missions ahead of you. That's fewer than the number of times I was replaced by a balloon as a child. You've got this!"
+  ],
+  evening: [
+    "Evening report, Agent {NAME}! You knocked out {DONE} of {TOTAL} missions today. Curse you, remaining chores! ...I mean, great job on what you finished!",
+    "Well, {NAME}, the day is winding down. {DONE} of {TOTAL} done. When I was your age I finished ZERO missions and was grounded until I was forty. You're doing better than me!",
+    "Nighttime, Agent {NAME}. {DONE} of {TOTAL} missions complete. Do your rabbit before bed or it will haunt your dreams. Trust me, I know about haunting. Long story. Goodnight!",
+    "End of day, {NAME}! {DONE} of {TOTAL}. Tomorrow we rise again, like my self-esteem after therapy. Sleep well, Agent.",
+    "The sun sets, {NAME}, and so does the chore window. {DONE} of {TOTAL} today. Be proud! I once got a participation trophy and cried for a week. Happy tears!"
+  ],
+  notStarted: [
+    "Agent {NAME}! You have {TOTAL} missions and have done... zero. ZERO! That's how many friends I had in boarding school! Let's not relive my childhood. Get started!",
+    "{NAME}, the missions are just sitting there. Waiting. Like I waited for my parents to pick me up from school. They didn't. But your chores WILL be done! Begin!",
+    "Ahem. Agent {NAME}. Nothing checked off yet. The first step is the hardest — like the first step off the curb when you're afraid of curbs. I was. Go do ONE mission!"
+  ],
+  partway: [
+    "Look at you go, {NAME}! {DONE} of {TOTAL} done and {LEFT} to go. You're halfway up the mountain, and unlike my mountain-climbing uncle, you will make it!",
+    "Progress, Agent {NAME}! {DONE} down, {LEFT} left. You're cooking with gas! Not literally. Do not cook with gas. That's a different mission.",
+    "{NAME}, you've done {DONE}! Only {LEFT} more! This is going better than my plan to take over the Tri-State Area, and I had a BLUEPRINT.",
+    "Keep it up, {NAME}! {LEFT} missions remain. You're closer than I ever got to winning my father's approval, and that's beautiful."
+  ],
+  nearlyDone: [
+    "SO close, Agent {NAME}! Just {LEFT} mission(s) left! I can feel it! This is more excitement than I've had since they invented the self-destruct button!",
+    "{NAME}, you magnificent agent, only {LEFT} to go! Finish strong! Don't stop now, like I stopped going to the gym after one day!",
+    "Almost there, {NAME}! {LEFT} left! The finish line is RIGHT THERE. Closer than my evil schemes ever got. SO much closer. Go!"
+  ],
+  allDone: [
+    "AGENT {NAME}! ALL {TOTAL} MISSIONS COMPLETE! A perfect day! I'm so proud I could cry, and I WILL, because I cry easily. INCREDIBLE work!",
+    "{NAME}! You did EVERYTHING! Curse you for being so... so GOOD at this! This is the best news since my Roombas learned to love! Well done, Agent!",
+    "PERFECT DAY, {NAME}! Every single mission! When I do everything right, which is never, I imagine it feels exactly like this. You're a STAR!",
+    "{NAME}, you completed all {TOTAL} missions! Flawless! I'm putting this in my Big Book Of Things That Went Right. It's a very thin book. You're on page one!"
+  ],
+  streak: [
+    "Agent {NAME}, you're on a STREAK! Multiple perfect days in a row! Consistency! The one thing I could never master, besides everything else. Keep it BURNING!",
+    "{NAME}, the streak continues! You're more reliable than my back-up generator, which exploded. You will NOT explode. Probably. Amazing work!"
+  ],
+  dishes: [
+    "Heads up, {NAME} — it's your dish duty today! Embrace the suds! I once tried to take over the world with dish soap. Failed. But the kitchen was SPOTLESS.",
+    "{NAME}, dishes are calling your name today. Answer the call! Unlike my mother, who never returned my calls. The dishwasher won't ghost you. Go!"
+  ],
+  laundry: [
+    "Laundry day, Agent {NAME}! Sort, wash, fold, conquer! Fun fact: I'm afraid of fitted sheets. Nobody can fold those. But YOU can fold everything else!",
+    "{NAME}, the laundry awaits! Clean clothes are a gift. Back in Gimmelshtump I wore the same potato sack for nine years. You don't have to! Go wash!"
+  ],
+  behind: [
+    "Agent {NAME}, you're running a little behind on missions — but DON'T despair! I've been behind my whole life and look at me! ...okay, bad example. But you can catch up!",
+    "{NAME}, the day's getting on and there are still missions to do. No shame! I once procrastinated so long my evil scheme became irrelevant. Yours won't! There's still time!"
+  ]
+};
+
+// Decide which on-open status pool fits the current numbers
+function hansStatusContext(done, total){
+  if(total === 0) return null;
+  if(done === 0) return 'notStarted';
+  if(done >= total) return 'allDone';
+  const ratio = done / total;
+  if(ratio >= 0.7) return 'nearlyDone';
+  return 'partway';
+}
+
+// Post a Hans or Heinz message into the current agent's private thread (with auto-trim)
+function hansPost(text, persona){
+  if(!currentAgent || !_db) return;
+  const isHeinz = persona === 'heinz';
+  const ref = _db.ref(`stewart/messages/${currentAgent.id}`);
+  ref.push({
+    text,
+    from: isHeinz ? HEINZ_FROM : HANS_FROM,
+    agentId: isHeinz ? 'heinz' : 'hans',
+    isHans: !isHeinz,
+    isHeinz: isHeinz,
+    timestamp: Date.now()
+  }).then(() => hansTrimThread(currentAgent.id));
+}
+
+// Keep only the most recent 50 messages in a thread
+function hansTrimThread(agentId){
+  if(!_db) return;
+  const ref = _db.ref(`stewart/messages/${agentId}`);
+  ref.once('value', snap => {
+    const val = snap.val();
+    if(!val) return;
+    const keys = Object.keys(val);
+    if(keys.length <= 50) return;
+    // Sort by timestamp ascending, remove oldest beyond 50
+    keys.sort((a,b)=>(val[a].timestamp||0)-(val[b].timestamp||0));
+    const toRemove = keys.slice(0, keys.length - 50);
+    const updates = {};
+    toRemove.forEach(k => updates[k] = null);
+    ref.update(updates);
+  });
+}
+
+function hansFill(line, name, done, total){
+  const left = Math.max(0, total - done);
+  return line.replace(/\{NAME\}/g, name)
+             .replace(/\{LEFT\}/g, left)
+             .replace(/\{DONE\}/g, done)
+             .replace(/\{TOTAL\}/g, total);
+}
+
+
+// ══════════════════════════════════════════════════════
+// HEINZ DOOFENSHMIRTZ — the "evil path" persona
+// Same character as Hans, but theatrically villainous when a boy is
+// behind / not started / has behavior deductions. Always funny, always
+// nudging back toward good. When they improve, Hans takes back over.
+// ══════════════════════════════════════════════════════
+
+const HEINZ_FROM = 'Heinz (HQ)';
+
+const HEINZ_LINES = {
+  notStarted: [
+    "Agent {NAME}... NOTHING done yet? Excellent. EXCELLENT! Chaos! Disorder! This is my favorite kind of morning! ...but you're better than this. Prove me wrong. Do a mission. I DARE you.",
+    "Behold, {NAME}! A to-do list completely UNTOUCHED! It's beautiful, in an evil way. Curse you, productivity! ...okay fine, go ruin my evil mood by actually doing something.",
+    "Ah-HA, {NAME}! Zero missions complete! My evil plan of you-doing-nothing is working PERFECTLY! Unless... no. You wouldn't. You wouldn't actually go do them, would you? WOULD you?!"
+  ],
+  behind: [
+    "Agent {NAME}, you're falling behiiiind! And I LOVE it! This is the kind of slacking that built my entire career! ...which, admittedly, was a series of failures. Okay, catch up. For both our sakes.",
+    "Curse you, half-finished chore list! {DONE} of {TOTAL}, {NAME}? You're SO close to total chaos and SO close to actually succeeding. Pick a side! (Pick the good side.)",
+    "{NAME}! It's getting late and missions remain! My evil sensors are TINGLING! But here's the twist nobody saw coming... I believe you can still finish. Plot twist! Get going!"
+  ],
+  deductions: [
+    "Ohhh, {NAME}, I see a behavior deduction on the books today. Naughty! Villainous! I'm almost proud... NO. No, I'm not. Shake it off, Agent. Turn this day around. I know you can.",
+    "Agent {NAME}, points were lost to... shall we say... CHAOS today. As a professional chaos enthusiast, I respect it. As someone who actually cares about you — knock it off and finish strong!",
+    "A deduction, {NAME}?! In MY tri-state area?! Look, even I clean up my messes eventually. Usually. Sometimes. The point is: you can still make today a win!"
+  ],
+  eveningEvil: [
+    "Well, {NAME}, the day ends with {DONE} of {TOTAL} done. Not your best work, my friend. But here's a Doofenshmirtz secret: tomorrow is a brand new scheme. Rest up. We try again.",
+    "Agent {NAME}, today got away from us, didn't it? {DONE} of {TOTAL}. Listen — I've had THOUSANDS of bad days. The trick is showing up tomorrow anyway. I'll see you then. Don't give up."
+  ]
+};
+
+// Hans's special "bounce back" lines — shown on the FIRST login the day
+// AFTER a rough day (low score / lots undone / deductions yesterday).
+const HANS_BOUNCEBACK = [
+  "Good morning, Agent {NAME}! Yesterday was a tough one — but you know what? Every great agent has off days. I have off DECADES. Today is a fresh start. Let's make it a good one together!",
+  "{NAME}! New day, clean slate! Yesterday is in the past, like my many regrets. Today, we rise! I believe in you more than my father ever believed in me. Let's GO!",
+  "Hey {NAME}, about yesterday — forget it. Done. Over. Back in Gimmelshtump we had a saying: 'A new day, a new chance to not get replaced by a balloon.' Today's YOUR day. Try your best!",
+  "Agent {NAME}, yesterday didn't go how we wanted. But here's the thing about bouncing back — it's the BEST part of the story! Today, let's show 'em what you've got. I'm rooting for you!"
+];
+
+// Determine the path: 'evil' (summon Heinz) or 'good' (summon Hans)
+// Evil if: nothing done, OR behind pace in afternoon, OR there are deductions today.
+function hansHeinzPath(completed, total, deductionTotal, hour){
+  if(deductionTotal > 0) return 'evil';
+  if(total > 0 && completed === 0 && hour >= 9) return 'evil';
+  if(hour >= 14 && total > 0 && completed < total/2) return 'evil';
+  return 'good';
+}
+
+
+// Main: run the Hans/Heinz engine for the current agent
+function runHansEngine(){
+  if(!currentAgent || !_db) return;
+  const agentId = currentAgent.id;
+  const name = currentAgent.name;
+  const today = localDateStr();
+  const hour = new Date().getHours();
+
+  // Yesterday's date for bounce-back check
+  const yDate = new Date(); yDate.setDate(yDate.getDate()-1);
+  const yesterday = localDateStr(yDate);
+
+  Promise.all([
+    _db.ref(`stewart/missions/${agentId}/${today}`).once('value'),
+    _db.ref(`stewart/deductions/${agentId}/${today}`).once('value'),
+    _db.ref(`stewart/scores/${agentId}/${yesterday}`).once('value'),
+    _db.ref(`stewart/deductions/${agentId}/${yesterday}`).once('value'),
+    _db.ref(`stewart/missions/${agentId}/${yesterday}`).once('value')
+  ]).then(([mSnap, dSnap, yScoreSnap, yDedSnap, yMissionSnap]) => {
+    const done = mSnap.val() || {};
+    const missions = buildMissions(agentId);
+    const total = missions.length;
+    const completed = missions.filter(m => done[m.id]).length;
+
+    const deductions = dSnap.val() || {};
+    const deductionTotal = Object.values(deductions).reduce((a,b)=>a+b,0);
+
+    // Determine yesterday's "bad day": low score, or had deductions, or finished little
+    const yScore = yScoreSnap.val();
+    const yDed = yDedSnap.val() || {};
+    const yDedTotal = Object.values(yDed).reduce((a,b)=>a+b,0);
+    const yDone = yMissionSnap.val() || {};
+    const yMissions = buildMissionsForDate(agentId, yDate);
+    const yCompleted = yMissions.filter(m => yDone[m.id]).length;
+    const yWasWeekday = (yDate.getDay() !== 0 && yDate.getDay() !== 6);
+    const hadBadDay = yWasWeekday && (
+      (yScore !== null && yScore !== undefined && yScore < 60) ||
+      yDedTotal > 0 ||
+      (yMissions.length > 0 && yCompleted < yMissions.length / 2)
+    );
+
+    // Determine today's path
+    const path = hansHeinzPath(completed, total, deductionTotal, hour);
+
+    // Spam-control state
+    let state = {};
+    try { state = JSON.parse(localStorage.getItem('hans-'+agentId+'-'+today) || '{}'); } catch(e){}
+
+    const toPost = [];
+
+    // 0. BOUNCE-BACK: first message of the day after a bad day (Hans, encouraging)
+    if(hadBadDay && !state.bounceback && !state.morning){
+      toPost.push({persona:'hans', text: hansFill(hansPick(HANS_BOUNCEBACK), name, completed, total)});
+      state.bounceback = true;
+    }
+
+    // 1. MORNING (before noon, once per day) — persona follows the path
+    if(hour < 12 && !state.morning){
+      if(path === 'evil' && deductionTotal === 0){
+        // Morning with nothing done yet leans Heinz playful
+        toPost.push({persona:'heinz', text: hansFill(hansPick(HEINZ_LINES.notStarted), name, completed, total)});
+      } else if(path === 'evil'){
+        toPost.push({persona:'heinz', text: hansFill(hansPick(HEINZ_LINES.deductions), name, completed, total)});
+      } else {
+        toPost.push({persona:'hans', text: hansFill(hansPick(HANS_LINES.morning), name, completed, total)});
+      }
+      state.morning = true;
+    }
+
+    // 2. EVENING (after 5pm, once per day) — persona follows the path
+    if(hour >= 17 && !state.evening){
+      if(path === 'evil'){
+        toPost.push({persona:'heinz', text: hansFill(hansPick(HEINZ_LINES.eveningEvil), name, completed, total)});
+      } else {
+        toPost.push({persona:'hans', text: hansFill(hansPick(HANS_LINES.evening), name, completed, total)});
+      }
+      state.evening = true;
+    }
+
+    // 3. MILESTONE: all done (Hans, once per day) — always good
+    if(completed >= total && total > 0 && !state.allDone){
+      toPost.push({persona:'hans', text: hansFill(hansPick(HANS_LINES.allDone), name, completed, total)});
+      state.allDone = true;
+    }
+
+    // 4. DEDUCTION ALERT (Heinz, once per day) — fire if a deduction appeared
+    if(deductionTotal > 0 && !state.deductionNoted && toPost.length === 0){
+      toPost.push({persona:'heinz', text: hansFill(hansPick(HEINZ_LINES.deductions), name, completed, total)});
+      state.deductionNoted = true;
+    }
+
+    // 5. ON-OPEN STATUS: only if completed count changed since last time
+    if(state.lastCompleted !== completed && !(completed >= total && state.allDone) && toPost.length === 0){
+      if(path === 'good'){
+        const ctx = hansStatusContext(completed, total);
+        if(ctx && ctx !== 'allDone'){
+          toPost.push({persona:'hans', text: hansFill(hansPick(HANS_LINES[ctx]), name, completed, total)});
+        }
+      } else {
+        // evil path on-open status
+        const pool = (completed === 0) ? HEINZ_LINES.notStarted : HEINZ_LINES.behind;
+        toPost.push({persona:'heinz', text: hansFill(hansPick(pool), name, completed, total)});
+      }
+    }
+
+    // 6. BEHIND nudge (afternoon, Heinz, once per day)
+    if(hour >= 14 && hour < 17 && completed < total/2 && total > 0 && !state.behind && toPost.length === 0){
+      toPost.push({persona:'heinz', text: hansFill(hansPick(HEINZ_LINES.behind), name, completed, total)});
+      state.behind = true;
+    }
+
+    state.lastCompleted = completed;
+    try { localStorage.setItem('hans-'+agentId+'-'+today, JSON.stringify(state)); } catch(e){}
+
+    // Post sequentially in order
+    toPost.forEach((item, idx) => setTimeout(() => hansPost(item.text, item.persona), idx * 450));
+  });
+}
+
 
 function loadPrivatePreview(){
   if(!currentAgent||!_db) return;
