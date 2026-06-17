@@ -1845,13 +1845,21 @@ function renderThreadMessages(msgs){
   const AGENT_ICONS = {samuel:'&#129413;',johnjr:'&#129409;',stephen:'&#129430;',daniel:'&#128024;'};
   const HANS_ICON = '&#129441;';
   el.innerHTML = items.map(m => {
-    const isParent = m.from==='Dad'||m.from==='Mom'||m.from==='HQ';
-    const icon = isParent ? HANS_ICON : (AGENT_ICONS[m.agentId] || '&#128100;');
+    const isHeinz = m.isHeinz || m.agentId==='heinz';
+    const isHans = m.isHans || m.agentId==='hans';
+    const isParent = isHeinz || isHans || m.from==='Dad'||m.from==='Mom'||m.from==='HQ';
+    let icon;
+    if(isHeinz) icon = '\u{1F9D1}\u200D\u{1F52C}\u26A1';
+    else if(isHans) icon = '\u{1F9D1}\u200D\u{1F52C}';
+    else if(isParent) icon = HANS_ICON;
+    else icon = (AGENT_ICONS[m.agentId] || '&#128100;');
     const time = m.timestamp ? new Date(m.timestamp).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '';
+    const extraStyle = isHeinz ? 'background:rgba(120,40,140,.18);border:1px solid rgba(160,60,180,.4);'
+                      : (isHans ? 'background:rgba(200,146,42,.14);border:1px solid rgba(200,146,42,.3);' : '');
     return `<div style="display:flex;align-items:flex-end;gap:6px;${isParent?'':'flex-direction:row-reverse;align-self:flex-end;'}max-width:85%;${isParent?'':'margin-left:auto;'}">
       <div style="font-size:18px;flex-shrink:0;">${icon}</div>
-      <div class="msg-bubble ${isParent?'sent':'received'}" style="max-width:100%;">
-        <div class="msg-bubble-from">${m.from||'Unknown'}</div>
+      <div class="msg-bubble ${isParent?'sent':'received'}" style="max-width:100%;${extraStyle}">
+        <div class="msg-bubble-from" style="${isHeinz?'color:#a03cb4;':(isHans?'color:#c8922a;':'')}">${m.from||'Unknown'}</div>
         ${linkify(m.text||'')}
         <div class="msg-bubble-time">${time}</div>
       </div>
