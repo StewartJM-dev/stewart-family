@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Systems Seven — The Bridge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+:root{
+  --green:#1a4a2e;--green2:#2d6a47;--green3:#3d8a5e;
+  --indigo:#1e2d5a;--indigo2:#2e3f7a;--indigo3:#3a4f95;
+  --gold:#c8922a;--gold2:#e8b84a;
+  --white:#f9f7f2;--offwhite:#ede9e0;--cream:#f7f2ea;
+  --black:#0e0e0e;--ink:#1a1410;--brown:#5c3d1e;
+  --rust:#b5451b;--muted:#8a7a65;--border:#e0d5c0;
+  --card:#ffffff;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{
+  font-family:'Crimson Pro',Georgia,serif;
+  background:
+    radial-gradient(ellipse at top,rgba(46,63,122,.18),transparent 60%),
+    linear-gradient(160deg,#0c1326 0%,#0e1a2e 45%,#0a1422 100%);
+  color:var(--white);
+  min-height:100vh;
+  padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:760px;margin:0 auto;padding:22px 16px 60px;}
+
+/* ===== Masthead ===== */
+.mast{text-align:center;padding:18px 0 10px;position:relative;}
+.mast .star{font-size:13px;color:var(--gold2);letter-spacing:6px;margin-bottom:8px;}
+.mast h1{
+  font-family:'Cinzel',serif;font-weight:900;
+  font-size:clamp(30px,9vw,46px);line-height:1;
+  background:linear-gradient(180deg,#f2e3b8,var(--gold) 70%,#9a6c1c);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+  letter-spacing:2px;
+}
+.mast .sub{
+  font-family:'Lato',sans-serif;font-weight:300;
+  font-size:12px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--gold2);opacity:.8;margin-top:10px;
+}
+.mast .verse{
+  font-style:italic;color:var(--offwhite);opacity:.7;
+  font-size:14px;margin-top:14px;
+}
+.rule{height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:18px 0;opacity:.5;}
+
+/* ===== Today banner ===== */
+.today{
+  background:linear-gradient(135deg,rgba(46,63,122,.5),rgba(26,74,46,.35));
+  border:1px solid rgba(200,146,42,.35);
+  border-radius:14px;padding:18px 20px;text-align:center;
+  box-shadow:0 4px 24px rgba(0,0,0,.3);
+}
+.today .label{font-family:'Lato',sans-serif;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold2);opacity:.85;}
+.today .day{font-family:'Cinzel',serif;font-weight:700;font-size:28px;margin:4px 0 2px;color:var(--white);}
+.today .watch{font-size:17px;color:var(--gold2);font-weight:600;}
+.today .focus{font-size:15px;opacity:.85;margin-top:8px;font-style:italic;}
+
+/* ===== Section heads ===== */
+.shead{
+  font-family:'Cinzel',serif;font-weight:700;font-size:13px;
+  letter-spacing:2px;text-transform:uppercase;color:var(--gold2);
+  margin:30px 0 12px;display:flex;align-items:center;gap:10px;
+}
+.shead::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(200,146,42,.4),transparent);}
+
+/* ===== Week grid ===== */
+.week{display:flex;flex-direction:column;gap:8px;}
+.dayrow{
+  display:flex;align-items:stretch;gap:0;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:11px;overflow:hidden;
+  transition:.2s;
+}
+.dayrow.is-today{
+  border-color:var(--gold);
+  background:linear-gradient(135deg,rgba(200,146,42,.16),rgba(46,63,122,.2));
+  box-shadow:0 2px 16px rgba(200,146,42,.15);
+}
+.dayrow .dname{
+  flex:0 0 92px;display:flex;flex-direction:column;justify-content:center;
+  padding:12px 10px;background:rgba(0,0,0,.18);
+}
+.dayrow .dname b{font-family:'Cinzel',serif;font-size:15px;color:var(--white);}
+.dayrow .dname span{font-family:'Lato',sans-serif;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold2);opacity:.75;margin-top:2px;}
+.dayrow .dbody{flex:1;padding:11px 14px;display:flex;flex-direction:column;justify-content:center;}
+.dayrow .dsys{font-weight:600;font-size:15px;color:var(--gold2);}
+.dayrow .dnote{font-size:13.5px;opacity:.82;margin-top:2px;line-height:1.35;}
+
+/* ===== Systems list ===== */
+.systems{display:grid;grid-template-columns:1fr;gap:8px;}
+.sys{
+  display:flex;align-items:flex-start;gap:13px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  border-left:3px solid var(--gold);
+  border-radius:10px;padding:13px 15px;
+}
+.sys .ico{font-size:22px;flex-shrink:0;line-height:1.1;}
+.sys .stext b{font-family:'Cinzel',serif;font-size:14px;letter-spacing:.5px;color:var(--white);display:block;}
+.sys .stext .role{font-size:13.5px;opacity:.8;margin-top:3px;line-height:1.4;}
+
+/* ===== Subsystem links (the fleet) ===== */
+.fleet{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:520px){.fleet{grid-template-columns:1fr;}}
+.port{
+  display:block;text-decoration:none;color:inherit;
+  background:linear-gradient(135deg,rgba(46,63,122,.35),rgba(0,0,0,.15));
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:12px;padding:16px;transition:.2s;position:relative;
+}
+.port:active{transform:scale(.98);}
+.port.live{border-color:rgba(61,138,94,.5);}
+.port.soon{opacity:.62;}
+.port .pico{font-size:24px;}
+.port .pname{font-family:'Cinzel',serif;font-weight:700;font-size:16px;margin:8px 0 3px;color:var(--white);}
+.port .pdesc{font-size:13px;opacity:.78;line-height:1.4;}
+.port .badge{
+  position:absolute;top:12px;right:12px;
+  font-family:'Lato',sans-serif;font-size:8.5px;font-weight:700;
+  letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:10px;
+}
+.port.live .badge{background:var(--green3);color:#fff;}
+.port.soon .badge{background:rgba(200,146,42,.25);color:var(--gold2);border:1px solid rgba(200,146,42,.4);}
+
+/* ===== Crew status ===== */
+.crew{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+@media(max-width:520px){.crew{grid-template-columns:1fr 1fr;}}
+.crew-loading{grid-column:1/-1;text-align:center;opacity:.5;font-style:italic;padding:14px;}
+.crewcard{
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.1);
+  border-left:3px solid var(--gold);
+  border-radius:10px;padding:12px 13px;
+}
+.crewcard .cname{font-family:'Cinzel',serif;font-weight:700;font-size:14px;color:var(--white);display:flex;align-items:center;gap:7px;}
+.crewcard .cmiss{font-size:13px;opacity:.85;margin-top:5px;}
+.crewcard .cbar{height:6px;border-radius:4px;background:rgba(255,255,255,.12);margin-top:7px;overflow:hidden;}
+.crewcard .cbar i{display:block;height:100%;background:linear-gradient(90deg,var(--green3),var(--gold));border-radius:4px;transition:width .4s;}
+.crewcard .cscore{font-size:12px;opacity:.7;margin-top:5px;font-family:'Lato',sans-serif;}
+
+/* ===== Transmission composer ===== */
+.transmit{
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:12px;padding:14px;
+}
+.tx-row{display:flex;gap:8px;margin-bottom:9px;}
+.transmit select{
+  flex:1;padding:9px 10px;border-radius:8px;
+  background:rgba(0,0,0,.25);color:var(--white);
+  border:1px solid rgba(255,255,255,.15);
+  font-family:'Crimson Pro',serif;font-size:14px;
+}
+.transmit textarea{
+  width:100%;min-height:70px;resize:vertical;
+  padding:11px 12px;border-radius:8px;
+  background:rgba(0,0,0,.25);color:var(--white);
+  border:1px solid rgba(255,255,255,.15);
+  font-family:'Crimson Pro',serif;font-size:15px;line-height:1.4;
+}
+.transmit textarea::placeholder{color:rgba(255,255,255,.4);}
+#tx-send{
+  margin-top:9px;width:100%;padding:11px;border:none;border-radius:8px;
+  background:linear-gradient(135deg,var(--gold),#9a6c1c);
+  color:#1a1410;font-family:'Cinzel',serif;font-weight:700;font-size:15px;
+  letter-spacing:1px;cursor:pointer;transition:.15s;
+}
+#tx-send:active{transform:scale(.98);}
+.tx-stat{text-align:center;font-size:13px;margin-top:9px;min-height:18px;opacity:.85;}
+
+/* ===== Footer ===== */
+.foot{text-align:center;margin-top:40px;font-size:12px;opacity:.4;font-style:italic;line-height:1.6;}
+.foot .motto{font-family:'Cinzel',serif;font-style:normal;letter-spacing:1px;color:var(--gold2);opacity:.6;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- MASTHEAD -->
+  <div class="mast">
+    <div class="star">✦ ✦ ✦</div>
+    <h1>Systems Seven</h1>
+    <div class="sub">The Bridge</div>
+    <div class="verse">"The LORD shall fight for you, and ye shall hold your peace." — Exodus 14:14</div>
+  </div>
+
+  <div class="rule"></div>
+
+  <!-- TODAY -->
+  <div class="today" id="today">
+    <div class="label">Today's Watch <span id="sync-dot" style="font-size:9px;letter-spacing:1px;margin-left:8px;opacity:.7;">connecting…</span></div>
+    <div class="day" id="t-day">—</div>
+    <div class="watch" id="t-watch">—</div>
+    <div class="focus" id="t-focus">—</div>
+  </div>
+
+  <!-- CREW STATUS (live from family app) -->
+  <div class="shead">Crew Status — Today</div>
+  <div class="crew" id="crew"><div class="crew-loading">Reading the family channel…</div></div>
+
+  <!-- CAPTAIN'S TRANSMISSION -->
+  <div class="shead">Captain's Transmission</div>
+  <div class="transmit">
+    <div class="tx-row">
+      <select id="tx-target">
+        <option value="group">📢 Whole crew (group chat)</option>
+        <option value="samuel">🦅 Samuel</option>
+        <option value="johnjr">🦁 John Jr.</option>
+        <option value="stephen">🦖 Stephen</option>
+        <option value="daniel">🐘 Daniel</option>
+      </select>
+      <select id="tx-from">
+        <option value="Dad">From: Dad</option>
+        <option value="HQ">From: HQ</option>
+      </select>
+    </div>
+    <textarea id="tx-msg" placeholder="Send a message to the crew from the Bridge…" maxlength="280"></textarea>
+    <button id="tx-send" onclick="sendTransmission()">Transmit ▸</button>
+    <div id="tx-status" class="tx-stat"></div>
+  </div>
+
+  <!-- THE WEEK -->
+  <div class="shead">The Seven-Day Cycle</div>
+  <div class="week" id="week"></div>
+
+  <!-- THE SYSTEMS -->
+  <div class="shead">The Seven Systems</div>
+  <div class="systems" id="systems"></div>
+
+  <!-- THE FLEET -->
+  <div class="shead">The Fleet</div>
+  <div class="fleet" id="fleet"></div>
+
+  <div class="foot">
+    <div class="motto">Virescit vulnere virtus</div>
+    Courage grows strong at a wound.<br>
+    Systems Seven · the vessel and its course
+  </div>
+
+</div>
+
+<script>
+// ════════════════════════════════════════════
+// SYSTEMS SEVEN — the Bridge
+// A whole-life operating system on a 7-day cycle.
+// Each day foregrounds certain systems so the captain
+// never has to run all seven at once.
+// ════════════════════════════════════════════
+
+// ----- Firebase (same backend as the family app) -----
+const FB_CONFIG = {
+  apiKey: "AIzaSyAXfFW3rWpChcTDqCiFKwk9QIJMY0fhnfw",
+  authDomain: "stewart-family-3cece.firebaseapp.com",
+  databaseURL: "https://stewart-family-3cece-default-rtdb.firebaseio.com",
+  projectId: "stewart-family-3cece",
+  storageBucket: "stewart-family-3cece.firebasestorage.app",
+  messagingSenderId: "43602660041",
+  appId: "1:43602660041:web:0f3d567cc00e7fdf86db18"
+};
+let _db = null;
+
+const AGENTS = [
+  {id:'samuel',  name:'Samuel',   icon:'🦅'},
+  {id:'johnjr',  name:'John Jr.', icon:'🦁'},
+  {id:'stephen', name:'Stephen',  icon:'🦖'},
+  {id:'daniel',  name:'Daniel',   icon:'🐘'}
+];
+
+function localDateStr(date){
+  const d = date ? new Date(date) : new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+function initFirebase(){
+  try{
+    firebase.initializeApp(FB_CONFIG);
+    _db = firebase.database();
+    const dot = document.getElementById('sync-dot');
+    _db.ref('.info/connected').on('value', snap => {
+      const live = !!snap.val();
+      if(dot){ dot.textContent = live ? '● live' : '○ offline'; dot.style.color = live ? '#7ad19a' : '#c89'; }
+      if(live) loadCrewStatus();
+    });
+  }catch(e){
+    const dot = document.getElementById('sync-dot');
+    if(dot){ dot.textContent = '○ offline'; }
+  }
+}
+
+// ----- Crew status: read each boy's completed missions + score for today -----
+function loadCrewStatus(){
+  if(!_db) return;
+  const today = localDateStr();
+  const el = document.getElementById('crew');
+  Promise.all(AGENTS.map(a => Promise.all([
+    _db.ref('stewart/missions/'+a.id+'/'+today).once('value'),
+    _db.ref('stewart/scores/'+a.id+'/'+today).once('value')
+  ]))).then(results => {
+    el.innerHTML = AGENTS.map((a,i) => {
+      const done = results[i][0].val() || {};
+      const completed = Object.values(done).filter(Boolean).length;
+      const score = results[i][1].val();
+      const scoreTxt = (score===null||score===undefined) ? 'No score yet' : (score+' pts · $'+(score/100).toFixed(2));
+      // We show completed count; total isn't recomputed here (engine lives in the app), so show count + a soft bar capped at 12
+      const pct = Math.min(100, Math.round((completed/12)*100));
+      return `<div class="crewcard">
+        <div class="cname">${a.icon} ${a.name}</div>
+        <div class="cmiss">${completed} mission${completed===1?'':'s'} done today</div>
+        <div class="cbar"><i style="width:${pct}%"></i></div>
+        <div class="cscore">${scoreTxt}</div>
+      </div>`;
+    }).join('');
+  }).catch(()=>{ el.innerHTML = '<div class="crew-loading">Could not read the family channel.</div>'; });
+}
+
+// ----- Captain's Transmission: post to group chat or a boy's thread -----
+function sendTransmission(){
+  if(!_db){ txStat('Not connected yet — try again in a moment.'); return; }
+  const target = document.getElementById('tx-target').value;
+  const from = document.getElementById('tx-from').value;
+  const box = document.getElementById('tx-msg');
+  const text = box.value.trim();
+  if(!text){ txStat('Write a message first.'); return; }
+  const payload = { text, from, timestamp: Date.now() };
+  let ref;
+  if(target === 'group'){
+    payload.agentId = 'parent';
+    ref = _db.ref('stewart/groupchat');
+  }else{
+    ref = _db.ref('stewart/messages/'+target);
+  }
+  ref.push(payload).then(()=>{
+    box.value='';
+    txStat(target==='group' ? 'Transmitted to the whole crew. ✦' : 'Transmitted. ✦');
+    setTimeout(()=>txStat(''), 3500);
+  }).catch(()=>txStat('Transmission failed — check connection.'));
+}
+function txStat(msg){ const e=document.getElementById('tx-status'); if(e) e.textContent=msg; }
+
+
+// THE SEVEN-DAY CYCLE  (tune the watches/notes to John's real week)
+const WEEK = [
+  {day:"Sunday",    abbr:"Helm",   sys:"Command & Power",      note:"Worship, rest, recalibrate the heading. Tend the captain and the power plant."},
+  {day:"Monday",    abbr:"Nav",    sys:"Navigation",           note:"Set the week's course. Where are we sailing? Review priorities and plot the route."},
+  {day:"Tuesday",   abbr:"Engine", sys:"Propulsion",           note:"Engines turning — work, daily family rhythms, a saga writing block."},
+  {day:"Wednesday", abbr:"Engine", sys:"Propulsion + Crew",    note:"Midweek drive. Work, family rhythms, church midweek."},
+  {day:"Thursday",  abbr:"Engine", sys:"Propulsion",           note:"Keep the engines turning. Work and a saga writing block."},
+  {day:"Friday",    abbr:"Crew",   sys:"Communications & Crew",note:"Family, the boys, troop & ministry prep. Connection."},
+  {day:"Saturday",  abbr:"Repair", sys:"Damage Control",       note:"Keep the vessel seaworthy — troop activities, the body, the household, the marriage."}
+];
+
+// THE SEVEN SYSTEMS
+const SYSTEMS = [
+  {ico:"⚓", name:"Command / Bridge",     role:"You & your faith. Where the whole vessel is sailing. Vision, values, the man at the helm. Cannot be delegated."},
+  {ico:"🧭", name:"Navigation",           role:"The plan. Where you are, where you're going, the route. Lives outside your head so it stops getting lost."},
+  {ico:"🔥", name:"Propulsion (Starfire)",role:"The engines. Daily rhythms and standing structures that move you forward without fresh willpower."},
+  {ico:"⚡", name:"Power",                role:"What runs everything else — faith, rest, energy. When this browns out, every other system fails."},
+  {ico:"🎚️", name:"Steering / Helm",      role:"Priorities & boundaries. Course-correction. Saying no. Keeping the ship on its heading."},
+  {ico:"🛠️", name:"Damage Control",       role:"Keeping the vessel seaworthy. Health, maintenance, fixing the small things before they sink you."},
+  {ico:"📡", name:"Communications / Crew", role:"Dawn, the boys, troop, ministry, friendships. The crew you sail with and lead."}
+];
+
+// THE FLEET — linked subsystem sites (update hrefs as they're built)
+const FLEET = [
+  {ico:"🏡", name:"The Homestead", desc:"Dawn's command — household, kitchen & the boys' oversight.", href:"../dashboard/", status:"live"},
+  {ico:"🍇", name:"The Vineyard", desc:"Just for John & Dawn — tend the marriage together.", href:"../vineyard/", status:"live"},
+  {ico:"🛡️", name:"O.W.C.A.", desc:"The boys' command center — missions, pay, agents.", href:"../boys/", status:"live"},
+  {ico:"🍲", name:"The Kitchen", desc:"Meals, recipes & the family cookbook.", href:"../kitchen/", status:"live"},
+  {ico:"📖", name:"The Saga", desc:"Adamah — gradual release for Dawn and the boys. Coming soon.", href:"#", status:"soon"},
+  {ico:"🧭", name:"Navigation", desc:"The week's course and this season's heading.", href:"#", status:"soon"},
+  {ico:"⛪", name:"Ministry & Troop", desc:"Trail Life PA-1997, men's ministry, church.", href:"#", status:"soon"},
+  {ico:"🛠️", name:"Maintenance", desc:"The captain's own upkeep — health, rest, faith.", href:"#", status:"soon"}
+];
+
+// ----- render -----
+function renderWeek(){
+  const todayIdx = new Date().getDay(); // 0 = Sunday
+  const el = document.getElementById('week');
+  el.innerHTML = WEEK.map((d,i)=>`
+    <div class="dayrow ${i===todayIdx?'is-today':''}">
+      <div class="dname"><b>${d.day.slice(0,3)}</b><span>${d.abbr}</span></div>
+      <div class="dbody">
+        <div class="dsys">${d.sys}</div>
+        <div class="dnote">${d.note}</div>
+      </div>
+    </div>`).join('');
+
+  // Today banner
+  const t = WEEK[todayIdx];
+  document.getElementById('t-day').textContent = t.day;
+  document.getElementById('t-watch').textContent = t.sys;
+  document.getElementById('t-focus').textContent = t.note;
+}
+function renderSystems(){
+  document.getElementById('systems').innerHTML = SYSTEMS.map(s=>`
+    <div class="sys">
+      <div class="ico">${s.ico}</div>
+      <div class="stext"><b>${s.name}</b><div class="role">${s.role}</div></div>
+    </div>`).join('');
+}
+function renderFleet(){
+  document.getElementById('fleet').innerHTML = FLEET.map(f=>`
+    <a class="port ${f.status}" href="${f.href}" ${f.status==='soon'?'onclick="return false;"':''}>
+      <span class="badge">${f.status==='live'?'Live':'Soon'}</span>
+      <div class="pico">${f.ico}</div>
+      <div class="pname">${f.name}</div>
+      <div class="pdesc">${f.desc}</div>
+    </a>`).join('');
+}
+renderWeek();
+renderSystems();
+renderFleet();
+initFirebase();
+</script>
+</body>
+</html>
