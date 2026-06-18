@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>The Vineyard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Cinzel:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+:root{
+  --purple:#3d1f47;--purple2:#5a2e6b;--purple3:#7a3f92;
+  --plum:#2a1530;--ink:#160a1a;--black:#0c060e;
+  --pink:#e87fa8;--pink2:#f4a7c4;--pinksoft:#d96b97;
+  --vine:#3e6b4a;--vine2:#5a8a64;--vineglow:#7faf89;
+  --gold:#d9b36a;
+  --cream:#f6eef0;--soft:#e8d9e2;--muted:#a98fb0;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{
+  font-family:'Cormorant Garamond',Georgia,serif;
+  background:
+    radial-gradient(ellipse at 50% 0%,rgba(122,63,146,.35),transparent 55%),
+    radial-gradient(ellipse at 80% 90%,rgba(232,127,168,.12),transparent 50%),
+    linear-gradient(165deg,#160a1a 0%,#2a1530 50%,#0c060e 100%);
+  background-attachment:fixed;
+  color:var(--cream);min-height:100vh;
+  padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:680px;margin:0 auto;padding:0 16px 90px;}
+
+/* vine flourish */
+.vine-top{text-align:center;color:var(--vineglow);opacity:.5;font-size:18px;letter-spacing:3px;padding-top:14px;}
+
+/* ===== Lock screen ===== */
+#lock{
+  position:fixed;inset:0;z-index:1000;
+  background:
+    radial-gradient(ellipse at 50% 30%,rgba(122,63,146,.45),transparent 60%),
+    linear-gradient(165deg,#160a1a,#2a1530 55%,#0c060e);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;
+}
+#lock h1{font-family:'Cinzel',serif;font-weight:700;font-size:34px;
+  background:linear-gradient(180deg,var(--pink2),var(--pink) 55%,var(--purple3));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  letter-spacing:2px;margin-bottom:6px;}
+#lock .vsub{font-style:italic;color:var(--pink2);opacity:.8;font-size:16px;margin-bottom:30px;text-align:center;max-width:300px;line-height:1.4;}
+#lock .pin-dots{display:flex;gap:14px;margin-bottom:26px;}
+#lock .pdot{width:15px;height:15px;border-radius:50%;border:2px solid var(--pink);opacity:.4;transition:.2s;}
+#lock .pdot.filled{opacity:1;background:var(--pink);box-shadow:0 0 12px var(--pink);}
+.keypad{display:grid;grid-template-columns:repeat(3,72px);gap:14px;}
+.key{
+  width:72px;height:72px;border-radius:50%;
+  background:rgba(122,63,146,.25);border:1px solid rgba(232,127,168,.3);
+  color:var(--cream);font-family:'Cormorant Garamond',serif;font-size:28px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.12s;
+}
+.key:active{background:rgba(232,127,168,.4);transform:scale(.94);}
+.key.blank{background:none;border:none;cursor:default;}
+#lock .err{color:var(--pink2);min-height:20px;margin-top:16px;font-style:italic;}
+
+/* ===== Masthead ===== */
+.mast{text-align:center;padding:10px 0 4px;}
+.mast h1{font-family:'Cinzel',serif;font-weight:700;font-size:32px;
+  background:linear-gradient(180deg,var(--pink2),var(--pink) 55%,var(--purple3));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  letter-spacing:2px;}
+.mast .verse{font-style:italic;color:var(--pink2);opacity:.78;font-size:15px;margin-top:8px;line-height:1.4;}
+.rule{height:1px;background:linear-gradient(90deg,transparent,var(--pinksoft),var(--vineglow),transparent);margin:16px 0;opacity:.4;}
+
+/* ===== Tabs ===== */
+.tabbar{
+  position:fixed;bottom:0;left:0;right:0;z-index:50;
+  background:linear-gradient(180deg,rgba(42,21,48,.96),rgba(12,6,14,.99));
+  border-top:1px solid rgba(232,127,168,.25);
+  display:flex;justify-content:space-around;padding:8px 6px calc(8px + env(safe-area-inset-bottom));
+  backdrop-filter:blur(8px);
+}
+.tabbtn{background:none;border:none;color:var(--muted);cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:3px;font-family:'Lato',sans-serif;font-size:9px;
+  letter-spacing:.5px;text-transform:uppercase;flex:1;padding:4px 0;transition:.15s;}
+.tabbtn .ti{font-size:21px;}
+.tabbtn.active{color:var(--pink2);}
+.tab{display:none;}
+.tab.active{display:block;animation:fade .3s;}
+@keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+
+/* ===== Cards ===== */
+.shead{font-family:'Cinzel',serif;font-weight:600;font-size:12px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--pink2);margin:22px 0 11px;display:flex;align-items:center;gap:9px;}
+.shead::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(232,127,168,.35),transparent);}
+.card{
+  background:linear-gradient(145deg,rgba(90,46,107,.32),rgba(42,21,48,.5));
+  border:1px solid rgba(232,127,168,.18);border-radius:14px;padding:16px 17px;margin-bottom:12px;
+  box-shadow:0 3px 18px rgba(0,0,0,.3);
+}
+.card.vineedge{border-left:3px solid var(--vine2);}
+.card.pinkedge{border-left:3px solid var(--pink);}
+.card h3{font-family:'Cinzel',serif;font-weight:600;font-size:15px;color:var(--cream);margin-bottom:4px;}
+.card p{font-size:15px;opacity:.85;line-height:1.45;}
+
+/* check-in toggles */
+.checkrow{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(232,127,168,.1);}
+.checkrow:last-child{border-bottom:none;}
+.checkrow .clabel{flex:1;font-size:16px;}
+.toggle{width:50px;height:28px;border-radius:16px;background:rgba(255,255,255,.12);
+  border:1px solid rgba(232,127,168,.3);cursor:pointer;position:relative;transition:.2s;flex-shrink:0;}
+.toggle::after{content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;
+  background:var(--muted);transition:.2s;}
+.toggle.on{background:linear-gradient(90deg,var(--vine2),var(--pink));}
+.toggle.on::after{left:24px;background:#fff;}
+
+textarea,input[type=text]{
+  width:100%;padding:11px 13px;border-radius:10px;
+  background:rgba(12,6,14,.5);color:var(--cream);
+  border:1px solid rgba(232,127,168,.25);
+  font-family:'Cormorant Garamond',serif;font-size:16px;line-height:1.4;resize:vertical;
+}
+textarea::placeholder,input::placeholder{color:rgba(169,143,176,.7);}
+.btn{
+  width:100%;padding:12px;border:none;border-radius:10px;margin-top:10px;
+  background:linear-gradient(135deg,var(--pink),var(--purple3));
+  color:#fff;font-family:'Cinzel',serif;font-weight:600;font-size:15px;letter-spacing:1px;cursor:pointer;transition:.15s;
+}
+.btn:active{transform:scale(.98);}
+.btn.vine{background:linear-gradient(135deg,var(--vine2),var(--purple2));}
+.stat{text-align:center;font-size:14px;margin-top:9px;min-height:18px;opacity:.85;font-style:italic;color:var(--pink2);}
+
+/* signals */
+.signals{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.sigbtn{
+  background:linear-gradient(145deg,rgba(122,63,146,.3),rgba(42,21,48,.5));
+  border:1px solid rgba(232,127,168,.25);border-radius:12px;padding:14px 10px;
+  color:var(--cream);cursor:pointer;text-align:center;transition:.15s;font-family:'Cormorant Garamond',serif;
+}
+.sigbtn:active{transform:scale(.97);background:rgba(232,127,168,.25);}
+.sigbtn .se{font-size:24px;display:block;margin-bottom:5px;}
+.sigbtn .st{font-size:14px;line-height:1.2;}
+
+/* thread */
+.thread{display:flex;flex-direction:column;gap:9px;max-height:50vh;overflow-y:auto;padding:4px 2px;margin-bottom:12px;}
+.msg{max-width:78%;padding:9px 13px;border-radius:14px;font-size:16px;line-height:1.4;}
+.msg .mfrom{font-size:10px;letter-spacing:1px;text-transform:uppercase;opacity:.6;margin-bottom:3px;font-family:'Lato',sans-serif;}
+.msg.me{align-self:flex-end;background:linear-gradient(135deg,var(--pink),var(--pinksoft));color:#2a1530;border-bottom-right-radius:4px;}
+.msg.them{align-self:flex-start;background:rgba(122,63,146,.4);border-bottom-left-radius:4px;}
+.msg .mtime{font-size:10px;opacity:.5;margin-top:3px;}
+.thread-empty{text-align:center;opacity:.5;font-style:italic;padding:24px;}
+
+/* date list */
+.datecard{background:linear-gradient(145deg,rgba(122,63,146,.28),rgba(42,21,48,.5));
+  border:1px solid rgba(232,127,168,.2);border-left:3px solid var(--pink);border-radius:12px;padding:13px 15px;margin-bottom:10px;}
+.datecard .dtitle{font-family:'Cinzel',serif;font-size:16px;color:var(--cream);}
+.datecard .dwhen{font-size:14px;color:var(--pink2);margin-top:3px;}
+.datecard .dnote{font-size:14px;opacity:.8;margin-top:6px;font-style:italic;line-height:1.4;}
+.datecard .ddel{float:right;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;opacity:.6;}
+.heat{display:inline-block;font-size:12px;padding:2px 8px;border-radius:8px;margin-top:7px;font-family:'Lato',sans-serif;letter-spacing:.5px;}
+.heat.tender{background:rgba(90,138,100,.3);color:var(--vineglow);}
+.heat.warm{background:rgba(217,179,106,.25);color:var(--gold);}
+.heat.spicy{background:rgba(232,127,168,.3);color:var(--pink2);}
+
+.field-label{font-family:'Lato',sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--pink2);opacity:.8;margin:12px 0 5px;}select{width:100%;padding:11px 12px;border-radius:10px;background:rgba(12,6,14,.5);color:var(--cream);
+  border:1px solid rgba(232,127,168,.25);font-family:'Cormorant Garamond',serif;font-size:16px;}
+
+.note-warm{text-align:center;font-style:italic;color:var(--pink2);opacity:.85;font-size:15px;line-height:1.5;
+  padding:14px 18px;background:rgba(122,63,146,.18);border-radius:12px;border:1px solid rgba(232,127,168,.15);margin-bottom:14px;}
+.extras-pick{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px;}
+.chip{padding:7px 13px;border-radius:16px;cursor:pointer;font-size:14px;
+  background:rgba(122,63,146,.25);border:1px solid rgba(232,127,168,.3);color:var(--cream);transition:.15s;}
+.chip.on{background:linear-gradient(135deg,var(--pink),var(--purple3));border-color:transparent;color:#fff;}
+.chip:active{transform:scale(.96);}
+.collrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(232,127,168,.1);}
+.collrow:last-child{border-bottom:none;}
+.collrow .cn{flex:1;font-size:16px;}
+.collrow button{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;opacity:.6;padding:2px 6px;}
+.collrow button:active{opacity:1;}
+.coll-empty{opacity:.5;font-style:italic;font-size:14px;padding:6px 0;}
+.nightcard{background:linear-gradient(145deg,rgba(122,63,146,.3),rgba(42,21,48,.55));
+  border:1px solid rgba(232,127,168,.22);border-left:3px solid var(--gold);border-radius:12px;padding:14px 15px;margin-bottom:10px;}
+.nightcard .nname{font-family:'Cinzel',serif;font-size:17px;color:var(--cream);}
+.nightcard .nmeta{font-size:13.5px;color:var(--pink2);margin-top:4px;}
+.nightcard .nrow{font-size:14px;opacity:.85;margin-top:6px;line-height:1.4;}
+.nightcard .nrow b{color:var(--pink2);font-weight:600;opacity:.9;}
+.nightcard .nbtns{display:flex;gap:8px;margin-top:11px;}
+.nightcard .nbtns button{flex:1;padding:8px;border-radius:8px;border:1px solid rgba(232,127,168,.3);
+  background:rgba(122,63,146,.25);color:var(--cream);font-family:'Cormorant Garamond',serif;font-size:14px;cursor:pointer;}
+.nightcard .nbtns button:active{transform:scale(.97);}
+.foot{text-align:center;margin-top:26px;font-size:13px;opacity:.4;font-style:italic;}
+.sync{text-align:center;font-size:10px;letter-spacing:1px;color:var(--muted);opacity:.6;margin-top:8px;font-family:'Lato',sans-serif;}
+</style>
+</head>
+<body>
+
+<!-- ===== LOCK SCREEN ===== -->
+<div id="lock">
+  <div class="vine-top">❧ ⚜ ❧</div>
+  <h1>The Vineyard</h1>
+  <div class="vsub">"My beloved is mine, and I am his." — Song of Solomon 2:16</div>
+  <div class="pin-dots" id="pin-dots"></div>
+  <div class="keypad" id="keypad"></div>
+  <div class="err" id="lock-err"></div>
+  <div style="position:absolute;bottom:26px;left:0;right:0;text-align:center;font-style:italic;color:var(--vineglow);opacity:.45;font-size:13px;padding:0 30px;line-height:1.5;">
+    "Mine own vineyard have I not kept." — Song 1:6<br>
+    <span style="opacity:.8;">Here, we keep ours.</span>
+  </div>
+</div>
+
+<!-- ===== APP ===== -->
+<div class="wrap" id="app" style="display:none;">
+  <div class="vine-top">❧ ⚜ ❧</div>
+  <div class="mast">
+    <h1>The Vineyard</h1>
+    <div class="verse" id="mast-verse">"Come, my beloved, let us go forth into the field." — Song 7:11</div>
+  </div>
+  <div class="rule"></div>
+
+  <!-- TAB: TOGETHER (spiritual + physical) -->
+  <div class="tab active" id="tab-together">
+    <div class="note-warm">"His banner over me was love." — Song 2:4<br><span style="opacity:.8;font-size:14px;">A garden you tend together.</span></div>
+
+    <div class="shead">Spiritual — Today</div>
+    <div class="card vineedge">
+      <div class="checkrow"><div class="clabel">🙏 Prayed together</div><div class="toggle" data-k="prayed"></div></div>
+      <div class="checkrow"><div class="clabel">📖 Read / devotions together</div><div class="toggle" data-k="devotions"></div></div>
+      <div class="checkrow"><div class="clabel">⛪ Worship / church</div><div class="toggle" data-k="worship"></div></div>
+    </div>
+    <div class="card">
+      <div class="field-label">Our shared prayer focus</div>
+      <textarea id="prayer-focus" rows="2" placeholder="What we're lifting up together…"></textarea>
+      <div class="field-label">Grateful for today</div>
+      <textarea id="gratitude" rows="2" placeholder="A blessing we noticed…"></textarea>
+      <button class="btn vine" onclick="saveSpiritual()">Save</button>
+      <div class="stat" id="spiritual-stat"></div>
+    </div>
+
+    <div class="shead">Our Health — Today</div>
+    <div class="card pinkedge">
+      <div class="checkrow"><div class="clabel">💪 Moved / exercised</div><div class="toggle" data-k="moved"></div></div>
+      <div class="checkrow"><div class="clabel">🚶 Walk together</div><div class="toggle" data-k="walk"></div></div>
+      <div class="checkrow"><div class="clabel">💧 Ate / hydrated well</div><div class="toggle" data-k="ate"></div></div>
+      <div class="checkrow"><div class="clabel">🤗 Affection / closeness</div><div class="toggle" data-k="affection"></div></div>
+    </div>
+    <div class="card">
+      <div class="field-label">A shared health goal we're working toward</div>
+      <textarea id="health-goal" rows="2" placeholder="Something we're building together…"></textarea>
+      <button class="btn vine" onclick="saveHealth()">Save</button>
+      <div class="stat" id="health-stat"></div>
+    </div>
+  </div>
+
+  <!-- TAB: DATES -->
+  <div class="tab" id="tab-dates">
+    <div class="note-warm">"Arise, my love, my fair one, and <em>come away</em>." — Song 2:13<br><span style="opacity:.8;font-size:14px;">Protected time, just for the two of you. The date makes the space — nothing is owed.</span></div>
+    <div class="shead">Plan a Date</div>
+    <div class="card">
+      <div class="field-label">What are we planning?</div>
+      <input type="text" id="d-title" placeholder="Dinner out · a night in · a getaway…">
+      <div class="field-label">When</div>
+      <input type="text" id="d-when" placeholder="e.g. Friday 7:00 PM">
+      <div class="field-label">The mood</div>
+      <select id="d-heat">
+        <option value="tender">🌿 Tender — sweet & close</option>
+        <option value="warm">✨ Warm — romantic</option>
+        <option value="spicy">🔥 Spicy — just us</option>
+      </select>
+      <div class="field-label">Private notes (just for us — ideas, hopes, what makes it special)</div>
+      <textarea id="d-note" rows="2" placeholder="Only the two of us see this…"></textarea>
+      <button class="btn" onclick="planDate()">Plan it ✦</button>
+      <button class="btn vine" onclick="addToCalendar()">＋ Add to calendar</button>
+      <div class="stat" id="date-stat"></div>
+    </div>
+    <div class="shead">Coming Up</div>
+    <div id="date-list"></div>
+  </div>
+
+  <!-- TAB: THE CELLAR (date-night designer + saved library) -->
+  <div class="tab" id="tab-cellar">
+    <div class="note-warm">"Let us get up early to the vineyards… there will I give thee my loves." — Song 7:12<br><span style="opacity:.8;font-size:14px;">Design a night, lay it down in the cellar, and bring it back out whenever you like. All private, all yours.</span></div>
+
+    <div class="shead">Design a Night</div>
+    <div class="card">
+      <div class="field-label">Name this night</div>
+      <input type="text" id="c-name" placeholder="Give it a name only you two know…">
+
+      <div class="field-label">Theme</div>
+      <select id="c-theme-pick" onchange="onThemePick()">
+        <option value="">— choose a starting point —</option>
+        <option value="Candlelit">🕯️ Candlelit</option>
+        <option value="Getaway">🧳 Getaway</option>
+        <option value="Anniversary">💍 Anniversary</option>
+        <option value="Surprise">🎁 Surprise</option>
+        <option value="Stay-in">🏡 Stay-in</option>
+        <option value="__custom">✎ Custom…</option>
+      </select>
+      <input type="text" id="c-theme" placeholder="Describe the theme in your own words…" style="margin-top:8px;">
+
+      <div class="field-label">The mood</div>
+      <select id="c-heat">
+        <option value="tender">🌿 Tender — sweet & close</option>
+        <option value="warm">✨ Warm — romantic</option>
+        <option value="spicy">🔥 Spicy — just us</option>
+      </select>
+
+      <div class="field-label">What to wear</div>
+      <textarea id="c-wear" rows="2" placeholder="A private note, just between us…"></textarea>
+
+      <div class="field-label">Setting & details</div>
+      <textarea id="c-notes" rows="2" placeholder="Music, lighting, food, anything that makes it special…"></textarea>
+
+      <div class="field-label">Extras from our collection</div>
+      <div id="c-extras-pick" class="extras-pick"></div>
+      <div style="font-size:13px;opacity:.65;font-style:italic;margin-top:4px;">Tap to include. Manage your collection below.</div>
+
+      <button class="btn" onclick="saveNight()">Lay it down in the cellar 🍷</button>
+      <button class="btn vine" id="c-update-btn" onclick="updateNight()" style="display:none;">Save changes</button>
+      <div class="stat" id="cellar-stat"></div>
+    </div>
+
+    <div class="shead">Our Collection</div>
+    <div class="card vineedge">
+      <p style="opacity:.8;margin-bottom:10px;">Your private collection of toys & extras. Add, edit, or remove — only the two of you ever see this.</p>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="collection-input" placeholder="Add an item…" style="flex:1;">
+        <button class="btn" style="width:auto;margin-top:0;padding:11px 18px;" onclick="addCollectionItem()">＋</button>
+      </div>
+      <div id="collection-list" style="margin-top:12px;"></div>
+    </div>
+
+    <div class="shead">The Cellar — Saved Nights</div>
+    <div id="cellar-list"></div>
+  </div>
+
+  <!-- TAB: BETWEEN US (thread + signals + little foxes) -->
+  <div class="tab" id="tab-between">
+    <div class="note-warm">"A garden inclosed is my sister, my spouse." — Song 4:12<br><span style="opacity:.8;font-size:14px;">Just between us. No one else will ever see this.</span></div>
+    <div class="shead">A Little Signal</div>
+    <div class="signals" id="signals"></div>
+
+    <div class="shead">Between Us</div>
+    <div class="thread" id="thread"></div>
+    <div class="card">
+      <textarea id="msg-box" rows="2" placeholder="Say something sweet… or spicy 🍇"></textarea>
+      <button class="btn" onclick="sendMsg()">Send ▸</button>
+    </div>
+
+    <div class="shead">The Little Foxes</div>
+    <div class="card vineedge">
+      <p style="font-style:italic;opacity:.8;margin-bottom:10px;">"Take us the foxes, the little foxes, that spoil the vines." — Song 2:15</p>
+      <p style="margin-bottom:10px;">A gentle, private place to name a small thing before it grows — a hurt, a worry, something left unsaid. Catch the little foxes early, while the vines have tender grapes.</p>
+      <textarea id="fox-box" rows="2" placeholder="Something small that's been on my heart…"></textarea>
+      <button class="btn vine" onclick="sendFox()">Name it, gently 🦊</button>
+      <div class="stat" id="fox-stat"></div>
+    </div>
+    <div id="fox-list"></div>
+  </div>
+
+  <div class="foot">The Vineyard · ours alone</div>
+  <div class="sync" id="sync">connecting…</div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tabbar" id="tabbar" style="display:none;">
+  <button class="tabbtn active" data-tab="together"><span class="ti">🌿</span>Together</button>
+  <button class="tabbtn" data-tab="dates"><span class="ti">🕯️</span>Dates</button>
+  <button class="tabbtn" data-tab="cellar"><span class="ti">🍷</span>The Cellar</button>
+  <button class="tabbtn" data-tab="between"><span class="ti">🍇</span>Between Us</button>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════
+// THE VINEYARD — private couple's app for John & Dawn
+// SEPARATE Firebase backend from the family apps. PIN 1985.
+// No frequency logging, no quotas — invitation & connection only.
+// ════════════════════════════════════════════════════
+
+// ⚠️ REPLACE THIS with the config from your NEW, SEPARATE Firebase project.
+// (Console → new project "the-vineyard" → Realtime Database → web app → copy config.)
+const FB_CONFIG = {
+  apiKey: "PASTE_YOUR_VINEYARD_API_KEY",
+  authDomain: "PASTE.firebaseapp.com",
+  databaseURL: "https://PASTE-default-rtdb.firebaseio.com",
+  projectId: "PASTE",
+  storageBucket: "PASTE.firebasestorage.app",
+  messagingSenderId: "PASTE",
+  appId: "PASTE"
+};
+
+const PIN = "1985";
+let _db = null;
+let WHO = null; // 'john' or 'dawn'
+
+// rotating tender verses — themed by tab
+const VERSES = {
+  cover: [
+    '"My beloved is mine, and I am his." — Song 2:16',
+    '"Set me as a seal upon thine heart… for love is strong as death." — Song 8:6',
+    '"Many waters cannot quench love, neither can the floods drown it." — Song 8:7',
+    '"This is my beloved, and this is my friend." — Song 5:16'
+  ],
+  together: [
+    '"This is my beloved, and this is my friend." — Song 5:16',
+    '"His banner over me was love." — Song 2:4',
+    '"I am my beloved\'s, and my beloved is mine." — Song 6:3',
+    '"Thou art all fair, my love; there is no spot in thee." — Song 4:7'
+  ],
+  dates: [
+    '"Arise, my love, my fair one, and come away." — Song 2:13',
+    '"Come, my beloved, let us go forth into the field." — Song 7:11',
+    '"The winter is past… the flowers appear on the earth." — Song 2:11-12',
+    '"Let us get up early to the vineyards; there will I give thee my loves." — Song 7:12'
+  ],
+  between: [
+    '"A garden inclosed is my sister, my spouse." — Song 4:12',
+    '"How fair is thy love, my sister, my spouse!" — Song 4:10',
+    '"Let my beloved come into his garden." — Song 4:16',
+    '"I am my beloved\'s, and his desire is toward me." — Song 7:10'
+  ]
+};
+
+const SIGNALS = [
+  {e:'💗', t:'Thinking of you'},
+  {e:'🍇', t:'In the mood for a date'},
+  {e:'🌹', t:'You looked beautiful today'},
+  {e:'🔥', t:'Just us tonight?'},
+  {e:'☕', t:'Slow morning together?'},
+  {e:'🕯️', t:'Let\'s make time this week'}
+];
+
+// Little Foxes — gentle honesty prompts (Song 2:15)
+const FOX_INTRO = '"Take us the foxes, the little foxes, that spoil the vines: for our vines have tender grapes." — Song 2:15';
+
+// ----- Lock screen -----
+let pinEntry = "";
+function buildLock(){
+  const dots = document.getElementById('pin-dots');
+  dots.innerHTML = [0,1,2,3].map(i=>`<div class="pdot" id="pd${i}"></div>`).join('');
+  const pad = document.getElementById('keypad');
+  const keys = ['1','2','3','4','5','6','7','8','9','blank','0','del'];
+  pad.innerHTML = keys.map(k=>{
+    if(k==='blank') return '<div class="key blank"></div>';
+    if(k==='del') return '<button class="key" data-k="del">⌫</button>';
+    return `<button class="key" data-k="${k}">${k}</button>`;
+  }).join('');
+  pad.querySelectorAll('.key[data-k]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const k=b.dataset.k;
+      if(k==='del'){ pinEntry=pinEntry.slice(0,-1); }
+      else if(pinEntry.length<4){ pinEntry+=k; }
+      updateDots();
+      if(pinEntry.length===4) checkPin();
+    });
+  });
+}
+function updateDots(){ for(let i=0;i<4;i++){ document.getElementById('pd'+i).classList.toggle('filled', i<pinEntry.length); } }
+function checkPin(){
+  if(pinEntry===PIN){
+    document.getElementById('lock').style.display='none';
+    document.getElementById('app').style.display='block';
+    document.getElementById('tabbar').style.display='flex';
+    askWho();
+    startApp();
+  }else{
+    document.getElementById('lock-err').textContent='Not quite. Try again.';
+    pinEntry=""; setTimeout(()=>{ updateDots(); document.getElementById('lock-err').textContent=''; },800);
+  }
+}
+
+// Who's using it (so the thread knows who's speaking) — remembered on device
+function askWho(){
+  WHO = localStorage.getItem('vineyard-who');
+  if(!WHO){
+    // simple first-time pick
+    const pick = confirm("Tap OK if you're John, Cancel if you're Dawn.") ? 'john':'dawn';
+    WHO = pick; localStorage.setItem('vineyard-who', WHO);
+  }
+}
+
+// ----- Firebase -----
+function startApp(){
+  // tab-aware verse
+  setVerse('together');
+  buildSignals();
+  renderExtrasPick();
+  document.getElementById('collection-input').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); addCollectionItem(); } });
+  try{
+    firebase.initializeApp(FB_CONFIG);
+    _db = firebase.database();
+    _db.ref('.info/connected').on('value', s=>{
+      const live=!!s.val();
+      document.getElementById('sync').textContent = live?'● connected · ours alone':'○ offline';
+      if(live){ loadToday(); listenThread(); listenDates(); listenFoxes(); listenCollection(); listenNights(); }
+    });
+  }catch(e){
+    document.getElementById('sync').textContent='○ add your Firebase config to connect';
+  }
+}
+
+const todayKey = ()=>{ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+
+// toggles
+document.addEventListener('click', e=>{
+  const t=e.target.closest('.toggle');
+  if(t){ t.classList.toggle('on'); saveToggles(); }
+});
+function saveToggles(){
+  if(!_db) return;
+  const data={};
+  document.querySelectorAll('.toggle[data-k]').forEach(t=>{ data[t.dataset.k]=t.classList.contains('on'); });
+  _db.ref('vineyard/checkins/'+todayKey()).update(data);
+}
+function saveSpiritual(){
+  if(!_db){ stat('spiritual-stat','Add your Firebase config first.'); return; }
+  _db.ref('vineyard/checkins/'+todayKey()).update({
+    prayerFocus: document.getElementById('prayer-focus').value,
+    gratitude: document.getElementById('gratitude').value
+  }).then(()=>stat('spiritual-stat','Saved ❧'));
+}
+function saveHealth(){
+  if(!_db){ stat('health-stat','Add your Firebase config first.'); return; }
+  _db.ref('vineyard/checkins/'+todayKey()).update({
+    healthGoal: document.getElementById('health-goal').value
+  }).then(()=>stat('health-stat','Saved ❧'));
+}
+function loadToday(){
+  _db.ref('vineyard/checkins/'+todayKey()).on('value', s=>{
+    const d=s.val()||{};
+    document.querySelectorAll('.toggle[data-k]').forEach(t=>{ t.classList.toggle('on', !!d[t.dataset.k]); });
+    if(document.activeElement.id!=='prayer-focus') document.getElementById('prayer-focus').value=d.prayerFocus||'';
+    if(document.activeElement.id!=='gratitude') document.getElementById('gratitude').value=d.gratitude||'';
+    if(document.activeElement.id!=='health-goal') document.getElementById('health-goal').value=d.healthGoal||'';
+  });
+}
+
+// ----- Dates -----
+function planDate(){
+  if(!_db){ stat('date-stat','Add your Firebase config first.'); return; }
+  const title=document.getElementById('d-title').value.trim();
+  if(!title){ stat('date-stat','Give the date a name first.'); return; }
+  const payload={
+    title, when:document.getElementById('d-when').value.trim(),
+    heat:document.getElementById('d-heat').value,
+    note:document.getElementById('d-note').value.trim(),
+    by:WHO, timestamp:Date.now()
+  };
+  _db.ref('vineyard/dates').push(payload).then(()=>{
+    document.getElementById('d-title').value='';document.getElementById('d-when').value='';document.getElementById('d-note').value='';
+    stat('date-stat','Planned ✦ something to look forward to');
+  });
+}
+function listenDates(){
+  _db.ref('vineyard/dates').on('value', s=>{
+    const v=s.val()||{};
+    const items=Object.entries(v).map(([k,d])=>({k,...d})).sort((a,b)=>(a.timestamp||0)-(b.timestamp||0));
+    const el=document.getElementById('date-list');
+    if(!items.length){ el.innerHTML='<div class="thread-empty">No dates planned yet. Plan one above ✦</div>'; return; }
+    el.innerHTML=items.map(d=>`
+      <div class="datecard">
+        <button class="ddel" onclick="delDate('${d.k}')">×</button>
+        <div class="dtitle">${esc(d.title)}</div>
+        ${d.when?`<div class="dwhen">🕯️ ${esc(d.when)}</div>`:''}
+        ${d.note?`<div class="dnote">${esc(d.note)}</div>`:''}
+        <span class="heat ${d.heat}">${d.heat==='tender'?'🌿 Tender':d.heat==='warm'?'✨ Warm':'🔥 Spicy'}</span>
+      </div>`).join('');
+  });
+}
+function delDate(k){ if(_db) _db.ref('vineyard/dates/'+k).remove(); }
+function addToCalendar(){
+  const title=document.getElementById('d-title').value.trim()||'Date night';
+  const when=document.getElementById('d-when').value.trim();
+  // Build a simple Google Calendar link (works on phones); falls back gracefully
+  const text=encodeURIComponent('💗 '+title);
+  const details=encodeURIComponent('A date from The Vineyard'+(document.getElementById('d-note').value?': '+document.getElementById('d-note').value:''));
+  const url='https://calendar.google.com/calendar/render?action=TEMPLATE&text='+text+'&details='+details;
+  window.open(url,'_blank');
+  stat('date-stat','Opening calendar… set your time there.');
+}
+
+// ----- Between Us: signals + thread -----
+function buildSignals(){
+  document.getElementById('signals').innerHTML=SIGNALS.map((s,i)=>`
+    <button class="sigbtn" onclick="sendSignal(${i})"><span class="se">${s.e}</span><span class="st">${s.t}</span></button>`).join('');
+}
+function sendSignal(i){
+  if(!_db) return;
+  const s=SIGNALS[i];
+  _db.ref('vineyard/thread').push({ text:s.e+' '+s.t, by:WHO, sig:true, timestamp:Date.now() });
+}
+function sendMsg(){
+  if(!_db) return;
+  const box=document.getElementById('msg-box');
+  const text=box.value.trim(); if(!text) return;
+  _db.ref('vineyard/thread').push({ text, by:WHO, timestamp:Date.now() }).then(()=>{ box.value=''; });
+}
+function listenThread(){
+  _db.ref('vineyard/thread').limitToLast(60).on('value', s=>{
+    const v=s.val()||{};
+    const items=Object.values(v).sort((a,b)=>(a.timestamp||0)-(b.timestamp||0));
+    const el=document.getElementById('thread');
+    if(!items.length){ el.innerHTML='<div class="thread-empty">Nothing here yet. Leave your love a little note 🍇</div>'; return; }
+    el.innerHTML=items.map(m=>{
+      const mine=m.by===WHO;
+      const name=m.by==='john'?'John':'Dawn';
+      const time=new Date(m.timestamp).toLocaleString('en-US',{weekday:'short',hour:'numeric',minute:'2-digit'});
+      return `<div class="msg ${mine?'me':'them'}">
+        <div class="mfrom">${name}</div>${esc(m.text)}
+        <div class="mtime">${time}</div></div>`;
+    }).join('');
+    el.scrollTop=el.scrollHeight;
+  });
+}
+
+// ----- helpers -----
+function setVerse(tab){
+  const pool = VERSES[tab] || VERSES.together;
+  document.getElementById('mast-verse').textContent = pool[Math.floor(Math.random()*pool.length)];
+}
+
+// ════════════════════════════════════════════
+// THE CELLAR — date-night designer + saved library
+// ════════════════════════════════════════════
+let COLLECTION = [];      // private list of toys/extras (strings)
+let selectedExtras = [];  // indices chosen for the night being designed
+let editingNightKey = null; // if editing an existing saved night
+
+function onThemePick(){
+  const v = document.getElementById('c-theme-pick').value;
+  const field = document.getElementById('c-theme');
+  if(v==='__custom'){ field.value=''; field.focus(); }
+  else if(v){ field.value = v; }
+}
+
+// --- Collection (the private toy/extras list) ---
+function addCollectionItem(){
+  if(!_db){ stat('cellar-stat','Add your Firebase config first.'); return; }
+  const inp=document.getElementById('collection-input');
+  const val=inp.value.trim(); if(!val) return;
+  _db.ref('vineyard/collection').push({ name:val, timestamp:Date.now() }).then(()=>{ inp.value=''; });
+}
+function delCollectionItem(k){ if(_db) _db.ref('vineyard/collection/'+k).remove(); }
+function listenCollection(){
+  _db.ref('vineyard/collection').on('value', s=>{
+    const v=s.val()||{};
+    COLLECTION=Object.entries(v).map(([k,d])=>({k,name:d.name}));
+    renderCollection();
+    renderExtrasPick();
+  });
+}
+function renderCollection(){
+  const el=document.getElementById('collection-list');
+  if(!COLLECTION.length){ el.innerHTML='<div class="coll-empty">Nothing here yet. Add what you like — it stays between you two.</div>'; return; }
+  el.innerHTML=COLLECTION.map(it=>`
+    <div class="collrow">
+      <div class="cn">${esc(it.name)}</div>
+      <button onclick="editCollectionItem('${it.k}')" title="Rename">✎</button>
+      <button onclick="delCollectionItem('${it.k}')" title="Remove">×</button>
+    </div>`).join('');
+}
+function editCollectionItem(k){
+  const it=COLLECTION.find(x=>x.k===k); if(!it) return;
+  const nv=prompt('Rename:', it.name);
+  if(nv!==null && nv.trim() && _db) _db.ref('vineyard/collection/'+k+'/name').set(nv.trim());
+}
+function renderExtrasPick(){
+  const el=document.getElementById('c-extras-pick');
+  if(!COLLECTION.length){ el.innerHTML='<div class="coll-empty">Add items to your collection below to include them here.</div>'; return; }
+  el.innerHTML=COLLECTION.map((it,i)=>`<div class="chip ${selectedExtras.includes(it.k)?'on':''}" onclick="toggleExtra('${it.k}')">${esc(it.name)}</div>`).join('');
+}
+function toggleExtra(k){
+  const i=selectedExtras.indexOf(k);
+  if(i>=0) selectedExtras.splice(i,1); else selectedExtras.push(k);
+  renderExtrasPick();
+}
+
+// --- Compose / save / replay nights ---
+function gatherNight(){
+  return {
+    name: document.getElementById('c-name').value.trim(),
+    theme: document.getElementById('c-theme').value.trim(),
+    heat: document.getElementById('c-heat').value,
+    wear: document.getElementById('c-wear').value.trim(),
+    notes: document.getElementById('c-notes').value.trim(),
+    extras: selectedExtras.slice(),
+    timestamp: Date.now()
+  };
+}
+function clearDesigner(){
+  ['c-name','c-theme','c-wear','c-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('c-theme-pick').value='';
+  document.getElementById('c-heat').value='tender';
+  selectedExtras=[]; editingNightKey=null;
+  document.getElementById('c-update-btn').style.display='none';
+  renderExtrasPick();
+}
+function saveNight(){
+  if(!_db){ stat('cellar-stat','Add your Firebase config first.'); return; }
+  const n=gatherNight();
+  if(!n.name){ stat('cellar-stat','Give the night a name first.'); return; }
+  _db.ref('vineyard/nights').push(n).then(()=>{ clearDesigner(); stat('cellar-stat','Laid down in the cellar 🍷'); });
+}
+function updateNight(){
+  if(!_db||!editingNightKey) return;
+  const n=gatherNight();
+  if(!n.name){ stat('cellar-stat','Give the night a name first.'); return; }
+  _db.ref('vineyard/nights/'+editingNightKey).update(n).then(()=>{ clearDesigner(); stat('cellar-stat','Saved ❧'); });
+}
+function listenNights(){
+  _db.ref('vineyard/nights').on('value', s=>{
+    const v=s.val()||{};
+    const items=Object.entries(v).map(([k,d])=>({k,...d})).sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
+    const el=document.getElementById('cellar-list');
+    if(!items.length){ el.innerHTML='<div class="thread-empty">The cellar is empty. Design a night above and lay it down 🍷</div>'; return; }
+    el.innerHTML=items.map(n=>{
+      const heatLabel=n.heat==='tender'?'🌿 Tender':n.heat==='warm'?'✨ Warm':'🔥 Spicy';
+      const extraNames=(n.extras||[]).map(k=>{const it=COLLECTION.find(x=>x.k===k);return it?esc(it.name):null;}).filter(Boolean);
+      return `<div class="nightcard">
+        <div class="nname">${esc(n.name)}</div>
+        <div class="nmeta">${n.theme?esc(n.theme)+' · ':''}${heatLabel}</div>
+        ${n.wear?`<div class="nrow"><b>Wear:</b> ${esc(n.wear)}</div>`:''}
+        ${n.notes?`<div class="nrow"><b>Setting:</b> ${esc(n.notes)}</div>`:''}
+        ${extraNames.length?`<div class="nrow"><b>Extras:</b> ${extraNames.join(', ')}</div>`:''}
+        <div class="nbtns">
+          <button onclick="loadNight('${n.k}')">Bring it out</button>
+          <button onclick="duplicateNight('${n.k}')">Duplicate</button>
+          <button onclick="delNight('${n.k}')">Remove</button>
+        </div>
+      </div>`;
+    }).join('');
+  });
+}
+function loadNight(k){
+  _db.ref('vineyard/nights/'+k).once('value', s=>{
+    const n=s.val(); if(!n) return;
+    document.getElementById('c-name').value=n.name||'';
+    document.getElementById('c-theme').value=n.theme||'';
+    document.getElementById('c-heat').value=n.heat||'tender';
+    document.getElementById('c-wear').value=n.wear||'';
+    document.getElementById('c-notes').value=n.notes||'';
+    selectedExtras=(n.extras||[]).slice();
+    editingNightKey=k;
+    document.getElementById('c-update-btn').style.display='block';
+    renderExtrasPick();
+    stat('cellar-stat','Brought out — edit and save changes, or use as-is.');
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+}
+function duplicateNight(k){
+  _db.ref('vineyard/nights/'+k).once('value', s=>{
+    const n=s.val(); if(!n) return;
+    const copy=Object.assign({},n,{name:(n.name||'Night')+' (copy)',timestamp:Date.now()});
+    _db.ref('vineyard/nights').push(copy).then(()=>stat('cellar-stat','Duplicated — tweak the copy as you like.'));
+  });
+}
+function delNight(k){ if(_db && confirm('Remove this night from the cellar?')) _db.ref('vineyard/nights/'+k).remove(); }
+
+// ----- Little Foxes (gentle honesty, Song 2:15) -----
+function sendFox(){
+  if(!_db){ stat('fox-stat','Add your Firebase config first.'); return; }
+  const box=document.getElementById('fox-box');
+  const text=box.value.trim();
+  if(!text){ stat('fox-stat','Name it whenever you\'re ready.'); return; }
+  _db.ref('vineyard/foxes').push({ text, by:WHO, resolved:false, timestamp:Date.now() }).then(()=>{
+    box.value=''; stat('fox-stat','Named, gently. Tend it together when you can. 🦊');
+  });
+}
+function listenFoxes(){
+  _db.ref('vineyard/foxes').on('value', s=>{
+    const v=s.val()||{};
+    const items=Object.entries(v).map(([k,d])=>({k,...d})).sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
+    const el=document.getElementById('fox-list');
+    const open=items.filter(f=>!f.resolved);
+    if(!open.length){ el.innerHTML='<div class="thread-empty">No little foxes right now. The vines are tended. 🍇</div>'; return; }
+    el.innerHTML=open.map(f=>{
+      const name=f.by==='john'?'John':'Dawn';
+      const when=new Date(f.timestamp).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+      return `<div class="datecard" style="border-left-color:var(--vine2);">
+        <button class="ddel" onclick="resolveFox('${f.k}')" title="Tended together">✓</button>
+        <div class="dtitle" style="font-size:15px;">🦊 ${esc(f.text)}</div>
+        <div class="dwhen" style="color:var(--vineglow);">named by ${name} · ${when}</div>
+      </div>`;
+    }).join('');
+  });
+}
+function resolveFox(k){ if(_db) _db.ref('vineyard/foxes/'+k+'/resolved').set(true); }
+
+function esc(s){ return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function stat(id,msg){ const e=document.getElementById(id); if(e){ e.textContent=msg; setTimeout(()=>{e.textContent='';},3000);} }
+
+// tabs
+document.getElementById('tabbar').addEventListener('click', e=>{
+  const b=e.target.closest('.tabbtn'); if(!b) return;
+  document.querySelectorAll('.tabbtn').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  document.getElementById('tab-'+b.dataset.tab).classList.add('active');
+  setVerse(b.dataset.tab);
+});
+
+buildLock();
+</script>
+</body>
+</html>
