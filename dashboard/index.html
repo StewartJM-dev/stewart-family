@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Stewart HQ — Parent Dashboard</title>
+<title>The Stewart Homestead</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -414,11 +414,13 @@ body{
 
   <div class="topbar">
     <div>
-      <div class="topbar-logo">Stewart <span>HQ</span></div>
+      <div class="topbar-logo">The <span>Homestead</span></div>
     </div>
     <div class="topbar-right">
       <span class="topbar-sync" id="sync-status" style="color:rgba(255,255,255,.5);">&#9675; Connecting</span>
-      <a href="../index.html" class="topbar-home">&#8962;</a>
+      <a href="../kitchen/" class="topbar-home" title="The Kitchen">&#127858;</a>
+      <a href="../bridge/" class="topbar-home" title="The Bridge">&#9875;</a>
+      <a href="../vineyard/" class="topbar-home" title="The Vineyard">&#127815;</a>
       <button class="topbar-lock" onclick="lockApp()">Lock</button>
     </div>
   </div>
@@ -428,6 +430,18 @@ body{
     <!-- TAB: OVERVIEW -->
     <div class="tab active" id="tab-overview">
       <div id="overview-day-banner" style="margin-bottom:12px;"></div>
+      <a href="https://stewartjm-dev.github.io/adamah/" target="_blank" style="display:block;text-decoration:none;color:inherit;margin-bottom:14px;">
+        <div class="card" style="background:linear-gradient(135deg,#1e2d5a,#1a4a2e);border:1px solid var(--gold);">
+          <div class="card-bd" style="display:flex;align-items:center;gap:14px;padding:14px 16px;">
+            <div style="font-size:30px;flex-shrink:0;">&#128214;</div>
+            <div style="flex:1;">
+              <div style="font-family:'Cinzel',serif;font-weight:700;font-size:16px;color:var(--gold2,#e8b84a);">The Adamah Saga</div>
+              <div style="font-size:13.5px;color:#f0ece2;opacity:.9;margin-top:3px;line-height:1.4;">Book One is coming soon &mdash; John is writing it for you to read first. Tap to follow along.</div>
+            </div>
+            <div style="font-family:'Lato',sans-serif;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:rgba(200,146,42,.25);color:var(--gold2,#e8b84a);border:1px solid rgba(200,146,42,.5);padding:4px 9px;border-radius:10px;flex-shrink:0;">Soon</div>
+          </div>
+        </div>
+      </a>
       <div class="sec-hd">Agent Status Today</div>
       <div class="agent-grid" id="overview-agents"></div>
       <div class="sec-hd">Weekly Pay</div>
@@ -449,6 +463,40 @@ body{
               <option value="Mom">From: Mom</option>
             </select>
             <button onclick="sendQuickTransmission()" style="padding:8px 16px;border:none;border-radius:7px;background:var(--indigo);color:white;font-family:'Cinzel',serif;font-size:11px;font-weight:700;cursor:pointer;">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: HOMESTEAD (Dawn's household home base) -->
+    <div class="tab" id="tab-homestead">
+      <a href="../vineyard/" style="display:block;text-decoration:none;color:inherit;margin-bottom:14px;">
+        <div class="card" style="background:linear-gradient(135deg,#3d1f47,#5a2e6b);border:1px solid #e87fa8;">
+          <div class="card-bd" style="display:flex;align-items:center;gap:14px;padding:14px 16px;">
+            <div style="font-size:28px;flex-shrink:0;">&#127815;</div>
+            <div style="flex:1;">
+              <div style="font-family:'Cinzel',serif;font-weight:700;font-size:16px;color:#f4a7c4;">The Vineyard</div>
+              <div style="font-size:13.5px;color:#f0ece2;opacity:.9;margin-top:3px;">Ours alone &mdash; tend it together. Tap to open.</div>
+            </div>
+            <div style="color:#f4a7c4;font-size:18px;">&#8250;</div>
+          </div>
+        </div>
+      </a>
+
+      <div class="sec-hd">The Homestead</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+        <a href="../kitchen/" style="text-decoration:none;color:inherit;" class="card"><div class="card-bd" style="text-align:center;padding:16px;"><div style="font-size:26px;">&#127858;</div><div style="font-family:'Cinzel',serif;font-weight:700;font-size:14px;margin-top:6px;">The Kitchen</div><div style="font-size:12px;opacity:.7;margin-top:2px;">Meals, recipes, cookbook</div></div></a>
+        <a href="../bridge/" style="text-decoration:none;color:inherit;" class="card"><div class="card-bd" style="text-align:center;padding:16px;"><div style="font-size:26px;">&#9875;</div><div style="font-family:'Cinzel',serif;font-weight:700;font-size:14px;margin-top:6px;">The Bridge</div><div style="font-size:12px;opacity:.7;margin-top:2px;">Systems Seven</div></div></a>
+      </div>
+
+      <div class="sec-hd">Homestead Manager</div>
+      <div id="segs-hs" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;"></div>
+      <div class="card">
+        <div class="card-bd">
+          <div id="hs-list"></div>
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <input type="text" id="hs-input" placeholder="Add to this list…" style="flex:1;padding:10px 12px;border-radius:8px;border:1px solid var(--border);font-size:15px;">
+            <button onclick="addHsItem()" style="padding:10px 16px;border:none;border-radius:8px;background:var(--green);color:#fff;font-weight:700;cursor:pointer;font-size:18px;">&#43;</button>
           </div>
         </div>
       </div>
@@ -752,6 +800,10 @@ body{
     <button class="bnb active" onclick="showTab('overview',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
       Overview
+    </button>
+    <button class="bnb" onclick="showTab('homestead',this);renderHomestead();">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/><path d="M9 21v-6h6v6"/></svg>
+      Home
     </button>
     <button class="bnb" onclick="showTab('messenger',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -3557,6 +3609,64 @@ function renderFamilyDevotionalDisplay(){
 // INIT
 // ══════════════════════════════════════════════════════
 // PIN screen is shown by default — app hidden until correct PIN
+
+// ════════════════════════════════════════════
+// HOMESTEAD MANAGER — garden / animals / supplies / household
+// Writes to its own homestead/ namespace (never touches boys' data)
+// ════════════════════════════════════════════
+const HS_SECTIONS = [
+  {key:'chores',   label:'Household'},
+  {key:'garden',   label:'Garden'},
+  {key:'animals',  label:'Animals'},
+  {key:'supplies', label:'Supplies'}
+];
+let hsActive = 'chores';
+let hsRef = null;
+
+function renderHomestead(){
+  renderHsSegs();
+  listenHsSection();
+  const inp=document.getElementById('hs-input');
+  if(inp && !inp.dataset.bound){
+    inp.dataset.bound='1';
+    inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); addHsItem(); } });
+  }
+}
+function renderHsSegs(){
+  const el=document.getElementById('segs-hs');
+  if(!el) return;
+  el.innerHTML=HS_SECTIONS.map(s=>
+    `<button onclick="switchHs('${s.key}')" style="flex:1;min-width:70px;padding:9px 6px;border-radius:8px;border:1px solid var(--border);background:${s.key===hsActive?'var(--green)':'#fff'};color:${s.key===hsActive?'#fff':'var(--ink)'};font-size:12px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.5px;">${s.label}</button>`
+  ).join('');
+}
+function switchHs(k){ hsActive=k; renderHsSegs(); listenHsSection(); }
+function listenHsSection(){
+  if(!_db) return;
+  if(hsRef) hsRef.off();
+  hsRef=_db.ref('homestead/'+hsActive);
+  hsRef.on('value', s=>{
+    const v=s.val()||{};
+    const items=Object.entries(v).map(([k,o])=>({k,...o})).sort((a,b)=>(a.timestamp||0)-(b.timestamp||0));
+    const el=document.getElementById('hs-list');
+    if(!el) return;
+    if(!items.length){ el.innerHTML='<div style="opacity:.5;font-style:italic;padding:8px 0;">Nothing here yet. Add the first item below.</div>'; return; }
+    el.innerHTML=items.map(it=>`
+      <div style="display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--border);">
+        <button onclick="toggleHs('${it.k}',${!it.done})" style="width:26px;height:26px;border-radius:7px;border:2px solid var(--green);background:${it.done?'var(--green)':'transparent'};color:${it.done?'#fff':'transparent'};cursor:pointer;flex-shrink:0;font-size:15px;">&#10003;</button>
+        <div style="flex:1;font-size:16px;${it.done?'opacity:.45;text-decoration:line-through;':''}">${escapeHtml(it.name)}</div>
+        <button onclick="delHs('${it.k}')" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;opacity:.6;">&times;</button>
+      </div>`).join('');
+  });
+}
+function addHsItem(){
+  if(!_db) return;
+  const inp=document.getElementById('hs-input');
+  const v=inp.value.trim(); if(!v) return;
+  _db.ref('homestead/'+hsActive).push({name:v,done:false,timestamp:Date.now()}).then(()=>{ inp.value=''; });
+}
+function toggleHs(k,val){ if(_db) _db.ref('homestead/'+hsActive+'/'+k+'/done').set(val); }
+function delHs(k){ if(_db) _db.ref('homestead/'+hsActive+'/'+k).remove(); }
+
 </script>
 </body>
 </html>
