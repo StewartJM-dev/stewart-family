@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Systems Seven — The Bridge</title>
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" href="icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Systems Seven">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
@@ -182,6 +188,42 @@ body{
 
 /* ===== Footer ===== */
 .foot{text-align:center;margin-top:40px;font-size:12px;opacity:.4;font-style:italic;line-height:1.6;}
+/* ===== Saga station ===== */
+.saga-progress{background:rgba(255,255,255,.04);border:1px solid rgba(200,146,42,.25);border-radius:12px;padding:15px 16px;margin-bottom:12px;}
+.saga-progress .sp-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px;}
+.saga-progress .sp-pct{font-family:'Cinzel',serif;font-size:22px;color:var(--gold2);font-weight:700;}
+.saga-progress .sp-label{font-size:13px;opacity:.75;}
+.saga-progress .sp-bar{height:9px;border-radius:5px;background:rgba(255,255,255,.1);overflow:hidden;}
+.saga-progress .sp-bar i{display:block;height:100%;background:linear-gradient(90deg,#3d8a5e,var(--gold2));border-radius:5px;transition:width .5s;}
+.saga-progress .sp-counts{font-size:12.5px;opacity:.7;margin-top:9px;font-family:'Lato',sans-serif;letter-spacing:.3px;}
+.saga-next{background:linear-gradient(135deg,rgba(46,63,122,.4),rgba(26,40,80,.3));border:1px solid rgba(200,146,42,.3);border-radius:12px;padding:14px 16px;margin-bottom:14px;}
+.saga-next .sn-label{font-family:'Lato',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold2);opacity:.85;}
+.saga-next .sn-title{font-family:'Cinzel',serif;font-size:17px;color:var(--white);margin-top:5px;}
+.saga-next .sn-none{font-style:italic;opacity:.7;font-size:14px;margin-top:4px;}
+.saga-chapters{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
+.sch{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-left:3px solid var(--muted);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:12px;}
+.sch.s-written{border-left-color:#3d8a5e;}
+.sch.s-drafting{border-left-color:var(--gold2);}
+.sch.s-released{border-left-color:#7faf89;background:rgba(61,138,94,.1);}
+.sch .sc-main{flex:1;}
+.sch .sc-num{font-family:'Lato',sans-serif;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold2);opacity:.8;}
+.sch .sc-title{font-family:'Cinzel',serif;font-size:15px;color:var(--white);margin-top:2px;}
+.sch .sc-status{font-size:12px;opacity:.7;margin-top:3px;font-style:italic;}
+.sch .sc-actions{display:flex;flex-direction:column;gap:5px;flex-shrink:0;}
+.sch .sc-actions button{font-family:'Lato',sans-serif;font-size:10px;letter-spacing:.5px;text-transform:uppercase;padding:5px 10px;border-radius:7px;border:1px solid rgba(200,146,42,.4);background:rgba(200,146,42,.12);color:var(--gold2);cursor:pointer;white-space:nowrap;}
+.sch .sc-actions button.release{background:linear-gradient(135deg,#3d8a5e,#2d6a47);color:#fff;border-color:transparent;}
+.sch .sc-actions button.released{background:rgba(61,138,94,.2);color:#7faf89;}
+.saga-add-btn{width:100%;padding:13px;border:1px dashed rgba(200,146,42,.4);border-radius:11px;background:rgba(200,146,42,.06);color:var(--gold2);font-family:'Cinzel',serif;font-size:14px;cursor:pointer;margin-bottom:14px;}
+.saga-add-btn:active{transform:scale(.99);}
+#chapter-editor{background:rgba(255,255,255,.04);border:1px solid rgba(200,146,42,.25);border-radius:12px;padding:16px;margin-bottom:14px;}
+.ce-field{margin-bottom:11px;}
+.ce-field label{display:block;font-family:'Lato',sans-serif;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold2);opacity:.8;margin-bottom:5px;}
+.ce-field input,.ce-field select,.ce-field textarea{width:100%;padding:10px 12px;border-radius:8px;background:rgba(0,0,0,.3);color:var(--white);border:1px solid rgba(200,146,42,.25);font-family:'Crimson Pro',serif;font-size:15px;}
+.ce-field textarea{resize:vertical;line-height:1.5;}
+.ce-btns{display:flex;gap:9px;}
+.ce-save{flex:1;padding:11px;border:none;border-radius:8px;background:linear-gradient(135deg,var(--gold),#9a6c1c);color:#1a1410;font-family:'Cinzel',serif;font-weight:700;cursor:pointer;}
+.ce-cancel{padding:11px 18px;border:1px solid rgba(255,255,255,.2);border-radius:8px;background:transparent;color:var(--white);font-family:'Cinzel',serif;cursor:pointer;}
+.ce-stat{text-align:center;font-size:13px;margin-top:9px;min-height:16px;opacity:.85;font-style:italic;color:var(--gold2);}
 .foot .motto{font-family:'Cinzel',serif;font-style:normal;letter-spacing:1px;color:var(--gold2);opacity:.6;}
 </style>
 </head>
@@ -243,6 +285,42 @@ body{
   <div class="shead">The Fleet</div>
   <div class="fleet" id="fleet"></div>
 
+  <!-- THE SAGA STATION (writing cockpit) -->
+  <div class="shead">The Saga — The Ascension</div>
+  <div class="saga-progress" id="saga-progress"></div>
+  <div class="saga-next" id="saga-next"></div>
+  <div class="saga-chapters" id="saga-chapters"></div>
+  <button class="saga-add-btn" onclick="openChapterEditor()">＋ Add / Draft a Chapter</button>
+
+  <!-- chapter editor (hidden until opened) -->
+  <div id="chapter-editor" style="display:none;">
+    <div class="ce-field">
+      <label>Chapter number</label>
+      <input type="number" id="ce-number" placeholder="e.g. 1">
+    </div>
+    <div class="ce-field">
+      <label>Title</label>
+      <input type="text" id="ce-title" placeholder="Chapter title…">
+    </div>
+    <div class="ce-field">
+      <label>Status</label>
+      <select id="ce-status">
+        <option value="notstarted">Not started</option>
+        <option value="drafting">Drafting</option>
+        <option value="written">Written</option>
+      </select>
+    </div>
+    <div class="ce-field">
+      <label>Chapter text (paste from Scrivener)</label>
+      <textarea id="ce-text" rows="8" placeholder="Paste the chapter here when it's ready…"></textarea>
+    </div>
+    <div class="ce-btns">
+      <button class="ce-save" onclick="saveChapter()">Save</button>
+      <button class="ce-cancel" onclick="closeChapterEditor()">Cancel</button>
+    </div>
+    <div class="ce-stat" id="ce-stat"></div>
+  </div>
+
   <div class="foot">
     <div class="motto">Virescit vulnere virtus</div>
     Courage grows strong at a wound.<br>
@@ -291,7 +369,7 @@ function initFirebase(){
     _db.ref('.info/connected').on('value', snap => {
       const live = !!snap.val();
       if(dot){ dot.textContent = live ? '● live' : '○ offline'; dot.style.color = live ? '#7ad19a' : '#c89'; }
-      if(live) loadCrewStatus();
+      if(live){ loadCrewStatus(); loadSaga(); }
     });
   }catch(e){
     const dot = document.getElementById('sync-dot');
@@ -419,6 +497,116 @@ function renderFleet(){
       <div class="pdesc">${f.desc}</div>
     </a>`).join('');
 }
+
+// ════════════════════════════════════════════
+// THE SAGA STATION — writing cockpit
+// Stores chapters in saga/chapters; reader shows only released ones.
+// ════════════════════════════════════════════
+let SAGA_CHAPTERS = [];
+let editingChapterKey = null;
+
+function loadSaga(){
+  if(!_db) return;
+  _db.ref('saga/chapters').on('value', s=>{
+    const v = s.val() || {};
+    SAGA_CHAPTERS = Object.entries(v).map(([k,c])=>({k,...c}))
+      .sort((a,b)=>(a.order||a.number||0)-(b.order||b.number||0));
+    renderSaga();
+  });
+}
+
+function renderSaga(){
+  const total = SAGA_CHAPTERS.length;
+  const written = SAGA_CHAPTERS.filter(c=>c.status==='written'||c.released).length;
+  const released = SAGA_CHAPTERS.filter(c=>c.released).length;
+  const drafting = SAGA_CHAPTERS.filter(c=>c.status==='drafting').length;
+  const pct = total ? Math.round((written/total)*100) : 0;
+  const pe=document.getElementById('saga-progress');
+  if(pe) pe.innerHTML = '<div class="sp-top"><div class="sp-pct">'+pct+'%</div><div class="sp-label">of charted chapters written</div></div>'+
+    '<div class="sp-bar"><i style="width:'+pct+'%"></i></div>'+
+    '<div class="sp-counts">'+written+' written · '+drafting+' drafting · '+released+' released · '+total+' charted</div>';
+
+  const next = SAGA_CHAPTERS.find(c=>c.status!=='written' && !c.released);
+  const nextEl = document.getElementById('saga-next');
+  if(nextEl){
+    if(next){
+      nextEl.innerHTML = '<div class="sn-label">Next at the helm</div><div class="sn-title">Ch. '+(next.number||'?')+' — '+esc(next.title||'Untitled')+'</div>';
+    }else if(total){
+      nextEl.innerHTML = '<div class="sn-label">Next at the helm</div><div class="sn-none">All charted chapters are written. Add the next one when you are ready.</div>';
+    }else{
+      nextEl.innerHTML = '<div class="sn-label">Next at the helm</div><div class="sn-none">No chapters charted yet. Add the first to set your heading.</div>';
+    }
+  }
+
+  const el = document.getElementById('saga-chapters');
+  if(el) el.innerHTML = SAGA_CHAPTERS.map(c=>{
+    const statusClass = c.released ? 's-released' : (c.status==='written'?'s-written':(c.status==='drafting'?'s-drafting':''));
+    const statusTxt = c.released ? 'Released to the family' : (c.status==='written'?'Written — ready to release':(c.status==='drafting'?'Drafting':'Not started'));
+    const canRelease = (c.status==='written' || c.released) && (c.text&&c.text.trim());
+    return '<div class="sch '+statusClass+'">'+
+      '<div class="sc-main"><div class="sc-num">Chapter '+(c.number||'?')+'</div>'+
+      '<div class="sc-title">'+esc(c.title||'Untitled')+'</div>'+
+      '<div class="sc-status">'+statusTxt+'</div></div>'+
+      '<div class="sc-actions"><button onclick="editChapter(\''+c.k+'\')">Edit</button>'+
+      (c.released
+        ? '<button class="released" onclick="unreleaseChapter(\''+c.k+'\')">Unrelease</button>'
+        : (canRelease ? '<button class="release" onclick="releaseChapter(\''+c.k+'\')">Release</button>' : ''))+
+      '</div></div>';
+  }).join('');
+}
+
+function openChapterEditor(){
+  editingChapterKey=null;
+  document.getElementById('ce-number').value = SAGA_CHAPTERS.length ? (Math.max.apply(null,SAGA_CHAPTERS.map(c=>c.number||0))+1) : 1;
+  document.getElementById('ce-title').value='';
+  document.getElementById('ce-status').value='notstarted';
+  document.getElementById('ce-text').value='';
+  document.getElementById('chapter-editor').style.display='block';
+  document.getElementById('ce-stat').textContent='';
+  document.getElementById('chapter-editor').scrollIntoView({behavior:'smooth'});
+}
+function editChapter(k){
+  const c=SAGA_CHAPTERS.find(x=>x.k===k); if(!c) return;
+  editingChapterKey=k;
+  document.getElementById('ce-number').value=c.number||'';
+  document.getElementById('ce-title').value=c.title||'';
+  document.getElementById('ce-status').value=c.status||'notstarted';
+  document.getElementById('ce-text').value=c.text||'';
+  document.getElementById('chapter-editor').style.display='block';
+  document.getElementById('ce-stat').textContent='';
+  document.getElementById('chapter-editor').scrollIntoView({behavior:'smooth'});
+}
+function closeChapterEditor(){ document.getElementById('chapter-editor').style.display='none'; }
+function saveChapter(){
+  if(!_db){ ceStat('Not connected.'); return; }
+  const number=parseInt(document.getElementById('ce-number').value,10);
+  const title=document.getElementById('ce-title').value.trim();
+  const status=document.getElementById('ce-status').value;
+  const text=document.getElementById('ce-text').value;
+  if(!number){ ceStat('Give it a chapter number.'); return; }
+  const data={number:number,order:number,title:title,status:status,text:text};
+  if(editingChapterKey){
+    _db.ref('saga/chapters/'+editingChapterKey).update(data).then(()=>{ ceStat('Saved'); setTimeout(closeChapterEditor,700); });
+  }else{
+    data.released=false; data.created_at=Date.now();
+    _db.ref('saga/chapters').push(data).then(()=>{ ceStat('Charted'); setTimeout(closeChapterEditor,700); });
+  }
+}
+function releaseChapter(k){
+  if(!_db) return;
+  if(confirm('Release this chapter to the family? They will be able to read it.')){
+    _db.ref('saga/chapters/'+k).update({released:true, released_at:Date.now(), status:'written'});
+  }
+}
+function unreleaseChapter(k){
+  if(!_db) return;
+  if(confirm('Pull this chapter back? It will disappear from the family reader.')){
+    _db.ref('saga/chapters/'+k).update({released:false});
+  }
+}
+function ceStat(m){ const e=document.getElementById('ce-stat'); if(e) e.textContent=m; }
+function esc(s){ return String(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
 renderWeek();
 renderSystems();
 renderFleet();
