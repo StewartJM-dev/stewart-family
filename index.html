@@ -2,447 +2,86 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Stewart Family</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Stewart Family · Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --green:#1a4a2e;--green2:#2d6a47;--green3:#3d8a5e;
-  --indigo:#1e2d5a;--indigo2:#2e3f7a;--indigo3:#3d52a0;
-  --gold:#c8922a;--gold2:#e8b84a;--gold3:#f5d070;
-  --white:#f9f7f2;--offwhite:#ede9e0;--black:#0e0e0e;--ink:#1a1410;
+  --green:#1a4a2e;--green3:#3d8a5e;--gold:#c8922a;--gold2:#e8b84a;
+  --cream:#f7f2ea;--muted:#8a7a65;
 }
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-body{font-family:'Crimson Pro',Georgia,serif;background:var(--white);color:var(--ink);overflow-x:hidden;}
-
-/* ── HERO BANNER ── full green with gold trim */
-.hero{
-  background:linear-gradient(160deg,var(--green) 0%,#0f2e1a 100%);
-  position:relative;overflow:hidden;
-  padding:48px 24px 36px;text-align:center;
-  border-bottom:3px solid var(--gold);
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{
+  font-family:'Crimson Pro',Georgia,serif;
+  background:radial-gradient(ellipse at top,rgba(46,63,122,.2),transparent 55%),linear-gradient(165deg,#0e1a2e,#12241a 55%,#0a1422);
+  background-attachment:fixed;color:var(--cream);min-height:100vh;
+  padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);-webkit-font-smoothing:antialiased;
 }
-/* subtle texture */
-.hero::before{
-  content:'';position:absolute;inset:0;
-  background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-  pointer-events:none;
-}
-/* gold corner ornaments */
-.hero::after{
-  content:'';position:absolute;
-  top:12px;left:12px;right:12px;bottom:12px;
-  border:1px solid rgba(200,146,42,.2);
-  border-radius:4px;pointer-events:none;
-}
-
-.hero-eyebrow{
-  font-family:'Cinzel',serif;font-size:9px;letter-spacing:5px;
-  text-transform:uppercase;color:var(--gold2);
-  margin-bottom:14px;position:relative;
-  opacity:0;animation:fadeUp .5s .05s ease forwards;
-}
-.hero-title{
-  font-family:'Cinzel',serif;
-  font-size:clamp(36px,9vw,58px);
-  font-weight:900;color:var(--white);
-  line-height:1.0;letter-spacing:1px;
-  text-shadow:0 2px 20px rgba(0,0,0,.4);
-  margin-bottom:4px;position:relative;
-  opacity:0;animation:fadeUp .6s .1s ease forwards;
-}
-.hero-title .gold{color:var(--gold2);}
-.hero-sub{
-  font-family:'Crimson Pro',serif;font-size:17px;
-  font-style:italic;font-weight:300;
-  color:rgba(249,247,242,.75);
-  margin-bottom:16px;position:relative;
-  opacity:0;animation:fadeUp .6s .15s ease forwards;
-}
-.hero-divider{
-  display:flex;align-items:center;justify-content:center;
-  gap:10px;margin:0 auto 14px;max-width:240px;
-  position:relative;
-  opacity:0;animation:fadeUp .5s .2s ease forwards;
-}
-.hero-divider .line{flex:1;height:1px;background:var(--gold);}
-.hero-divider .diamond{width:7px;height:7px;background:var(--gold);transform:rotate(45deg);}
-.hero-divider .dot{width:3px;height:3px;background:var(--gold2);border-radius:50%;}
-.hero-motto{
-  font-family:'Cinzel',serif;font-size:9.5px;
-  letter-spacing:3px;text-transform:uppercase;
-  color:var(--gold);position:relative;
-  opacity:0;animation:fadeUp .5s .25s ease forwards;
-}
-
-/* ── GOLD RIBBON BANNER ── between hero and cards */
-.ribbon{
-  background:linear-gradient(90deg,var(--gold) 0%,var(--gold2) 50%,var(--gold) 100%);
-  padding:9px 24px;text-align:center;
-  border-bottom:2px solid var(--black);
-}
-.ribbon-text{
-  font-family:'Cinzel',serif;font-size:9px;
-  letter-spacing:4px;text-transform:uppercase;
-  color:var(--black);font-weight:700;
-}
-
-/* ── SECTION BANNERS ── */
-.section-banner{
-  padding:11px 20px 10px;
-  display:flex;align-items:center;gap:12px;
-  border-top:2px solid var(--black);
-  border-bottom:2px solid var(--black);
-  margin-bottom:14px;
-  opacity:0;animation:fadeUp .5s ease forwards;
-}
-.section-banner.green-banner{background:var(--green);}
-.section-banner.indigo-banner{background:var(--indigo);}
-.section-banner .banner-icon{font-size:16px;flex-shrink:0;}
-.section-banner .banner-text{
-  font-family:'Cinzel',serif;font-size:10px;
-  letter-spacing:3px;text-transform:uppercase;
-  color:var(--white);flex:1;
-}
-.section-banner .banner-rule{
-  height:1px;width:24px;background:var(--gold);flex-shrink:0;
-}
-.section-banner .banner-diamond{
-  width:6px;height:6px;background:var(--gold);
-  transform:rotate(45deg);flex-shrink:0;
-}
-
-/* ── CARDS ── */
-.grid{
-  padding:0 14px 6px;
-  display:grid;grid-template-columns:1fr 1fr;gap:11px;
-}
-
-.card{
-  border-radius:12px;overflow:hidden;
-  text-decoration:none;color:inherit;
-  display:flex;flex-direction:column;
-  border:2px solid var(--black);
-  transition:transform .2s,box-shadow .2s;
-  opacity:0;animation:fadeUp .5s ease forwards;
-  min-height:144px;
-}
-.card:active{transform:scale(.97);}
-.card.live{background:var(--white);box-shadow:4px 4px 0 var(--black);}
-.card.live:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--black);}
-.card.soon{background:var(--offwhite);box-shadow:3px 3px 0 #c0b8ac;}
-.card.wide{grid-column:1/-1;min-height:100px;flex-direction:row;}
-
-/* Card header band */
-.card-head{
-  padding:8px 12px 7px;
-  display:flex;align-items:center;gap:8px;
-  border-bottom:2px solid var(--black);
-}
-.card.green-card  .card-head{background:var(--green);}
-.card.indigo-card .card-head{background:var(--indigo);}
-.card.gold-card   .card-head{background:var(--gold);}
-.card.green2-card .card-head{background:var(--green2);}
-.card.mixed-card  .card-head{background:linear-gradient(90deg,var(--green),var(--indigo2));}
-.card.soon .card-head{filter:saturate(.5) brightness(.9);}
-
-.card-head-icon{font-size:16px;line-height:1;flex-shrink:0;}
-.card-head-title{
-  font-family:'Cinzel',serif;font-size:10px;
-  font-weight:700;letter-spacing:.8px;
-  text-transform:uppercase;color:var(--white);
-  line-height:1.2;flex:1;
-}
-.card.gold-card .card-head-title{color:var(--black);}
-
-.card-head-pip{
-  width:7px;height:7px;border-radius:50%;flex-shrink:0;
-}
-.card.live  .card-head-pip{background:var(--gold2);box-shadow:0 0 0 2px rgba(232,184,74,.35);}
-.card.soon  .card-head-pip{background:rgba(255,255,255,.3);}
-
-/* Card body */
-.card-body{padding:12px 13px 10px;flex:1;display:flex;flex-direction:column;}
-.card.wide .card-body{flex-direction:row;align-items:center;gap:12px;padding:12px 16px;}
-.card.wide .card-icon-lg{font-size:28px;flex-shrink:0;}
-
-.card-desc{
-  font-family:'Crimson Pro',serif;font-size:13px;
-  font-weight:300;color:#3a3530;
-  line-height:1.45;flex:1;
-}
-.card.soon .card-desc{color:#8a8278;}
-
-.card-status{
-  margin-top:9px;
-  display:inline-flex;align-items:center;gap:5px;
-  font-family:'Cinzel',serif;font-size:7.5px;
-  letter-spacing:1.5px;text-transform:uppercase;
-}
-.card.live  .card-status{color:var(--green2);}
-.card.soon  .card-status{color:#9a9288;}
-.card.wide .card-info{flex:1;}
-.card.wide .card-arrow-box{
-  width:32px;height:32px;border-radius:6px;
-  background:var(--green);border:2px solid var(--black);
-  display:flex;align-items:center;justify-content:center;
-  color:var(--gold2);font-size:14px;flex-shrink:0;
-  box-shadow:2px 2px 0 var(--black);
-}
-.card.soon.wide .card-arrow-box{background:#c0b8ac;color:#f9f7f2;}
-
-/* ── VERSE SECTION ── indigo banner + white card */
-.verse-wrap{
-  padding:0 14px 14px;
-  opacity:0;animation:fadeUp .5s ease forwards;
-}
-.verse-card{
-  border:2px solid var(--black);border-radius:12px;
-  overflow:hidden;box-shadow:4px 4px 0 var(--black);
-}
-.verse-card-head{
-  background:var(--indigo);
-  padding:8px 14px;
-  border-bottom:2px solid var(--black);
-  display:flex;align-items:center;gap:10px;
-}
-.verse-card-head-text{
-  font-family:'Cinzel',serif;font-size:9px;
-  letter-spacing:3px;text-transform:uppercase;
-  color:var(--gold2);
-}
-.verse-card-body{
-  background:var(--white);
-  padding:16px 18px 14px;
-}
-.verse-text{
-  font-family:'Crimson Pro',serif;font-size:17px;
-  font-style:italic;font-weight:300;
-  color:var(--indigo);line-height:1.55;
-  margin-bottom:8px;
-}
-.verse-ref{
-  font-family:'Cinzel',serif;font-size:9px;
-  letter-spacing:2.5px;text-transform:uppercase;
-  color:var(--gold);
-}
-
-/* ── FOOTER BANNER ── */
-footer{
-  background:var(--black);
-  border-top:3px solid var(--gold);
-  padding:18px 24px 32px;text-align:center;
-  opacity:0;animation:fadeUp .5s ease forwards;
-}
-.footer-motto{
-  font-family:'Cinzel',serif;font-size:10px;
-  letter-spacing:3.5px;text-transform:uppercase;
-  color:var(--gold);margin-bottom:5px;
-}
-.footer-sub{
-  font-family:'Crimson Pro',serif;font-size:13px;
-  font-style:italic;color:rgba(249,247,242,.45);
-}
-
-/* ── SPACER ── */
-.gap{height:16px;}
-
-/* ── ANIMATIONS ── */
-@keyframes fadeUp{
-  from{opacity:0;transform:translateY(12px);}
-  to{opacity:1;transform:translateY(0);}
-}
-.d1{animation-delay:.3s;}.d2{animation-delay:.35s;}.d3{animation-delay:.4s;}
-.d4{animation-delay:.43s;}.d5{animation-delay:.46s;}.d6{animation-delay:.49s;}
-.d7{animation-delay:.52s;}.d8{animation-delay:.55s;}.d9{animation-delay:.58s;}
-.d10{animation-delay:.6s;}.d11{animation-delay:.62s;}.d12{animation-delay:.64s;}
+.wrap{max-width:560px;margin:0 auto;padding:30px 18px 60px;}
+.mast{text-align:center;margin-bottom:8px;}
+.mast .orn{color:var(--gold2);letter-spacing:6px;font-size:13px;opacity:.7;margin-bottom:10px;}
+.mast h1{font-family:'Cinzel',serif;font-weight:900;font-size:clamp(26px,7vw,38px);
+  background:linear-gradient(180deg,#f0e4c0,var(--gold) 70%,#8a5e18);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:1px;}
+.mast .verse{font-style:italic;opacity:.72;font-size:14px;margin-top:12px;line-height:1.45;}
+.note{text-align:center;font-family:'Lato',sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase;
+  color:var(--gold2);opacity:.65;margin:18px 0 22px;}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:460px){.tiles{grid-template-columns:1fr;}}
+.tile{display:block;text-decoration:none;color:inherit;border-radius:14px;padding:20px 18px;transition:.15s;
+  background:linear-gradient(145deg,rgba(45,106,71,.4),rgba(26,74,46,.3));border:1px solid rgba(200,146,42,.25);}
+.tile:active{transform:scale(.98);}
+.tile.full{grid-column:1/-1;}
+.tile .ic{font-size:30px;}
+.tile .tn{font-family:'Cinzel',serif;font-weight:700;font-size:18px;margin:9px 0 4px;}
+.tile .td{font-size:14px;opacity:.8;line-height:1.4;}
+.tile.bridge{background:linear-gradient(145deg,rgba(46,63,122,.5),rgba(26,40,80,.4));border-color:rgba(200,146,42,.4);}
+.tile.vine{background:linear-gradient(145deg,rgba(90,46,107,.45),rgba(61,31,71,.4));border-color:rgba(232,127,168,.35);}
+.foot{text-align:center;margin-top:34px;font-size:12px;opacity:.4;font-style:italic;line-height:1.6;}
+.foot .motto{font-family:'Cinzel',serif;font-style:normal;letter-spacing:1px;color:var(--gold2);opacity:.6;}
 </style>
 </head>
 <body>
-
-<!-- ═══ HERO ═══ -->
-<header class="hero">
-  <div class="hero-eyebrow">Family Portal</div>
-  <h1 class="hero-title">The <span class="gold">Stewart</span><br>Family</h1>
-  <p class="hero-sub">One home. One mission. One place.</p>
-  <div class="hero-divider">
-    <div class="line"></div><div class="dot"></div>
-    <div class="diamond"></div><div class="dot"></div>
-    <div class="line"></div>
+<div class="wrap">
+  <div class="mast">
+    <div class="orn">&#10022; &#10022; &#10022;</div>
+    <h1>The Stewart Family</h1>
+    <div class="verse">"As for me and my house, we will serve the LORD." &mdash; Joshua 24:15</div>
   </div>
-  <p class="hero-motto">Virescit Vulnere Virtus</p>
-</header>
+  <div class="note">Private hub &middot; all stations</div>
 
-<!-- ═══ GOLD RIBBON ═══ -->
-<div class="ribbon">
-  <div class="ribbon-text">Family Tools &nbsp;&#9670;&nbsp; Apps &nbsp;&#9670;&nbsp; Resources</div>
-</div>
-
-<!-- ═══ LIVE TOOLS SECTION ═══ -->
-<div class="gap"></div>
-<div class="section-banner green-banner d1">
-  <div class="banner-rule"></div>
-  <div class="banner-diamond"></div>
-  <div class="banner-text">Live &mdash; Ready to Use</div>
-  <div class="banner-diamond"></div>
-  <div class="banner-rule"></div>
-</div>
-
-<div class="grid">
-  <!-- KITCHEN — wide live -->
-  <a href="kitchen/index.html" class="card wide live green-card d2">
-    <div class="card-head">
-      <div class="card-head-icon">🍽</div>
-      <div class="card-head-title">Stewart Kitchen</div>
-      <div class="card-head-pip"></div>
-    </div>
-    <div class="card-body">
-      <div class="card-icon-lg">🥘</div>
-      <div class="card-info">
-        <div class="card-desc">Meal planning, weekly planner, full cookbook recipes embedded, leftover chains, pantry inventory &amp; calendar export.</div>
-        <div class="card-status">&#9679; Live &mdash; 98 meals &middot; 33 recipes</div>
-      </div>
-      <div class="card-arrow-box">&#8594;</div>
-    </div>
-  </a>
-
-  <!-- AGENT HQ — live -->
-  <a href="boys/index.html" class="card wide live indigo-card d2">
-    <div class="card-head">
-      <div class="card-head-icon">🦆</div>
-      <div class="card-head-title">Agent HQ</div>
-      <div class="card-head-pip"></div>
-    </div>
-    <div class="card-body">
-      <div class="card-icon-lg">🕵️</div>
-      <div class="card-info">
-        <div class="card-desc">Boys app. Missions, field rations, pay tracker &amp; Family Night reward. OWCA theme.</div>
-        <div class="card-status">&#9679; Live &mdash; Agents Alpha, Bravo, Dino &amp; Wildcard</div>
-      </div>
-      <div class="card-arrow-box">&#8594;</div>
-    </div>
-  </a>
-
-  <!-- PARENT DASHBOARD — live, PIN protected -->
-  <a href="dashboard/index.html" class="card wide live green-card d2">
-    <div class="card-head">
-      <div class="card-head-icon">&#128274;</div>
-      <div class="card-head-title">Parent Dashboard</div>
-      <div class="card-head-pip"></div>
-    </div>
-    <div class="card-body">
-      <div class="card-icon-lg">&#128101;</div>
-      <div class="card-info">
-        <div class="card-desc">PIN protected command center. Mission tracking, weekly pay, messenger, lunch drop &amp; family board.</div>
-        <div class="card-status">&#9679; Live &mdash; PIN protected &middot; John &amp; Dawn only</div>
-      </div>
-      <div class="card-arrow-box">&#8594;</div>
-    </div>
-  </a>
-</div>
-
-<div class="gap"></div>
-
-<!-- ═══ COMING SOON SECTION ═══ -->
-<div class="section-banner indigo-banner d3">
-  <div class="banner-rule"></div>
-  <div class="banner-diamond"></div>
-  <div class="banner-text">In Development &mdash; Coming Soon</div>
-  <div class="banner-diamond"></div>
-  <div class="banner-rule"></div>
-</div>
-
-<div class="grid">
-
-  <!-- DEVOTIONAL -->
-  <div class="card soon gold-card d5">
-    <div class="card-head">
-      <div class="card-head-icon">📖</div>
-      <div class="card-head-title">Daily Devotional</div>
-      <div class="card-head-pip"></div>
-    </div>
-    <div class="card-body">
-      <div class="card-desc">Scripture, reflection &amp; a dinner table question for the family each day.</div>
-      <div class="card-status">&#9675; Coming Soon</div>
-    </div>
+  <div class="tiles">
+    <a class="tile bridge full" href="bridge/index.html">
+      <div class="ic">&#9875;</div>
+      <div class="tn">The Bridge</div>
+      <div class="td">Systems Seven &mdash; the whole-life command console.</div>
+    </a>
+    <a class="tile" href="dashboard/index.html">
+      <div class="ic">&#127968;</div>
+      <div class="tn">The Homestead</div>
+      <div class="td">Household, the boys, kitchen &amp; home.</div>
+    </a>
+    <a class="tile" href="boys/index.html">
+      <div class="ic">&#128737;</div>
+      <div class="tn">O.W.C.A.</div>
+      <div class="td">The boys' command center.</div>
+    </a>
+    <a class="tile" href="kitchen/index.html">
+      <div class="ic">&#127858;</div>
+      <div class="tn">The Kitchen</div>
+      <div class="td">Meals, recipes &amp; the cookbook.</div>
+    </a>
+    <a class="tile vine" href="vineyard/index.html">
+      <div class="ic">&#127815;</div>
+      <div class="tn">The Vineyard</div>
+      <div class="td">Ours alone.</div>
+    </a>
   </div>
 
-  <!-- HOMESCHOOL -->
-  <div class="card soon indigo-card d5">
-    <div class="card-head">
-      <div class="card-head-icon">📚</div>
-      <div class="card-head-title">Homeschool</div>
-      <div class="card-head-pip"></div>
-    </div>
-    <div class="card-body">
-      <div class="card-desc">Daily subjects per boy. Dawn logs, John sees the summary.</div>
-      <div class="card-status">&#9675; Coming Soon</div>
-    </div>
-  </div>
-
-  <!-- TRAIL LIFE -->
-  <div class="card soon green-card d6">
-    <div class="card-head">
-      <div class="card-head-icon">⛺</div>
-      <div class="card-head-title">Trail Life</div>
-      <div class="card-head-pip"></div>
-    </div>
-    <div class="card-body">
-      <div class="card-desc">Rank &amp; badge progress for all four boys. Troop PA-1997.</div>
-      <div class="card-status">&#9675; Coming Soon</div>
-    </div>
-  </div>
-
-  <!-- CALENDAR — wide coming soon -->
-  <div class="card soon wide green2-card d7">
-    <div class="card-head">
-      <div class="card-head-icon">📅</div>
-      <div class="card-head-title">Family Calendar &amp; Message Board</div>
-      <div class="card-head-pip"></div>
-    </div>
-    <div class="card-body">
-      <div class="card-icon-lg">🗓</div>
-      <div class="card-info">
-        <div class="card-desc">Dedicated calendar view for the boys — Trail Life meetings, church, school schedule and family events all in one place.</div>
-        <div class="card-status">&#9675; Coming Soon</div>
-      </div>
-      <div class="card-arrow-box">&#8230;</div>
-    </div>
-  </div>
-
-</div>
-
-<div class="gap"></div>
-
-<!-- ═══ VERSE ═══ -->
-<div class="section-banner indigo-banner d8">
-  <div class="banner-rule"></div>
-  <div class="banner-diamond"></div>
-  <div class="banner-text">Stewart Family &mdash; Signature Verse</div>
-  <div class="banner-diamond"></div>
-  <div class="banner-rule"></div>
-</div>
-
-<div class="verse-wrap d9">
-  <div class="verse-card">
-    <div class="verse-card-head">
-      <div class="banner-diamond" style="width:6px;height:6px;background:var(--gold2);transform:rotate(45deg);flex-shrink:0;"></div>
-      <div class="verse-card-head-text">Exodus 14:14</div>
-    </div>
-    <div class="verse-card-body">
-      <div class="verse-text">&ldquo;The Lord shall fight for you, and ye shall hold your peace.&rdquo;</div>
-      <div class="verse-ref">Exodus 14:14 &nbsp;&#9670;&nbsp; King James Version</div>
-    </div>
+  <div class="foot">
+    <div class="motto">Virescit vulnere virtus</div>
+    Courage grows strong at a wound.
   </div>
 </div>
-
-<div class="gap"></div>
-
-<!-- ═══ FOOTER ═══ -->
-<footer class="d10">
-  <div class="footer-motto">Virescit Vulnere Virtus</div>
-  <div class="footer-sub">Courage grows strong at a wound &nbsp;&middot;&nbsp; The Stewart Family</div>
-</footer>
-
 </body>
 </html>
