@@ -453,7 +453,7 @@ function initFirebase(){
     _db.ref('.info/connected').on('value', snap => {
       const live = !!snap.val();
       if(dot){ dot.textContent = live ? '● live' : '○ offline'; dot.style.color = live ? '#7ad19a' : '#c89'; }
-      if(live){ loadCrewStatus(); loadSaga(); loadCadence(); }
+      if(live){ loadCrewStatus(); loadSaga(); loadCadence(); loadDailyBanner(); }
     });
   }catch(e){
     const dot = document.getElementById('sync-dot');
