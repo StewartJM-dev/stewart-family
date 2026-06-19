@@ -537,6 +537,14 @@ body{
           </div>
         </div>
 
+        <div class="sec-hd">Chat Moderation</div>
+        <div class="card" style="margin-bottom:14px;">
+          <div class="card-bd">
+            <div style="font-size:13px;opacity:.75;margin-bottom:10px;">Pause a boy's group chat if it's getting out of hand. Reversible anytime.</div>
+            <div id="mod-list"></div>
+          </div>
+        </div>
+
         <div class="sec-hd">Private Threads</div>
         <div class="thread-list">
           <div class="thread-item" onclick="openThread('samuel','Samuel','Agent Alpha','var(--alpha)')">
@@ -1785,6 +1793,7 @@ function renderMessenger(){
   loadBoardMessages();
   loadThreadPreviews();
   updateDashGroupBadge();
+  renderModeration();
 }
 
 function loadBoardMessages(){
@@ -3672,6 +3681,56 @@ function addHsItem(){
 }
 function toggleHs(k,val){ if(_db) _db.ref('homestead/'+hsActive+'/'+k+'/done').set(val); }
 function delHs(k){ if(_db) _db.ref('homestead/'+hsActive+'/'+k).remove(); }
+
+
+// ════════════════════════════════════════════
+// CHAT MODERATION — pause a boy's group chat (reversible)
+// ════════════════════════════════════════════
+const MOD_AGENTS = [
+  {id:'samuel',name:'Samuel',icon:'🦅'},
+  {id:'johnjr',name:'John Jr.',icon:'🦁'},
+  {id:'stephen',name:'Stephen',icon:'🦖'},
+  {id:'daniel',name:'Daniel',icon:'🐘'}
+];
+function renderModeration(){
+  if(!_db) return;
+  _db.ref('stewart/chatmutes').on('value', s=>{
+    const mutes = s.val()||{};
+    const el=document.getElementById('mod-list');
+    if(!el) return;
+    el.innerHTML = MOD_AGENTS.map(a=>{
+      const mute = mutes[a.id];
+      const until = (mute===true)?Infinity:(typeof mute==='number'?mute:0);
+      const active = until && Date.now()<until;
+      const statusTxt = active
+        ? (until===Infinity ? 'Paused (until lifted)' : 'Paused until '+new Date(until).toLocaleString('en-US',{weekday:'short',hour:'numeric',minute:'2-digit'}))
+        : 'Active';
+      return '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);">'+
+        '<div style="font-size:20px;">'+a.icon+'</div>'+
+        '<div style="flex:1;"><div style="font-weight:700;font-size:15px;">'+a.name+'</div>'+
+        '<div style="font-size:12px;opacity:.7;'+(active?'color:#c0504d;':'')+'">'+statusTxt+'</div></div>'+
+        (active
+          ? '<button onclick="unmuteBoy(\''+a.id+'\')" style="padding:7px 12px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:12px;font-weight:700;cursor:pointer;">Unpause</button>'
+          : '<div style="display:flex;gap:5px;">'+
+            '<button onclick="muteBoy(\''+a.id+'\',1)" style="padding:6px 9px;border-radius:7px;border:1px solid var(--border);background:#fff;font-size:11px;cursor:pointer;">1 hr</button>'+
+            '<button onclick="muteBoy(\''+a.id+'\',24)" style="padding:6px 9px;border-radius:7px;border:1px solid var(--border);background:#fff;font-size:11px;cursor:pointer;">1 day</button>'+
+            '<button onclick="muteBoy(\''+a.id+'\',0)" style="padding:6px 9px;border-radius:7px;border:1px solid #c0504d;background:#fff;color:#c0504d;font-size:11px;cursor:pointer;">Hold</button>'+
+            '</div>')+
+        '</div>';
+    }).join('');
+  });
+}
+function muteBoy(id,hours){
+  if(!_db) return;
+  const name=(MOD_AGENTS.find(a=>a.id===id)||{}).name||'this agent';
+  if(hours===0){
+    if(!confirm('Pause '+name+"'s group chat until you lift it?")) return;
+    _db.ref('stewart/chatmutes/'+id).set(true);
+  }else{
+    _db.ref('stewart/chatmutes/'+id).set(Date.now()+hours*3600*1000);
+  }
+}
+function unmuteBoy(id){ if(_db) _db.ref('stewart/chatmutes/'+id).set(null); }
 
 </script>
 </body>
