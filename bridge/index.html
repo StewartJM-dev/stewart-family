@@ -200,6 +200,10 @@ body{
 .saga-next .sn-label{font-family:'Lato',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold2);opacity:.85;}
 .saga-next .sn-title{font-family:'Cinzel',serif;font-size:17px;color:var(--white);margin-top:5px;}
 .saga-next .sn-none{font-style:italic;opacity:.7;font-size:14px;margin-top:4px;}
+.saga-next .sn-beat{font-size:15px;line-height:1.45;margin-top:7px;opacity:.92;font-style:italic;color:#e8d9c0;}
+.saga-next .sn-beat-empty{opacity:.5;font-style:italic;}
+.saga-next .sn-cadence{font-family:'Lato',sans-serif;font-size:12px;margin-top:10px;padding-top:9px;border-top:1px solid rgba(200,146,42,.2);opacity:.85;}
+.saga-next .sn-cadence.sn-overdue{color:#e8b84a;opacity:1;font-weight:700;}
 .saga-chapters{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
 .sch{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-left:3px solid var(--muted);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:12px;}
 .sch.s-written{border-left-color:#3d8a5e;}
@@ -225,6 +229,47 @@ body{
 .ce-cancel{padding:11px 18px;border:1px solid rgba(255,255,255,.2);border-radius:8px;background:transparent;color:var(--white);font-family:'Cinzel',serif;cursor:pointer;}
 .ce-stat{text-align:center;font-size:13px;margin-top:9px;min-height:16px;opacity:.85;font-style:italic;color:var(--gold2);}
 .foot .motto{font-family:'Cinzel',serif;font-style:normal;letter-spacing:1px;color:var(--gold2);opacity:.6;}
+/* ===== Tabs & bottom nav ===== */
+.btab{display:none;}
+.btab.active{display:block;animation:bfade .25s;}
+@keyframes bfade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+.wrap{padding-bottom:90px;}
+.bbotnav{position:fixed;bottom:0;left:0;right:0;z-index:50;display:flex;justify-content:space-around;
+  background:linear-gradient(180deg,rgba(20,30,46,.97),rgba(10,16,26,.99));border-top:1px solid rgba(200,160,70,.3);
+  padding:8px 4px calc(8px + env(safe-area-inset-bottom));backdrop-filter:blur(10px);}
+.bnav{background:none;border:none;color:rgba(220,210,180,.5);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-family:'Lato',sans-serif;font-size:9px;letter-spacing:.5px;text-transform:uppercase;flex:1;padding:4px 0;transition:.15s;}
+.bnav .bni{font-size:20px;}
+.bnav.active{color:var(--gold2,#e8b84a);}
+
+/* ===== Daily banner ===== */
+.daily-banner{background:linear-gradient(135deg,rgba(46,63,122,.45),rgba(26,40,80,.35));border:1px solid rgba(200,160,70,.3);
+  border-radius:14px;padding:16px;margin-bottom:16px;}
+.daily-banner .db-date{font-family:'Lato',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold2,#e8b84a);opacity:.85;}
+.daily-banner .db-greet{font-family:'Cinzel',serif;font-size:18px;color:#fff;margin:5px 0 12px;}
+.daily-banner .db-item{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid rgba(200,160,70,.12);}
+.daily-banner .db-item:last-child{border-bottom:none;}
+.daily-banner .db-check{width:24px;height:24px;border-radius:7px;border:2px solid var(--gold,#c8922a);background:transparent;color:transparent;cursor:pointer;flex-shrink:0;font-size:14px;transition:.15s;}
+.daily-banner .db-check.on{background:var(--gold,#c8922a);color:#16120c;}
+.daily-banner .db-label{flex:1;font-size:16px;}
+.daily-banner .db-label.done{opacity:.5;text-decoration:line-through;}
+.daily-banner .db-link{font-size:11px;color:var(--gold2,#e8b84a);text-decoration:none;opacity:.8;border:1px solid rgba(200,160,70,.3);border-radius:7px;padding:4px 9px;flex-shrink:0;}
+
+/* ===== Family chat on Bridge ===== */
+.bchat-thread{display:flex;flex-direction:column;gap:8px;max-height:55vh;overflow-y:auto;padding:4px 2px;margin-bottom:12px;}
+.bchat-msg{max-width:80%;padding:9px 13px;border-radius:13px;font-size:15px;line-height:1.4;}
+.bchat-msg .bcm-from{font-size:10px;letter-spacing:.5px;text-transform:uppercase;opacity:.65;margin-bottom:3px;font-family:'Lato',sans-serif;}
+.bchat-msg.me{align-self:flex-end;background:linear-gradient(135deg,var(--gold,#c8922a),#9a6c1c);color:#16120c;border-bottom-right-radius:4px;}
+.bchat-msg.them{align-self:flex-start;background:rgba(255,255,255,.08);border-bottom-left-radius:4px;}
+.bchat-msg .bcm-time{font-size:10px;opacity:.5;margin-top:3px;}
+.bchat-empty{text-align:center;opacity:.5;font-style:italic;padding:24px;}
+.bchat-input-row{display:flex;gap:8px;}
+.bchat-input-row input{flex:1;padding:11px 13px;border-radius:9px;background:rgba(0,0,0,.3);color:#f6efe0;border:1px solid rgba(200,160,70,.25);font-family:'Crimson Pro',serif;font-size:15px;}
+.bchat-input-row button{padding:11px 18px;border:none;border-radius:9px;background:linear-gradient(135deg,var(--gold,#c8922a),#9a6c1c);color:#16120c;font-family:'Cinzel',serif;font-weight:700;cursor:pointer;}
+
+/* instruments placeholder */
+.instruments-soon{text-align:center;padding:40px 20px;opacity:.8;line-height:1.7;}
+.instruments-soon p{margin-top:8px;}
 </style>
 </head>
 <body>
@@ -240,7 +285,14 @@ body{
 
   <div class="rule"></div>
 
-  <!-- TODAY -->
+  <div class="rule"></div>
+
+  <!-- ===== HELM TAB ===== -->
+  <div class="btab active" id="btab-helm">
+    <!-- DAILY BANNER -->
+    <div class="daily-banner" id="daily-banner"></div>
+
+    <!-- TODAY -->
   <div class="today" id="today">
     <div class="label">Today's Watch <span id="sync-dot" style="font-size:9px;letter-spacing:1px;margin-left:8px;opacity:.7;">connecting…</span></div>
     <div class="day" id="t-day">—</div>
@@ -248,11 +300,14 @@ body{
     <div class="focus" id="t-focus">—</div>
   </div>
 
-  <!-- CREW STATUS (live from family app) -->
+    <!-- CREW STATUS (live from family app) -->
   <div class="shead">Crew Status — Today</div>
   <div class="crew" id="crew"><div class="crew-loading">Reading the family channel…</div></div>
+  </div>
 
-  <!-- CAPTAIN'S TRANSMISSION -->
+  <!-- ===== COMMS TAB ===== -->
+  <div class="btab" id="btab-comms">
+    <!-- CAPTAIN'S TRANSMISSION -->
   <div class="shead">Captain's Transmission</div>
   <div class="transmit">
     <div class="tx-row">
@@ -273,19 +328,28 @@ body{
     <div id="tx-status" class="tx-stat"></div>
   </div>
 
-  <!-- THE WEEK -->
-  <div class="shead">The Seven-Day Cycle</div>
-  <div class="week" id="week"></div>
+    <!-- FAMILY CHAT -->
+    <div class="shead">Family Channel</div>
+    <div class="bchat-thread" id="bchat-thread"></div>
+    <div class="bchat-input-row">
+      <input type="text" id="bchat-input" placeholder="Message the family…" maxlength="280">
+      <button onclick="sendBridgeChat()">Send</button>
+    </div>
+  </div>
 
-  <!-- THE SYSTEMS -->
-  <div class="shead">The Seven Systems</div>
-  <div class="systems" id="systems"></div>
+  <!-- ===== INSTRUMENTS TAB ===== -->
+  <div class="btab" id="btab-instruments">
+    <div class="shead">Instruments</div>
+    <div class="instruments-soon">
+      <div style="font-size:34px;opacity:.5;">⚙</div>
+      <p>The instrument panel is being fitted.</p>
+      <p style="font-size:13px;opacity:.6;">Gauges, dials, and the status board are coming to this station.</p>
+    </div>
+  </div>
 
-  <!-- THE FLEET -->
-  <div class="shead">The Fleet</div>
-  <div class="fleet" id="fleet"></div>
-
-  <!-- THE SAGA STATION (writing cockpit) -->
+  <!-- ===== SAGA TAB ===== -->
+  <div class="btab" id="btab-saga">
+    <!-- THE SAGA STATION (writing cockpit) -->
   <div class="shead">The Saga — The Ascension</div>
   <div class="saga-progress" id="saga-progress"></div>
   <div class="saga-next" id="saga-next"></div>
@@ -311,6 +375,10 @@ body{
       </select>
     </div>
     <div class="ce-field">
+      <label>The beat — what happens in this chapter (your bearing)</label>
+      <input type="text" id="ce-beat" placeholder="e.g. Corvin makes his kill demand on Day Seven…">
+    </div>
+    <div class="ce-field">
       <label>Chapter text (paste from Scrivener)</label>
       <textarea id="ce-text" rows="8" placeholder="Paste the chapter here when it's ready…"></textarea>
     </div>
@@ -319,6 +387,22 @@ body{
       <button class="ce-cancel" onclick="closeChapterEditor()">Cancel</button>
     </div>
     <div class="ce-stat" id="ce-stat"></div>
+  </div>
+  </div>
+
+  <!-- ===== SYSTEMS TAB ===== -->
+  <div class="btab" id="btab-systems">
+    <!-- THE WEEK -->
+  <div class="shead">The Seven-Day Cycle</div>
+  <div class="week" id="week"></div>
+
+    <!-- THE SYSTEMS -->
+  <div class="shead">The Seven Systems</div>
+  <div class="systems" id="systems"></div>
+
+    <!-- THE FLEET -->
+  <div class="shead">The Fleet</div>
+  <div class="fleet" id="fleet"></div>
   </div>
 
   <div class="foot">
@@ -369,7 +453,7 @@ function initFirebase(){
     _db.ref('.info/connected').on('value', snap => {
       const live = !!snap.val();
       if(dot){ dot.textContent = live ? '● live' : '○ offline'; dot.style.color = live ? '#7ad19a' : '#c89'; }
-      if(live){ loadCrewStatus(); loadSaga(); }
+      if(live){ loadCrewStatus(); loadSaga(); loadCadence(); }
     });
   }catch(e){
     const dot = document.getElementById('sync-dot');
@@ -530,11 +614,14 @@ function renderSaga(){
   const nextEl = document.getElementById('saga-next');
   if(nextEl){
     if(next){
-      nextEl.innerHTML = '<div class="sn-label">Next at the helm</div><div class="sn-title">Ch. '+(next.number||'?')+' — '+esc(next.title||'Untitled')+'</div>';
+      const beatLine = next.beat ? '<div class="sn-beat">'+esc(next.beat)+'</div>' : '<div class="sn-beat sn-beat-empty">No beat noted yet — tap Edit to set what happens here.</div>';
+      nextEl.innerHTML = '<div class="sn-label">Your bearing — write this next</div>'+
+        '<div class="sn-title">Ch. '+(next.number||'?')+' — '+esc(next.title||'Untitled')+'</div>'+
+        beatLine + renderCadenceLine();
     }else if(total){
-      nextEl.innerHTML = '<div class="sn-label">Next at the helm</div><div class="sn-none">All charted chapters are written. Add the next one when you are ready.</div>';
+      nextEl.innerHTML = '<div class="sn-label">Your bearing</div><div class="sn-none">All charted chapters are written. Chart the next one to set your heading.</div>'+renderCadenceLine();
     }else{
-      nextEl.innerHTML = '<div class="sn-label">Next at the helm</div><div class="sn-none">No chapters charted yet. Add the first to set your heading.</div>';
+      nextEl.innerHTML = '<div class="sn-label">Your bearing</div><div class="sn-none">No chapters charted yet. Add the first to set your heading.</div>';
     }
   }
 
@@ -560,6 +647,7 @@ function openChapterEditor(){
   document.getElementById('ce-number').value = SAGA_CHAPTERS.length ? (Math.max.apply(null,SAGA_CHAPTERS.map(c=>c.number||0))+1) : 1;
   document.getElementById('ce-title').value='';
   document.getElementById('ce-status').value='notstarted';
+  document.getElementById('ce-beat').value='';
   document.getElementById('ce-text').value='';
   document.getElementById('chapter-editor').style.display='block';
   document.getElementById('ce-stat').textContent='';
@@ -571,6 +659,7 @@ function editChapter(k){
   document.getElementById('ce-number').value=c.number||'';
   document.getElementById('ce-title').value=c.title||'';
   document.getElementById('ce-status').value=c.status||'notstarted';
+  document.getElementById('ce-beat').value=c.beat||'';
   document.getElementById('ce-text').value=c.text||'';
   document.getElementById('chapter-editor').style.display='block';
   document.getElementById('ce-stat').textContent='';
@@ -582,9 +671,10 @@ function saveChapter(){
   const number=parseInt(document.getElementById('ce-number').value,10);
   const title=document.getElementById('ce-title').value.trim();
   const status=document.getElementById('ce-status').value;
+  const beat=document.getElementById('ce-beat').value.trim();
   const text=document.getElementById('ce-text').value;
   if(!number){ ceStat('Give it a chapter number.'); return; }
-  const data={number:number,order:number,title:title,status:status,text:text};
+  const data={number:number,order:number,title:title,status:status,beat:beat,text:text};
   if(editingChapterKey){
     _db.ref('saga/chapters/'+editingChapterKey).update(data).then(()=>{ ceStat('Saved'); setTimeout(closeChapterEditor,700); });
   }else{
@@ -605,12 +695,129 @@ function unreleaseChapter(k){
   }
 }
 function ceStat(m){ const e=document.getElementById('ce-stat'); if(e) e.textContent=m; }
+
+// ----- Release cadence (item 3) -----
+let SAGA_CADENCE = 0; // days between releases; 0 = no cadence set
+function loadCadence(){
+  if(!_db) return;
+  _db.ref('saga/meta/cadenceDays').on('value', s=>{ SAGA_CADENCE = s.val()||0; renderSaga(); });
+}
+function setCadence(){
+  if(!_db) return;
+  const v = prompt('Release one chapter every how many days? (e.g. 14 for every two weeks. Enter 0 to turn off.)', SAGA_CADENCE||14);
+  if(v===null) return;
+  const n = parseInt(v,10);
+  if(isNaN(n)||n<0) return;
+  _db.ref('saga/meta/cadenceDays').set(n);
+}
+function renderCadenceLine(){
+  if(!SAGA_CADENCE){
+    return '<div class="sn-cadence"><span onclick="setCadence()" style="cursor:pointer;text-decoration:underline;">Set a release rhythm</span> to keep the family turning pages.</div>';
+  }
+  // find most recent release date
+  const releases = SAGA_CHAPTERS.filter(c=>c.released && c.released_at).map(c=>c.released_at);
+  const lastRelease = releases.length ? Math.max.apply(null,releases) : 0;
+  const hasWrittenUnreleased = SAGA_CHAPTERS.some(c=>(c.status==='written')&&!c.released&&c.text&&c.text.trim());
+  if(!lastRelease){
+    return '<div class="sn-cadence">Rhythm: one chapter every '+SAGA_CADENCE+' days. '+(hasWrittenUnreleased?'You have one ready — release it to start the clock.':'')+' <span onclick="setCadence()" style="cursor:pointer;text-decoration:underline;opacity:.7;">change</span></div>';
+  }
+  const due = lastRelease + SAGA_CADENCE*86400000;
+  const now = Date.now();
+  const daysLeft = Math.ceil((due-now)/86400000);
+  let msg;
+  if(daysLeft>1) msg='Next release due in '+daysLeft+' days ('+new Date(due).toLocaleDateString('en-US',{month:'short',day:'numeric'})+').';
+  else if(daysLeft===1) msg='Next release due tomorrow.';
+  else if(daysLeft===0) msg='Next release due today.';
+  else msg='Release overdue by '+Math.abs(daysLeft)+' day'+(Math.abs(daysLeft)===1?'':'s')+' — the family is waiting.';
+  return '<div class="sn-cadence'+(daysLeft<=0?' sn-overdue':'')+'">'+msg+' <span onclick="setCadence()" style="cursor:pointer;text-decoration:underline;opacity:.7;">change</span></div>';
+}
 function esc(s){ return String(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+// ════════════════════════════════════════════
+// TAB SWITCHING
+// ════════════════════════════════════════════
+function showBTab(name, btn){
+  document.querySelectorAll('.btab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.bnav').forEach(b=>b.classList.remove('active'));
+  document.getElementById('btab-'+name).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(name==='comms'){ loadBridgeChat(); }
+  window.scrollTo(0,0);
+}
+
+// ════════════════════════════════════════════
+// FAMILY CHAT (Bridge side) — same stewart/groupchat the boys use
+// ════════════════════════════════════════════
+function loadBridgeChat(){
+  if(!_db) return;
+  _db.ref('stewart/groupchat').limitToLast(60).on('value', s=>{
+    const v=s.val()||{};
+    const items=Object.values(v).sort((a,b)=>(a.timestamp||0)-(b.timestamp||0));
+    const el=document.getElementById('bchat-thread');
+    if(!el) return;
+    if(!items.length){ el.innerHTML='<div class="bchat-empty">No messages yet. Open the channel.</div>'; return; }
+    el.innerHTML=items.map(m=>{
+      const mine=(m.agentId==='parent');
+      const time=m.timestamp?new Date(m.timestamp).toLocaleString('en-US',{weekday:'short',hour:'numeric',minute:'2-digit'}):'';
+      return '<div class="bchat-msg '+(mine?'me':'them')+'">'+
+        '<div class="bcm-from">'+esc(m.from||'')+'</div>'+esc(m.text||'')+
+        '<div class="bcm-time">'+time+'</div></div>';
+    }).join('');
+    el.scrollTop=el.scrollHeight;
+  });
+}
+function sendBridgeChat(){
+  if(!_db) return;
+  const inp=document.getElementById('bchat-input');
+  const text=inp.value.trim(); if(!text) return;
+  _db.ref('stewart/groupchat').push({ text, from:'Dad', agentId:'parent', timestamp:Date.now() }).then(()=>{ inp.value=''; });
+}
+
+// ════════════════════════════════════════════
+// DAILY BANNER — shared daily rhythm with check-offs
+// ════════════════════════════════════════════
+const DAILY_ITEMS = [
+  {key:'devotions', label:'Morning devotions', link:null},
+  {key:'vineyard',  label:'Tend the Vineyard', link:'../vineyard/'},
+  {key:'saga',      label:"Write today's bearing", link:null},
+  {key:'family',    label:'Check in with the family', link:null}
+];
+function dayKey(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function loadDailyBanner(){
+  if(!_db) return;
+  _db.ref('bridge/daily/'+dayKey()).on('value', s=>{ renderDailyBanner(s.val()||{}); });
+}
+function renderDailyBanner(done){
+  done=done||{};
+  const el=document.getElementById('daily-banner'); if(!el) return;
+  const h=new Date().getHours();
+  const greet=h<12?'Good morning, Captain.':h<17?'Good afternoon, Captain.':'Good evening, Captain.';
+  const dateStr=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  const items=DAILY_ITEMS.map(it=>{
+    const on=!!done[it.key];
+    return '<div class="db-item">'+
+      '<button class="db-check '+(on?'on':'')+'" onclick="toggleDaily(\''+it.key+'\','+(!on)+')">\u2713</button>'+
+      '<div class="db-label '+(on?'done':'')+'">'+it.label+'</div>'+
+      (it.link?'<a class="db-link" href="'+it.link+'">Open</a>':'')+
+    '</div>';
+  }).join('');
+  el.innerHTML='<div class="db-date">'+dateStr+'</div><div class="db-greet">'+greet+'</div>'+items;
+}
+function toggleDaily(key,val){ if(_db) _db.ref('bridge/daily/'+dayKey()+'/'+key).set(val); }
 
 renderWeek();
 renderSystems();
 renderFleet();
 initFirebase();
 </script>
+
+<!-- BRIDGE BOTTOM NAV -->
+<div class="bbotnav">
+  <button class="bnav active" data-btab="helm" onclick="showBTab('helm',this)"><span class="bni">⚓</span>Helm</button>
+  <button class="bnav" data-btab="comms" onclick="showBTab('comms',this)"><span class="bni">📡</span>Comms</button>
+  <button class="bnav" data-btab="instruments" onclick="showBTab('instruments',this)"><span class="bni">🎛️</span>Instruments</button>
+  <button class="bnav" data-btab="saga" onclick="showBTab('saga',this)"><span class="bni">📖</span>Saga</button>
+  <button class="bnav" data-btab="systems" onclick="showBTab('systems',this)"><span class="bni">🧭</span>Systems</button>
+</div>
 </body>
 </html>
