@@ -177,6 +177,8 @@ textarea::placeholder,input::placeholder{color:rgba(169,143,176,.7);}
 .collrow button{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;opacity:.6;padding:2px 6px;}
 .collrow button:active{opacity:1;}
 .coll-empty{opacity:.5;font-style:italic;font-size:14px;padding:6px 0;}
+.list-mgr{padding:14px 0;border-bottom:1px solid rgba(232,127,168,.15);}
+.list-mgr-title{font-family:'Cinzel',serif;font-size:14px;color:var(--pink2);margin-bottom:9px;}
 .nightcard{background:linear-gradient(145deg,rgba(122,63,146,.3),rgba(42,21,48,.55));
   border:1px solid rgba(232,127,168,.22);border-left:3px solid var(--gold);border-radius:12px;padding:14px 15px;margin-bottom:10px;}
 .nightcard .nname{font-family:'Cinzel',serif;font-size:17px;color:var(--cream);}
@@ -294,7 +296,7 @@ textarea::placeholder,input::placeholder{color:rgba(169,143,176,.7);}
         <option value="Stay-in">🏡 Stay-in</option>
         <option value="__custom">✎ Custom…</option>
       </select>
-      <input type="text" id="c-theme" placeholder="Describe the theme in your own words…" style="margin-top:8px;">
+      <input type="text" id="c-theme" placeholder="…or write your own theme here" style="margin-top:8px;">
 
       <div class="field-label">The mood</div>
       <select id="c-heat">
@@ -304,28 +306,75 @@ textarea::placeholder,input::placeholder{color:rgba(169,143,176,.7);}
       </select>
 
       <div class="field-label">What to wear</div>
-      <textarea id="c-wear" rows="2" placeholder="A private note, just between us…"></textarea>
+      <div id="c-wear-pick" class="extras-pick"></div>
 
-      <div class="field-label">Setting & details</div>
-      <textarea id="c-notes" rows="2" placeholder="Music, lighting, food, anything that makes it special…"></textarea>
+      <div class="field-label">Prep before the night</div>
+      <div id="c-prep-pick" class="extras-pick"></div>
 
-      <div class="field-label">Extras from our collection</div>
+      <div class="field-label">Dinner</div>
+      <div id="c-dinner-pick" class="extras-pick"></div>
+
+      <div class="field-label">Toys from our collection</div>
       <div id="c-extras-pick" class="extras-pick"></div>
-      <div style="font-size:13px;opacity:.65;font-style:italic;margin-top:4px;">Tap to include. Manage your collection below.</div>
+      <div style="font-size:13px;opacity:.65;font-style:italic;margin-top:4px;">Tap to include. Manage each list below.</div>
+
+      <div class="field-label">Setting &amp; details</div>
+      <textarea id="c-notes" rows="2" placeholder="Music, lighting, anything else that makes it special…"></textarea>
 
       <button class="btn" onclick="saveNight()">Lay it down in the cellar 🍷</button>
       <button class="btn vine" id="c-update-btn" onclick="updateNight()" style="display:none;">Save changes</button>
       <div class="stat" id="cellar-stat"></div>
     </div>
 
-    <div class="shead">Our Collection</div>
+    <div class="shead">Our Lists</div>
     <div class="card vineedge">
-      <p style="opacity:.8;margin-bottom:10px;">Your private collection of toys & extras. Add, edit, or remove — only the two of you ever see this.</p>
-      <div style="display:flex;gap:8px;">
-        <input type="text" id="collection-input" placeholder="Add an item…" style="flex:1;">
-        <button class="btn" style="width:auto;margin-top:0;padding:11px 18px;" onclick="addCollectionItem()">＋</button>
+      <p style="opacity:.8;margin-bottom:12px;">Build your own lists. Add, edit, or remove anything — only the two of you ever see these.</p>
+
+      <div class="list-mgr">
+        <div class="list-mgr-title">👗 What to wear</div>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="wear-input" placeholder="Add something to wear…" style="flex:1;">
+          <button class="btn" style="width:auto;margin-top:0;padding:10px 16px;" onclick="addListItem('wear')">＋</button>
+        </div>
+        <div id="wear-list" style="margin-top:10px;"></div>
       </div>
-      <div id="collection-list" style="margin-top:12px;"></div>
+
+      <div class="list-mgr">
+        <div class="list-mgr-title">🚿 Prep checklist</div>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="prep-input" placeholder="Add a prep step (shower, candles…)" style="flex:1;">
+          <button class="btn" style="width:auto;margin-top:0;padding:10px 16px;" onclick="addListItem('prep')">＋</button>
+        </div>
+        <div id="prep-list" style="margin-top:10px;"></div>
+      </div>
+
+      <div class="list-mgr">
+        <div class="list-mgr-title">🍽️ Dinner ideas</div>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="dinner-input" placeholder="Add a dinner idea…" style="flex:1;">
+          <button class="btn" style="width:auto;margin-top:0;padding:10px 16px;" onclick="addListItem('dinner')">＋</button>
+        </div>
+        <div id="dinner-list" style="margin-top:10px;"></div>
+      </div>
+
+      <div class="list-mgr" style="border-bottom:none;">
+        <div class="list-mgr-title">🍇 Our toy collection</div>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="collection-input" placeholder="Add an item…" style="flex:1;">
+          <button class="btn" style="width:auto;margin-top:0;padding:10px 16px;" onclick="addListItem('collection')">＋</button>
+        </div>
+        <div id="collection-list" style="margin-top:10px;"></div>
+      </div>
+    </div>
+
+    <div class="shead">From Dawn's Kitchen Wishes</div>
+    <div class="card">
+      <p style="opacity:.8;margin-bottom:10px;">Dawn, add a dish you'd love made for you. It'll be waiting as a dinner idea.</p>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="foodwish-input" placeholder="A meal you're craving…" style="flex:1;">
+        <button class="btn vine" style="width:auto;margin-top:0;padding:10px 16px;" onclick="addFoodWish()">＋</button>
+      </div>
+      <div id="foodwish-list" style="margin-top:12px;"></div>
     </div>
 
     <div class="shead">The Cellar — Saved Nights</div>
@@ -388,6 +437,7 @@ const FB_CONFIG = {
 };
 
 const PIN = "1985";
+const VKEY = "0ba2b20152748f0c8c92c16f2c67b2ae61a4"; // shared-secret namespace — must match database rules
 let _db = null;
 let WHO = null; // 'john' or 'dawn'
 
@@ -482,7 +532,7 @@ function startApp(){
   // tab-aware verse
   setVerse('together');
   buildSignals();
-  renderExtrasPick();
+  LISTS.forEach(renderPick);
   document.getElementById('collection-input').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); addCollectionItem(); } });
   try{
     firebase.initializeApp(FB_CONFIG);
@@ -490,7 +540,7 @@ function startApp(){
     _db.ref('.info/connected').on('value', s=>{
       const live=!!s.val();
       document.getElementById('sync').textContent = live?'● connected · ours alone':'○ offline';
-      if(live){ loadToday(); listenThread(); listenDates(); listenFoxes(); listenCollection(); listenNights(); }
+      if(live){ loadToday(); listenThread(); listenDates(); listenFoxes(); listenLists(); listenFoodWishes(); listenNights(); }
     });
   }catch(e){
     document.getElementById('sync').textContent='○ add your Firebase config to connect';
@@ -508,23 +558,23 @@ function saveToggles(){
   if(!_db) return;
   const data={};
   document.querySelectorAll('.toggle[data-k]').forEach(t=>{ data[t.dataset.k]=t.classList.contains('on'); });
-  _db.ref('vineyard/checkins/'+todayKey()).update(data);
+  _db.ref(VKEY+'/vineyard/checkins/'+todayKey()).update(data);
 }
 function saveSpiritual(){
   if(!_db){ stat('spiritual-stat','Add your Firebase config first.'); return; }
-  _db.ref('vineyard/checkins/'+todayKey()).update({
+  _db.ref(VKEY+'/vineyard/checkins/'+todayKey()).update({
     prayerFocus: document.getElementById('prayer-focus').value,
     gratitude: document.getElementById('gratitude').value
   }).then(()=>stat('spiritual-stat','Saved ❧'));
 }
 function saveHealth(){
   if(!_db){ stat('health-stat','Add your Firebase config first.'); return; }
-  _db.ref('vineyard/checkins/'+todayKey()).update({
+  _db.ref(VKEY+'/vineyard/checkins/'+todayKey()).update({
     healthGoal: document.getElementById('health-goal').value
   }).then(()=>stat('health-stat','Saved ❧'));
 }
 function loadToday(){
-  _db.ref('vineyard/checkins/'+todayKey()).on('value', s=>{
+  _db.ref(VKEY+'/vineyard/checkins/'+todayKey()).on('value', s=>{
     const d=s.val()||{};
     document.querySelectorAll('.toggle[data-k]').forEach(t=>{ t.classList.toggle('on', !!d[t.dataset.k]); });
     if(document.activeElement.id!=='prayer-focus') document.getElementById('prayer-focus').value=d.prayerFocus||'';
@@ -544,13 +594,13 @@ function planDate(){
     note:document.getElementById('d-note').value.trim(),
     by:WHO, timestamp:Date.now()
   };
-  _db.ref('vineyard/dates').push(payload).then(()=>{
+  _db.ref(VKEY+'/vineyard/dates').push(payload).then(()=>{
     document.getElementById('d-title').value='';document.getElementById('d-when').value='';document.getElementById('d-note').value='';
     stat('date-stat','Planned ✦ something to look forward to');
   });
 }
 function listenDates(){
-  _db.ref('vineyard/dates').on('value', s=>{
+  _db.ref(VKEY+'/vineyard/dates').on('value', s=>{
     const v=s.val()||{};
     const items=Object.entries(v).map(([k,d])=>({k,...d})).sort((a,b)=>(a.timestamp||0)-(b.timestamp||0));
     const el=document.getElementById('date-list');
@@ -565,7 +615,7 @@ function listenDates(){
       </div>`).join('');
   });
 }
-function delDate(k){ if(_db) _db.ref('vineyard/dates/'+k).remove(); }
+function delDate(k){ if(_db) _db.ref(VKEY+'/vineyard/dates/'+k).remove(); }
 function addToCalendar(){
   const title=document.getElementById('d-title').value.trim()||'Date night';
   const when=document.getElementById('d-when').value.trim();
@@ -585,16 +635,16 @@ function buildSignals(){
 function sendSignal(i){
   if(!_db) return;
   const s=SIGNALS[i];
-  _db.ref('vineyard/thread').push({ text:s.e+' '+s.t, by:WHO, sig:true, timestamp:Date.now() });
+  _db.ref(VKEY+'/vineyard/thread').push({ text:s.e+' '+s.t, by:WHO, sig:true, timestamp:Date.now() });
 }
 function sendMsg(){
   if(!_db) return;
   const box=document.getElementById('msg-box');
   const text=box.value.trim(); if(!text) return;
-  _db.ref('vineyard/thread').push({ text, by:WHO, timestamp:Date.now() }).then(()=>{ box.value=''; });
+  _db.ref(VKEY+'/vineyard/thread').push({ text, by:WHO, timestamp:Date.now() }).then(()=>{ box.value=''; });
 }
 function listenThread(){
-  _db.ref('vineyard/thread').limitToLast(60).on('value', s=>{
+  _db.ref(VKEY+'/vineyard/thread').limitToLast(60).on('value', s=>{
     const v=s.val()||{};
     const items=Object.values(v).sort((a,b)=>(a.timestamp||0)-(b.timestamp||0));
     const el=document.getElementById('thread');
@@ -620,8 +670,6 @@ function setVerse(tab){
 // ════════════════════════════════════════════
 // THE CELLAR — date-night designer + saved library
 // ════════════════════════════════════════════
-let COLLECTION = [];      // private list of toys/extras (strings)
-let selectedExtras = [];  // indices chosen for the night being designed
 let editingNightKey = null; // if editing an existing saved night
 
 function onThemePick(){
@@ -631,47 +679,78 @@ function onThemePick(){
   else if(v){ field.value = v; }
 }
 
-// --- Collection (the private toy/extras list) ---
-function addCollectionItem(){
-  if(!_db){ stat('cellar-stat','Add your Firebase config first.'); return; }
-  const inp=document.getElementById('collection-input');
+// --- Self-managed lists: wear / prep / dinner / collection ---
+const LISTS = ['wear','prep','dinner','collection'];
+const LIST_DATA = { wear:[], prep:[], dinner:[], collection:[] };
+const LIST_SELECTED = { wear:[], prep:[], dinner:[], collection:[] };
+const LIST_EMPTY = {
+  wear:'Add something to wear above.',
+  prep:'Add a prep step above.',
+  dinner:'Add a dinner idea above.',
+  collection:'Add an item above.'
+};
+
+function addListItem(cat){
+  if(!_db){ stat('cellar-stat','Not connected yet.'); return; }
+  const inp=document.getElementById(cat+'-input');
   const val=inp.value.trim(); if(!val) return;
-  _db.ref('vineyard/collection').push({ name:val, timestamp:Date.now() }).then(()=>{ inp.value=''; });
+  _db.ref(VKEY+'/vineyard/lists/'+cat).push({ name:val, timestamp:Date.now() }).then(()=>{ inp.value=''; });
 }
-function delCollectionItem(k){ if(_db) _db.ref('vineyard/collection/'+k).remove(); }
-function listenCollection(){
-  _db.ref('vineyard/collection').on('value', s=>{
-    const v=s.val()||{};
-    COLLECTION=Object.entries(v).map(([k,d])=>({k,name:d.name}));
-    renderCollection();
-    renderExtrasPick();
+function delListItem(cat,k){ if(_db) _db.ref(VKEY+'/vineyard/lists/'+cat+'/'+k).remove(); }
+function editListItem(cat,k){
+  const it=LIST_DATA[cat].find(x=>x.k===k); if(!it) return;
+  const nv=prompt('Rename:', it.name);
+  if(nv!==null && nv.trim() && _db) _db.ref(VKEY+'/vineyard/lists/'+cat+'/'+k+'/name').set(nv.trim());
+}
+function listenLists(){
+  LISTS.forEach(cat=>{
+    _db.ref(VKEY+'/vineyard/lists/'+cat).on('value', s=>{
+      const v=s.val()||{};
+      LIST_DATA[cat]=Object.entries(v).map(([k,d])=>({k,name:d.name}));
+      renderListMgr(cat);
+      renderPick(cat);
+    });
   });
 }
-function renderCollection(){
-  const el=document.getElementById('collection-list');
-  if(!COLLECTION.length){ el.innerHTML='<div class="coll-empty">Nothing here yet. Add what you like — it stays between you two.</div>'; return; }
-  el.innerHTML=COLLECTION.map(it=>`
-    <div class="collrow">
-      <div class="cn">${esc(it.name)}</div>
-      <button onclick="editCollectionItem('${it.k}')" title="Rename">✎</button>
-      <button onclick="delCollectionItem('${it.k}')" title="Remove">×</button>
-    </div>`).join('');
+function renderListMgr(cat){
+  const el=document.getElementById(cat+'-list'); if(!el) return;
+  if(!LIST_DATA[cat].length){ el.innerHTML='<div class="coll-empty">'+LIST_EMPTY[cat]+'</div>'; return; }
+  el.innerHTML=LIST_DATA[cat].map(it=>'<div class="collrow"><div class="cn">'+esc(it.name)+'</div>'+
+    '<button onclick="editListItem(\''+cat+'\',\''+it.k+'\')" title="Rename">✎</button>'+
+    '<button onclick="delListItem(\''+cat+'\',\''+it.k+'\')" title="Remove">×</button></div>').join('');
 }
-function editCollectionItem(k){
-  const it=COLLECTION.find(x=>x.k===k); if(!it) return;
-  const nv=prompt('Rename:', it.name);
-  if(nv!==null && nv.trim() && _db) _db.ref('vineyard/collection/'+k+'/name').set(nv.trim());
+function renderPick(cat){
+  const el=document.getElementById('c-'+cat+'-pick'); if(!el) return;
+  if(!LIST_DATA[cat].length){ el.innerHTML='<div class="coll-empty" style="font-size:13px;">Add to this list below to pick from it here.</div>'; return; }
+  el.innerHTML=LIST_DATA[cat].map(it=>'<div class="chip '+(LIST_SELECTED[cat].includes(it.k)?'on':'')+'" onclick="togglePick(\''+cat+'\',\''+it.k+'\')">'+esc(it.name)+'</div>').join('');
 }
-function renderExtrasPick(){
-  const el=document.getElementById('c-extras-pick');
-  if(!COLLECTION.length){ el.innerHTML='<div class="coll-empty">Add items to your collection below to include them here.</div>'; return; }
-  el.innerHTML=COLLECTION.map((it,i)=>`<div class="chip ${selectedExtras.includes(it.k)?'on':''}" onclick="toggleExtra('${it.k}')">${esc(it.name)}</div>`).join('');
+function togglePick(cat,k){
+  const arr=LIST_SELECTED[cat];
+  const i=arr.indexOf(k);
+  if(i>=0) arr.splice(i,1); else arr.push(k);
+  renderPick(cat);
 }
-function toggleExtra(k){
-  const i=selectedExtras.indexOf(k);
-  if(i>=0) selectedExtras.splice(i,1); else selectedExtras.push(k);
-  renderExtrasPick();
+
+// --- Dawn's food wishes ---
+let FOODWISHES=[];
+function addFoodWish(){
+  if(!_db){ return; }
+  const inp=document.getElementById('foodwish-input');
+  const val=inp.value.trim(); if(!val) return;
+  _db.ref(VKEY+'/vineyard/foodwishes').push({ name:val, timestamp:Date.now() }).then(()=>{ inp.value=''; });
 }
+function delFoodWish(k){ if(_db) _db.ref(VKEY+'/vineyard/foodwishes/'+k).remove(); }
+function listenFoodWishes(){
+  _db.ref(VKEY+'/vineyard/foodwishes').on('value', s=>{
+    const v=s.val()||{};
+    FOODWISHES=Object.entries(v).map(([k,d])=>({k,name:d.name}));
+    const el=document.getElementById('foodwish-list'); if(!el) return;
+    if(!FOODWISHES.length){ el.innerHTML='<div class="coll-empty">No wishes yet.</div>'; return; }
+    el.innerHTML=FOODWISHES.map(it=>'<div class="collrow"><div class="cn">🍽️ '+esc(it.name)+'</div>'+
+      '<button onclick="delFoodWish(\''+it.k+'\')" title="Remove">×</button></div>').join('');
+  });
+}
+
 
 // --- Compose / save / replay nights ---
 function gatherNight(){
@@ -679,47 +758,57 @@ function gatherNight(){
     name: document.getElementById('c-name').value.trim(),
     theme: document.getElementById('c-theme').value.trim(),
     heat: document.getElementById('c-heat').value,
-    wear: document.getElementById('c-wear').value.trim(),
     notes: document.getElementById('c-notes').value.trim(),
-    extras: selectedExtras.slice(),
+    wear: LIST_SELECTED.wear.slice(),
+    prep: LIST_SELECTED.prep.slice(),
+    dinner: LIST_SELECTED.dinner.slice(),
+    extras: LIST_SELECTED.collection.slice(),
     timestamp: Date.now()
   };
 }
 function clearDesigner(){
-  ['c-name','c-theme','c-wear','c-notes'].forEach(id=>document.getElementById(id).value='');
+  ['c-name','c-theme','c-notes'].forEach(id=>{const e=document.getElementById(id); if(e) e.value='';});
   document.getElementById('c-theme-pick').value='';
   document.getElementById('c-heat').value='tender';
-  selectedExtras=[]; editingNightKey=null;
+  LIST_SELECTED.wear=[]; LIST_SELECTED.prep=[]; LIST_SELECTED.dinner=[]; LIST_SELECTED.collection=[];
+  editingNightKey=null;
   document.getElementById('c-update-btn').style.display='none';
-  renderExtrasPick();
+  LISTS.forEach(renderPick);
 }
 function saveNight(){
   if(!_db){ stat('cellar-stat','Add your Firebase config first.'); return; }
   const n=gatherNight();
   if(!n.name){ stat('cellar-stat','Give the night a name first.'); return; }
-  _db.ref('vineyard/nights').push(n).then(()=>{ clearDesigner(); stat('cellar-stat','Laid down in the cellar 🍷'); });
+  _db.ref(VKEY+'/vineyard/nights').push(n).then(()=>{ clearDesigner(); stat('cellar-stat','Laid down in the cellar 🍷'); });
 }
 function updateNight(){
   if(!_db||!editingNightKey) return;
   const n=gatherNight();
   if(!n.name){ stat('cellar-stat','Give the night a name first.'); return; }
-  _db.ref('vineyard/nights/'+editingNightKey).update(n).then(()=>{ clearDesigner(); stat('cellar-stat','Saved ❧'); });
+  _db.ref(VKEY+'/vineyard/nights/'+editingNightKey).update(n).then(()=>{ clearDesigner(); stat('cellar-stat','Saved ❧'); });
 }
 function listenNights(){
-  _db.ref('vineyard/nights').on('value', s=>{
+  _db.ref(VKEY+'/vineyard/nights').on('value', s=>{
     const v=s.val()||{};
     const items=Object.entries(v).map(([k,d])=>({k,...d})).sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
     const el=document.getElementById('cellar-list');
     if(!items.length){ el.innerHTML='<div class="thread-empty">The cellar is empty. Design a night above and lay it down 🍷</div>'; return; }
     el.innerHTML=items.map(n=>{
       const heatLabel=n.heat==='tender'?'🌿 Tender':n.heat==='warm'?'✨ Warm':'🔥 Spicy';
-      const extraNames=(n.extras||[]).map(k=>{const it=COLLECTION.find(x=>x.k===k);return it?esc(it.name):null;}).filter(Boolean);
+      const nm=(cat,keys)=>(keys||[]).map(k=>{const it=LIST_DATA[cat].find(x=>x.k===k);return it?esc(it.name):null;}).filter(Boolean);
+      const wearNames=Array.isArray(n.wear)?nm('wear',n.wear):[];
+      const prepNames=nm('prep',n.prep);
+      const dinnerNames=nm('dinner',n.dinner);
+      const extraNames=nm('collection',n.extras);
       return `<div class="nightcard">
         <div class="nname">${esc(n.name)}</div>
-        <div class="nmeta">${n.theme?esc(n.theme)+' · ':''}${heatLabel}</div>
-        ${n.wear?`<div class="nrow"><b>Wear:</b> ${esc(n.wear)}</div>`:''}
+        <div class="nmeta">${heatLabel}</div>
+        ${n.theme?`<div class="nrow"><b>Theme:</b> ${esc(n.theme)}</div>`:''}
+        ${wearNames.length?`<div class="nrow"><b>Wear:</b> ${wearNames.join(', ')}</div>`:''}
+        ${prepNames.length?`<div class="nrow"><b>Prep:</b> ${prepNames.join(', ')}</div>`:''}
+        ${dinnerNames.length?`<div class="nrow"><b>Dinner:</b> ${dinnerNames.join(', ')}</div>`:''}
+        ${extraNames.length?`<div class="nrow"><b>Toys:</b> ${extraNames.join(', ')}</div>`:''}
         ${n.notes?`<div class="nrow"><b>Setting:</b> ${esc(n.notes)}</div>`:''}
-        ${extraNames.length?`<div class="nrow"><b>Extras:</b> ${extraNames.join(', ')}</div>`:''}
         <div class="nbtns">
           <button onclick="loadNight('${n.k}')">Bring it out</button>
           <button onclick="duplicateNight('${n.k}')">Duplicate</button>
@@ -730,29 +819,31 @@ function listenNights(){
   });
 }
 function loadNight(k){
-  _db.ref('vineyard/nights/'+k).once('value', s=>{
+  _db.ref(VKEY+'/vineyard/nights/'+k).once('value', s=>{
     const n=s.val(); if(!n) return;
     document.getElementById('c-name').value=n.name||'';
     document.getElementById('c-theme').value=n.theme||'';
     document.getElementById('c-heat').value=n.heat||'tender';
-    document.getElementById('c-wear').value=n.wear||'';
     document.getElementById('c-notes').value=n.notes||'';
-    selectedExtras=(n.extras||[]).slice();
+    LIST_SELECTED.wear=(n.wear&&Array.isArray(n.wear))?n.wear.slice():[];
+    LIST_SELECTED.prep=(n.prep||[]).slice();
+    LIST_SELECTED.dinner=(n.dinner||[]).slice();
+    LIST_SELECTED.collection=(n.extras||[]).slice();
     editingNightKey=k;
     document.getElementById('c-update-btn').style.display='block';
-    renderExtrasPick();
+    LISTS.forEach(renderPick);
     stat('cellar-stat','Brought out — edit and save changes, or use as-is.');
     window.scrollTo({top:0,behavior:'smooth'});
   });
 }
 function duplicateNight(k){
-  _db.ref('vineyard/nights/'+k).once('value', s=>{
+  _db.ref(VKEY+'/vineyard/nights/'+k).once('value', s=>{
     const n=s.val(); if(!n) return;
     const copy=Object.assign({},n,{name:(n.name||'Night')+' (copy)',timestamp:Date.now()});
-    _db.ref('vineyard/nights').push(copy).then(()=>stat('cellar-stat','Duplicated — tweak the copy as you like.'));
+    _db.ref(VKEY+'/vineyard/nights').push(copy).then(()=>stat('cellar-stat','Duplicated — tweak the copy as you like.'));
   });
 }
-function delNight(k){ if(_db && confirm('Remove this night from the cellar?')) _db.ref('vineyard/nights/'+k).remove(); }
+function delNight(k){ if(_db && confirm('Remove this night from the cellar?')) _db.ref(VKEY+'/vineyard/nights/'+k).remove(); }
 
 // ----- Little Foxes (gentle honesty, Song 2:15) -----
 function sendFox(){
@@ -760,12 +851,12 @@ function sendFox(){
   const box=document.getElementById('fox-box');
   const text=box.value.trim();
   if(!text){ stat('fox-stat','Name it whenever you\'re ready.'); return; }
-  _db.ref('vineyard/foxes').push({ text, by:WHO, resolved:false, timestamp:Date.now() }).then(()=>{
+  _db.ref(VKEY+'/vineyard/foxes').push({ text, by:WHO, resolved:false, timestamp:Date.now() }).then(()=>{
     box.value=''; stat('fox-stat','Named, gently. Tend it together when you can. 🦊');
   });
 }
 function listenFoxes(){
-  _db.ref('vineyard/foxes').on('value', s=>{
+  _db.ref(VKEY+'/vineyard/foxes').on('value', s=>{
     const v=s.val()||{};
     const items=Object.entries(v).map(([k,d])=>({k,...d})).sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
     const el=document.getElementById('fox-list');
@@ -782,7 +873,7 @@ function listenFoxes(){
     }).join('');
   });
 }
-function resolveFox(k){ if(_db) _db.ref('vineyard/foxes/'+k+'/resolved').set(true); }
+function resolveFox(k){ if(_db) _db.ref(VKEY+'/vineyard/foxes/'+k+'/resolved').set(true); }
 
 function esc(s){ return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function stat(id,msg){ const e=document.getElementById(id); if(e){ e.textContent=msg; setTimeout(()=>{e.textContent='';},3000);} }
