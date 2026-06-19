@@ -270,6 +270,49 @@ body{
 /* instruments placeholder */
 .instruments-soon{text-align:center;padding:40px 20px;opacity:.8;line-height:1.7;}
 .instruments-soon p{margin-top:8px;}
+/* ===== Word / devotional ===== */
+.word-weeklabel{text-align:center;font-family:'Lato',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold2,#e8b84a);opacity:.8;margin-bottom:14px;}
+.card-dev{background:rgba(255,255,255,.04);border:1px solid rgba(200,160,70,.25);border-radius:14px;padding:16px;}
+.dev-label{display:block;font-family:'Lato',sans-serif;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold2,#e8b84a);opacity:.8;margin:12px 0 5px;}
+.dev-label:first-child{margin-top:0;}
+.dev-in{width:100%;padding:10px 12px;border-radius:8px;background:rgba(0,0,0,.3);color:#f6efe0;border:1px solid rgba(200,160,70,.25);font-family:'Crimson Pro',serif;font-size:15px;line-height:1.5;resize:vertical;}
+.btn-dev{width:100%;margin-top:14px;padding:13px;border:none;border-radius:9px;background:linear-gradient(135deg,var(--gold,#c8922a),#9a6c1c);color:#16120c;font-family:'Cinzel',serif;font-weight:700;font-size:15px;letter-spacing:1px;cursor:pointer;}
+.dev-stat{text-align:center;font-size:13px;margin-top:9px;min-height:16px;font-style:italic;color:var(--gold2,#e8b84a);}
+.word-input-from{background:linear-gradient(135deg,rgba(46,63,122,.35),rgba(26,40,80,.28));border:1px solid rgba(200,160,70,.22);border-radius:11px;padding:13px 15px;margin-bottom:12px;}
+.word-input-from .wf-label{font-family:'Lato',sans-serif;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold2,#e8b84a);opacity:.85;margin-bottom:7px;}
+.word-input-from .wf-item{font-size:15px;padding:4px 0;opacity:.92;}
+.word-input-from .wf-empty{font-size:14px;opacity:.6;font-style:italic;}
+.word-input-from .wf-votes{font-size:13px;opacity:.7;margin-left:6px;}
+.word-suggest-note{text-align:center;font-size:13px;opacity:.7;font-style:italic;line-height:1.5;padding:0 10px;}
+
+/* ===== Instrument gauges ===== */
+.master-gauge{display:flex;justify-content:center;margin-bottom:8px;}
+.gauge-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px;}
+.gauge-card{background:radial-gradient(ellipse at 50% 30%,rgba(46,63,122,.3),rgba(10,16,26,.5));
+  border:1px solid rgba(200,160,70,.25);border-radius:14px;padding:14px 10px 12px;text-align:center;}
+.gauge-card .gc-name{font-family:'Cinzel',serif;font-size:14px;color:#f6efe0;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:6px;}
+.gauge-card .gc-readout{font-family:'Lato',sans-serif;font-size:12px;color:var(--gold2,#e8b84a);margin-top:6px;letter-spacing:.5px;}
+.gauge-card .gc-sub{font-size:11px;opacity:.65;margin-top:2px;}
+.gauge-svg{width:100%;max-width:130px;height:auto;}
+.gauge-track{fill:none;stroke:rgba(255,255,255,.1);stroke-width:9;stroke-linecap:round;}
+.gauge-fill{fill:none;stroke-width:9;stroke-linecap:round;transition:stroke-dashoffset .8s ease,stroke .4s;}
+.gauge-num{font-family:'Cinzel',serif;font-weight:700;fill:#fff;}
+.gauge-pct{font-family:'Lato',sans-serif;fill:var(--gold2,#e8b84a);}
+
+/* ===== Submarine status board (Christmas tree) ===== */
+.xmas-tree{background:linear-gradient(180deg,#0a0e16,#12182400);border:1px solid rgba(200,160,70,.25);border-radius:14px;padding:8px 6px;margin-bottom:10px;}
+.tree-row{display:flex;align-items:center;gap:12px;padding:11px 12px;border-bottom:1px solid rgba(255,255,255,.05);}
+.tree-row:last-child{border-bottom:none;}
+.tree-row .tr-label{flex:1;font-size:15px;color:#e8e2d4;}
+.tree-row .tr-status{font-size:11px;font-family:'Lato',sans-serif;letter-spacing:.5px;opacity:.7;text-align:right;}
+.lamp{display:inline-block;width:15px;height:15px;border-radius:50%;flex-shrink:0;position:relative;}
+.lamp.green{background:radial-gradient(circle at 35% 30%,#9affb4,#1c8a3a);box-shadow:0 0 9px #2fd45f,0 0 3px #2fd45f;}
+.lamp.amber{background:radial-gradient(circle at 35% 30%,#ffe08a,#c8922a);box-shadow:0 0 9px #e8b84a,0 0 3px #e8b84a;}
+.lamp.red{background:radial-gradient(circle at 35% 30%,#ff9b9b,#b02a2a);box-shadow:0 0 9px #e05050,0 0 3px #e05050;}
+.lamp.off{background:radial-gradient(circle at 35% 30%,#3a3a44,#1a1a22);box-shadow:none;}
+.tree-legend{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;font-size:11px;font-family:'Lato',sans-serif;opacity:.7;margin-bottom:8px;}
+.tree-legend span{display:flex;align-items:center;gap:6px;}
+.tree-legend .lamp{width:11px;height:11px;}
 </style>
 </head>
 <body>
@@ -339,11 +382,18 @@ body{
 
   <!-- ===== INSTRUMENTS TAB ===== -->
   <div class="btab" id="btab-instruments">
-    <div class="shead">Instruments</div>
-    <div class="instruments-soon">
-      <div style="font-size:34px;opacity:.5;">⚙</div>
-      <p>The instrument panel is being fitted.</p>
-      <p style="font-size:13px;opacity:.6;">Gauges, dials, and the status board are coming to this station.</p>
+    <div class="shead">Fleet Readiness</div>
+    <div class="master-gauge" id="master-gauge"></div>
+
+    <div class="shead">Crew Instruments — Today</div>
+    <div class="gauge-grid" id="gauge-grid"></div>
+
+    <div class="shead">Status Board</div>
+    <div class="xmas-tree" id="xmas-tree"></div>
+    <div class="tree-legend">
+      <span><i class="lamp green"></i> Rigged / on course</span>
+      <span><i class="lamp amber"></i> Needs attention</span>
+      <span><i class="lamp red"></i> Off course</span>
     </div>
   </div>
 
@@ -388,6 +438,36 @@ body{
     </div>
     <div class="ce-stat" id="ce-stat"></div>
   </div>
+  </div>
+
+  <!-- ===== WORD TAB (devotional ministry) ===== -->
+  <div class="btab" id="btab-word">
+    <div class="shead">The Family Devotional</div>
+    <div class="word-weeklabel" id="word-weeklabel"></div>
+
+    <!-- what the boys voted + Dawn suggested, shown while you write -->
+    <div class="word-input-from" id="word-votes"></div>
+    <div class="word-input-from" id="word-dawn-suggest"></div>
+
+    <div class="card-dev">
+      <label class="dev-label">Title / Theme</label>
+      <input type="text" id="wdev-title" class="dev-in" placeholder="e.g. Patience Under Fire">
+      <label class="dev-label">Scripture reference</label>
+      <input type="text" id="wdev-ref" class="dev-in" placeholder="e.g. James 1:2-4 (KJV)">
+      <label class="dev-label">Scripture text (KJV)</label>
+      <textarea id="wdev-scripture" class="dev-in" rows="3" placeholder="The verse…"></textarea>
+      <label class="dev-label">Narrative / story</label>
+      <textarea id="wdev-narrative" class="dev-in" rows="7" placeholder="The OWCA story, the lesson, the vignette…"></textarea>
+      <label class="dev-label">Discussion question</label>
+      <textarea id="wdev-question" class="dev-in" rows="2" placeholder="A question for the table…"></textarea>
+      <label class="dev-label">Prayer prompt</label>
+      <textarea id="wdev-prayer" class="dev-in" rows="2" placeholder="Close with…"></textarea>
+      <button class="btn-dev" onclick="saveFamilyDevotional()">Send to the family ✝️</button>
+      <div class="dev-stat" id="wdev-stat"></div>
+    </div>
+
+    <div class="shead">Next Week — What They Want</div>
+    <div class="word-suggest-note">The boys vote in O.W.C.A.; Dawn suggests in the Homestead. Their picks gather here to guide next week's study.</div>
   </div>
 
   <!-- ===== SYSTEMS TAB ===== -->
@@ -742,6 +822,8 @@ function showBTab(name, btn){
   document.getElementById('btab-'+name).classList.add('active');
   if(btn) btn.classList.add('active');
   if(name==='comms'){ loadBridgeChat(); }
+  if(name==='instruments'){ loadInstruments(); }
+  if(name==='word'){ loadWord(); }
   window.scrollTo(0,0);
 }
 
@@ -803,7 +885,198 @@ function renderDailyBanner(done){
   }).join('');
   el.innerHTML='<div class="db-date">'+dateStr+'</div><div class="db-greet">'+greet+'</div>'+items;
 }
+
+// ════════════════════════════════════════════
+// WORD — family devotional (created here, read by the boys)
+// Path: stewart/devotional/family/{weekKey}; suggestions/votes at stewart/devotional/suggestions
+// ════════════════════════════════════════════
+function devWeekKey(){
+  // Monday of current week, YYYY-MM-DD
+  const d=new Date(); const day=(d.getDay()+6)%7; d.setDate(d.getDate()-day);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function loadWord(){
+  if(!_db) return;
+  const wk=devWeekKey();
+  const d=new Date(wk);
+  document.getElementById('word-weeklabel').textContent='Week of '+d.toLocaleDateString('en-US',{month:'long',day:'numeric'});
+  // load existing devotional for this week
+  _db.ref('stewart/devotional/family/'+wk).once('value', s=>{
+    const v=s.val()||{};
+    if(document.activeElement.tagName!=='INPUT'&&document.activeElement.tagName!=='TEXTAREA'){
+      document.getElementById('wdev-title').value=v.title||'';
+      document.getElementById('wdev-ref').value=v.scriptureRef||'';
+      document.getElementById('wdev-scripture').value=v.scriptureText||'';
+      document.getElementById('wdev-narrative').value=v.narrative||'';
+      document.getElementById('wdev-question').value=v.question||'';
+      document.getElementById('wdev-prayer').value=v.prayer||'';
+    }
+  });
+  loadWordVotes();
+  loadDawnSuggest();
+}
+function saveFamilyDevotional(){
+  if(!_db){ wdevStat('Not connected.'); return; }
+  const wk=devWeekKey();
+  const entry={
+    title:document.getElementById('wdev-title').value.trim(),
+    scriptureRef:document.getElementById('wdev-ref').value.trim(),
+    scriptureText:document.getElementById('wdev-scripture').value.trim(),
+    narrative:document.getElementById('wdev-narrative').value.trim(),
+    question:document.getElementById('wdev-question').value.trim(),
+    prayer:document.getElementById('wdev-prayer').value.trim(),
+    timestamp:Date.now()
+  };
+  _db.ref('stewart/devotional/family/'+wk).set(entry).then(()=>{ wdevStat('Sent — the boys will see it in their Training tab ✝️'); });
+}
+function wdevStat(m){ const e=document.getElementById('wdev-stat'); if(e){ e.textContent=m; setTimeout(()=>{e.textContent='';},4000); } }
+
+function loadWordVotes(){
+  _db.ref('stewart/devotional/suggestions').on('value', s=>{
+    const v=s.val()||{};
+    // tally votes per topic
+    const topics={};
+    Object.values(v).forEach(sug=>{
+      if(!sug||!sug.topic) return;
+      if(!topics[sug.topic]) topics[sug.topic]={topic:sug.topic, votes:0, by:sug.by||''};
+      topics[sug.topic].votes += (sug.votes? Object.keys(sug.votes).length : 0);
+    });
+    const ranked=Object.values(topics).sort((a,b)=>b.votes-a.votes);
+    const el=document.getElementById('word-votes');
+    if(!ranked.length){
+      el.innerHTML='<div class="wf-label">🛡️ The boys\' suggestions</div><div class="wf-empty">No suggestions yet — the boys can add topics in O.W.C.A.</div>';
+      return;
+    }
+    el.innerHTML='<div class="wf-label">🛡️ The boys want to study</div>'+
+      ranked.map(t=>'<div class="wf-item">'+esc(t.topic)+'<span class="wf-votes">'+t.votes+' vote'+(t.votes===1?'':'s')+'</span></div>').join('');
+  });
+}
+function loadDawnSuggest(){
+  _db.ref('stewart/devotional/dawn').on('value', s=>{
+    const v=s.val()||{};
+    const items=Object.values(v).filter(x=>x&&x.topic);
+    const el=document.getElementById('word-dawn-suggest');
+    if(!items.length){
+      el.innerHTML='<div class="wf-label">💗 Dawn\'s wishes</div><div class="wf-empty">Nothing yet — Dawn can suggest from the Homestead.</div>';
+      return;
+    }
+    el.innerHTML='<div class="wf-label">💗 Dawn would like to study</div>'+
+      items.map(t=>'<div class="wf-item">'+esc(t.topic)+(t.note?' <span class="wf-votes">'+esc(t.note)+'</span>':'')+'</div>').join('');
+  });
+}
+
 function toggleDaily(key,val){ if(_db) _db.ref('bridge/daily/'+dayKey()+'/'+key).set(val); }
+
+// ════════════════════════════════════════════
+// INSTRUMENTS — gauges + submarine status board
+// ════════════════════════════════════════════
+const MISSION_TARGET = 12; // soft denominator for the gauge
+
+// build an SVG arc gauge. pct 0-100. returns svg string.
+function gaugeSVG(pct, label, big){
+  const size = big ? 200 : 130;
+  const r = big ? 80 : 52;
+  const cx = size/2, cy = size/2;
+  const circ = 2*Math.PI*r;
+  // use 270° arc (gap at bottom)
+  const arcFrac = 0.75;
+  const dash = circ*arcFrac;
+  const offset = dash*(1 - pct/100);
+  const color = pct>=100 ? '#2fd45f' : pct>=60 ? '#e8b84a' : pct>=30 ? '#e8922a' : '#e05050';
+  const rot = 135; // start angle so the gap is at the bottom
+  const numSize = big ? 38 : 26;
+  const pctSize = big ? 13 : 11;
+  return `<svg class="gauge-svg" viewBox="0 0 ${size} ${size}" style="${big?'max-width:200px;':''}">
+    <circle class="gauge-track" cx="${cx}" cy="${cy}" r="${r}"
+      stroke-dasharray="${dash} ${circ}" transform="rotate(${rot} ${cx} ${cy})"/>
+    <circle class="gauge-fill" cx="${cx}" cy="${cy}" r="${r}" stroke="${color}"
+      stroke-dasharray="${dash} ${circ}" stroke-dashoffset="${offset}" transform="rotate(${rot} ${cx} ${cy})"/>
+    <text class="gauge-num" x="${cx}" y="${cy+ (big?6:4)}" text-anchor="middle" font-size="${numSize}">${pct}</text>
+    <text class="gauge-pct" x="${cx}" y="${cy+(big?26:20)}" text-anchor="middle" font-size="${pctSize}">${label||'%'}</text>
+  </svg>`;
+}
+
+function loadInstruments(){
+  if(!_db) return;
+  const today = localDateStr();
+  Promise.all(AGENTS.map(a => Promise.all([
+    _db.ref('stewart/missions/'+a.id+'/'+today).once('value'),
+    _db.ref('stewart/scores/'+a.id+'/'+today).once('value')
+  ]))).then(results => {
+    const crew = AGENTS.map((a,i)=>{
+      const done = results[i][0].val() || {};
+      const completed = Object.values(done).filter(Boolean).length;
+      const score = results[i][1].val();
+      const pct = Math.min(100, Math.round((completed/MISSION_TARGET)*100));
+      return {a, completed, score, pct};
+    });
+    renderGauges(crew);
+    renderStatusBoard(crew);
+  }).catch(()=>{});
+}
+
+function renderGauges(crew){
+  // master = average of crew pct
+  const avg = crew.length ? Math.round(crew.reduce((s,c)=>s+c.pct,0)/crew.length) : 0;
+  const mg = document.getElementById('master-gauge');
+  if(mg) mg.innerHTML = '<div class="gauge-card" style="grid-column:1/-1;max-width:240px;margin:0 auto;border-color:rgba(200,160,70,.4);">'+
+    '<div class="gc-name">⚓ Whole Crew</div>'+gaugeSVG(avg,'ready',true)+
+    '<div class="gc-readout">Fleet readiness today</div></div>';
+  const gg = document.getElementById('gauge-grid');
+  if(gg) gg.innerHTML = crew.map(c=>{
+    const scoreTxt = (c.score===null||c.score===undefined)?'—':('$'+(c.score/100).toFixed(2));
+    return '<div class="gauge-card"><div class="gc-name">'+c.a.icon+' '+c.a.name+'</div>'+
+      gaugeSVG(c.pct,'%',false)+
+      '<div class="gc-readout">'+c.completed+' of '+MISSION_TARGET+' missions</div>'+
+      '<div class="gc-sub">'+scoreTxt+'</div></div>';
+  }).join('');
+}
+
+function renderStatusBoard(crew){
+  // pull family-night, saga cadence, daily banner
+  Promise.all([
+    _db.ref('stewart/familynight').once('value'),
+    _db.ref('bridge/daily/'+dayKey()).once('value')
+  ]).then(([fnSnap, dailySnap])=>{
+    const rows = [];
+    // each boy: green if 100%, amber if some, red if none
+    crew.forEach(c=>{
+      const lamp = c.pct>=100?'green':(c.completed>0?'amber':'red');
+      const status = c.pct>=100?'All clear':(c.completed>0?c.completed+'/'+MISSION_TARGET:'None yet');
+      rows.push({label:c.a.icon+' '+c.a.name, lamp, status});
+    });
+    // Saga cadence lamp
+    let sagaLamp='off', sagaStatus='no rhythm';
+    if(typeof SAGA_CADENCE!=='undefined' && SAGA_CADENCE){
+      const releases=(SAGA_CHAPTERS||[]).filter(x=>x.released&&x.released_at).map(x=>x.released_at);
+      const last=releases.length?Math.max.apply(null,releases):0;
+      if(!last){ sagaLamp='amber'; sagaStatus='not started'; }
+      else{
+        const due=last+SAGA_CADENCE*86400000;
+        const daysLeft=Math.ceil((due-Date.now())/86400000);
+        if(daysLeft<0){ sagaLamp='red'; sagaStatus='overdue '+Math.abs(daysLeft)+'d'; }
+        else if(daysLeft<=2){ sagaLamp='amber'; sagaStatus='due in '+daysLeft+'d'; }
+        else { sagaLamp='green'; sagaStatus='on course'; }
+      }
+    }
+    rows.push({label:'📖 The Saga', lamp:sagaLamp, status:sagaStatus});
+    // Daily banner: green if all done, amber if some
+    const daily=dailySnap.val()||{};
+    const dailyDone=Object.values(daily).filter(Boolean).length;
+    const dailyTotal=(typeof DAILY_ITEMS!=='undefined')?DAILY_ITEMS.length:4;
+    const dLamp=dailyDone>=dailyTotal?'green':(dailyDone>0?'amber':'off');
+    rows.push({label:"⚓ Captain's daily watch", lamp:dLamp, status:dailyDone+'/'+dailyTotal});
+    // Family night this week
+    const fn=fnSnap.val();
+    let fnLamp='off', fnStatus='not set';
+    if(fn){ fnLamp='green'; fnStatus='held'; }
+    rows.push({label:'🕯️ Family night', lamp:fnLamp, status:fnStatus});
+
+    const el=document.getElementById('xmas-tree');
+    if(el) el.innerHTML=rows.map(r=>'<div class="tree-row"><i class="lamp '+r.lamp+'"></i>'+
+      '<div class="tr-label">'+r.label+'</div><div class="tr-status">'+r.status+'</div></div>').join('');
+  }).catch(()=>{});
+}
 
 renderWeek();
 renderSystems();
@@ -817,6 +1090,7 @@ initFirebase();
   <button class="bnav" data-btab="comms" onclick="showBTab('comms',this)"><span class="bni">📡</span>Comms</button>
   <button class="bnav" data-btab="instruments" onclick="showBTab('instruments',this)"><span class="bni">🎛️</span>Instruments</button>
   <button class="bnav" data-btab="saga" onclick="showBTab('saga',this)"><span class="bni">📖</span>Saga</button>
+  <button class="bnav" data-btab="word" onclick="showBTab('word',this)"><span class="bni">✝️</span>Word</button>
   <button class="bnav" data-btab="systems" onclick="showBTab('systems',this)"><span class="bni">🧭</span>Systems</button>
 </div>
 </body>
